@@ -1,0 +1,66 @@
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class XPathFinder:
+    """Утилиты для поиска элементов по XPath с использованием Selenium."""
+
+    def __init__(self, driver, timeout=10, few=False):
+        """Инициализация класса.
+        :param driver: WebDriver для взаимодействия с браузером.
+        :param timeout: Время ожидания элемента (по умолчанию 10 секунд).
+        :param few: Если True, методы ищут список элементов, иначе один.
+        """
+        self.driver = driver
+        self.timeout = timeout
+        self.few = few  # Контролирует режим поиска элементов (один или список)
+
+    def find_located(self, path, timeout=None, few=None):
+        """Проверяет, что элемент(ы) присутствует в DOM."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        WebDriverWait(self.driver, wait_time).until(
+            EC.presence_of_element_located((By.XPATH, path))
+        )
+        return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
+
+    def find_visible(self, path, timeout=None, few=None):
+        """Проверяет, что элемент(ы) видим."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        WebDriverWait(self.driver, wait_time).until(
+            EC.presence_of_element_located((By.XPATH, path))
+        )
+        return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
+
+    def find_clickable(self, path, timeout=None, few=None):
+        """Проверяет, что элемент(ы) кликабелен."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        WebDriverWait(self.driver, wait_time).until(
+            EC.element_to_be_clickable((By.XPATH, path))
+        )
+        return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
+
+    def find_invisible(self, path, timeout=None, few=None):
+        """Проверяет, что элемент(ы) не видим."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        WebDriverWait(self.driver, wait_time).until(
+            EC.invisibility_of_element_located((By.XPATH, path))
+        )
+        return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
+
+    def find_inside(self, element, path, few=None):
+        """Ищет элементы внутри другого элемента (WebElement).
+        :param element: Родительский элемент (`WebElement`).
+        :param path: XPath вложенного элемента.
+        :param few: Если True, ищет список элементов, иначе один (по умолчанию используется `self.few`).
+        :return: Один или список `WebElement`, найденных внутри `element`.
+        """
+        search_mode = few if few is not None else self.few
+        return element.find_elements(By.XPATH, path) if search_mode else element.find_element(By.XPATH, path)

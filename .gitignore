@@ -14,3 +14,7 @@
 /exceptionHandler/__pycache__
 /log
 /pages/__pycache__
+/utils/exception_handler/__pycache__
+/locators/__pycache__
+/allure_results
+/tests/check_url/__pycache__
