@@ -1,8 +1,9 @@
 # Браузер для теста ("chrome", "firefox") 
-Browser = 'chrome'
-# url адрес тестируемой сборки (по умолчанию локальный)
-URL = 'http://localhost:9080/'
+BROWSER = 'chrome'
+# url адрес тестируемой сборки (по умолчанию локальный, при использовании docker вместо localhost следует указать host.docker.internal)
+URL = 'http://host.docker.internal:9080/'
+#URL = 'http://localhost:9080/'
 # Логин УЗ Администартора
-Admin_Login = 'admin'
+ADMIN_LOGIN = 'admin'
 # Пароль от УЗ администратора
-Admin_Password = '11111111'
+ADMIN_PASSWORD = '11111111'

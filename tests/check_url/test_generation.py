@@ -1,5 +1,4 @@
 import pytest
-import allure
 
 from utils.exception_handler.decorator_error_handler import exception_handler, MinorIssue
 from locators.generation_locators import GenerationLocators

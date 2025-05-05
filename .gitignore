@@ -1,8 +1,9 @@
-﻿################################################################################
+################################################################################
 # Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
 ################################################################################
 
 /.idea
+/.pytest_cache
 /.vs
 /results/img
 /settings/__pycache__
@@ -11,10 +12,11 @@
 /reports/report_2025-04-10.docx
 /reports
 /allure-results
+/allure_reports
 /exceptionHandler/__pycache__
-/log
 /pages/__pycache__
 /utils/exception_handler/__pycache__
 /locators/__pycache__
 /allure_results
 /tests/check_url/__pycache__
+/log

@@ -2,14 +2,14 @@ import pytest  # Импорт библиотеки для работы с тес
 from pages.login_page import LoginPage
 from locators.login_locators import LoginLocators
 from utils.exception_handler.decorator_error_handler import exception_handler, MinorIssue  # Декоратор для обработки исключений
-from settings.variables import Admin_Login, Admin_Password  # Данные для тестирования авторизации
+from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD  # Данные для тестирования авторизации
 
 @pytest.mark.smoke  # Маркируем тест
 @pytest.mark.parametrize("test_suite", [
     # Параметризованные тесты для проверки различных сценариев авторизации
-    ("Некорректный логин", Admin_Login + "123", Admin_Password, True),  # Ожидаем ошибку из-за неверного логина
-    ("Некорректный пароль", Admin_Login, Admin_Password + "123", True),  # Ожидаем ошибку из-за неверного пароля
-    ("Успешная авторизация", Admin_Login, Admin_Password, False)  # Ожидаем успешную авторизацию без ошибок
+    ("Некорректный логин", ADMIN_LOGIN + "123", ADMIN_PASSWORD, True),  # Ожидаем ошибку из-за неверного логина
+    ("Некорректный пароль", ADMIN_LOGIN, ADMIN_PASSWORD + "123", True),  # Ожидаем ошибку из-за неверного пароля
+    ("Успешная авторизация", ADMIN_LOGIN, ADMIN_PASSWORD, False)  # Ожидаем успешную авторизацию без ошибок
 ])
 @exception_handler  # Декоратор для обработки исключений во время выполнения теста
 def test_authorization(error_handler, logger, driver, test_suite):

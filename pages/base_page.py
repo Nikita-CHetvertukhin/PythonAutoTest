@@ -30,7 +30,7 @@ class BasePage:
         # Поиск кнопок меню
         btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=1, few=True)
         if not btns_headerMenu:
-            self.logger.warning("Кнопки меню не найдены.")
+            self.logger.warning("Кнопки Header меню не найдены.")
             return False
 
         for btn in btns_headerMenu:
@@ -97,6 +97,23 @@ class BasePage:
         else:
             self.logger.error("Меньше 3 кнопок в меню. Невозможно кликнуть кнопку 'Ещё'.")
             return False
+
+    def find_click_side_menu(self, button_name):
+        # Поиск кнопок меню
+        btns_sideMenu = self.xpath.find_visible(BaseLocators.SIDE_MENU_BUTTONS, timeout=1, few=True)
+        if not btns_sideMenu:
+            self.logger.error("Кнопки бокового меню не найдены.")
+            return False
+
+        for btn in btns_sideMenu:
+            span = self.xpath.find_inside(btn, f'.//span[text()="{button_name}"]', few=True)
+            if span and span[0].is_displayed():
+                btn.click()
+                self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
+                return True
+         # Если после цикла кнопка не найдена
+        self.logger.error(f"Кнопка '{button_name}' не найдена в боковом меню.")
+        return False         
     
     def check_error(self, should_find_error=True, path=None, has_close_button=True, timeout=1):
         """Проверяет наличие ошибки на странице и, если возможно, закрывает ее.
@@ -135,3 +152,4 @@ class BasePage:
             else:
                 self.logger.info(f"Успех: Ошибка отсутствует на странице — {path}")
                 return True
+

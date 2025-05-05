@@ -1,5 +1,10 @@
 class BaseLocators:
 
+    '''Licence.Properties'''
+
+    # Путь до json с лицензиями
+    LICENCE_PROPERTIES = '//script[@type="text/javascript" and contains(text(), "Licence.Properties")]'
+
     '''HEADER'''
 
     # Кнопка Лого DZ
@@ -19,6 +24,10 @@ class BaseLocators:
 
     # Кнопка "Выйти"
     ACCOUNT_SIGNOUT = '//div[contains(@class, "account-panel")]//a[contains(@class, "sign-out")]'
+
+    '''SIDE MENU'''
+    # Кнопки бокового меню
+    SIDE_MENU_BUTTONS = '//div[@class="body"]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/a[not(contains(@class, "display-none"))]'
 
     '''ERRORS'''
 

@@ -1,3 +1,4 @@
+import tempfile
 from selenium import webdriver  # Основной модуль Selenium для управления браузерами
 from selenium.webdriver.chrome.service import Service  # Оптимизированный способ запуска Chrome WebDriver
 from webdriver_manager.chrome import ChromeDriverManager  # Автоматическое управление версией Chrome WebDriver
@@ -17,6 +18,9 @@ class BrowserDriver:
         if self.browser_type == "chrome":
             service = Service(ChromeDriverManager().install())  # Установка и управление Chrome WebDriver
             options = webdriver.ChromeOptions()  # Опции для Chrome (можно добавить параметры, например headless)
+            options.add_argument(f"--user-data-dir={tempfile.mkdtemp(prefix='chrome-profile-')}")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
             self.driver = webdriver.Chrome(service=service, options=options)
 
         elif self.browser_type == "firefox":
