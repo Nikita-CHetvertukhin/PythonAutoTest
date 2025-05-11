@@ -32,7 +32,7 @@ class ErrorHandler:
         screenshot_path = screenshot_dir / (screenshot_name or f"screenshot_{timestamp}.png")
 
         self.driver.save_screenshot(screenshot_path)
-        self.logger.warning(f"Ошибка: {exception}. Скриншот сохранён: {screenshot_path}")
+        self.logger.error(f"Ошибка: {exception}. Скриншот сохранён: {screenshot_path}")
 
         # Прикрепление скриншота к Allure
         if "pytest" in sys.modules:

@@ -44,15 +44,15 @@
   <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл "check_url.log"</summary>
 
   ```bash
-pytest tests/check_url -n auto --alluredir=allure_results && type log\project_*.log > log\check_url.log && del log\project_*.log
+pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.log > log\check_url.log && del log\project_*.log
   ```
 </details>
 
 <details>
-  <summary>⚡ Запускаем параллельную проверку остальных тестов</summary>
+  <summary>⚡ Запускаем параллельную проверку остальных тестов (чем больше потоков тем не стабильнее тесты из ФС и вебсокетов, оптимальное значение -n 3)</summary>
 
   ```bash
-  pytest -n auto --dist=loadscope --alluredir=allure_results --ignore=tests/check_url && type log\project_*.log > log\tests.log && del log\project_*.log
+  pytest -n 3 --dist=loadscope --alluredir=allure_results --ignore=tests/check_url & type log\project_*.log > log\tests.log && del log\project_*.log
   ```
 </details>
 

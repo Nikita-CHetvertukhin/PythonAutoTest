@@ -51,7 +51,7 @@ class LoginPage(BasePage):
     def check_account_button(self, log_enabled=False):
         """Проверяет наличие кнопки 'Личный кабинет'."""
         try:
-            element = self.xpath.find_located(BaseLocators.HEADER_ACCOUNT_BUTTON, timeout=1)
+            element = self.xpath.find_located(BaseLocators.HEADER_ACCOUNT_BUTTON, timeout=3)
             if log_enabled:
                 self.logger.info("Кнопка 'Личный кабинет' найдена.")
             return True

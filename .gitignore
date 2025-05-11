@@ -4,6 +4,7 @@
 
 /.idea
 /.pytest_cache
+/env
 /.vs
 /results/img
 /settings/__pycache__
@@ -20,3 +21,6 @@
 /allure_results
 /tests/check_url/__pycache__
 /log
+/tests/checking_sections/__pycache__
+/tests/processes_section/__pycache__
+/resources/downloads

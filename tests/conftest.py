@@ -9,7 +9,7 @@ from utils.exception_handler.error_handler import ErrorHandler
 from utils.element_searching import XPathFinder
 from pages.login_page import LoginPage
 from locators.base_locators import BaseLocators
-from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD,BROWSER, URL
+from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD,BROWSER, URL, USER1_LOGIN, USER1_PASSWORD
 
 # Пути к файлам
 DEFAULT_LICENCE_FILE = "settings/default_licence_properties.json"
@@ -24,7 +24,7 @@ def driver():
 
     yield driver  # Передаём драйвер в тесты
 
-    driver.quit()  # Закрываем браузер после теста
+    driver_instance.cleanup()  # Закрываем браузер после теста
 
 @pytest.fixture(scope="session")
 def logger():
@@ -53,15 +53,34 @@ def admin_driver(driver, logger, error_handler):
 
     return driver  # Передаём браузер без закрытия (его закроет driver)
 
+@pytest.fixture(scope="function")
+def user1_driver(logger, error_handler):
+    """Создаёт новый браузер и выполняет авторизацию"""
+    driver_instance = BrowserDriver(browser_type=BROWSER)
+    driver = driver_instance.initialize_driver()
+    login_page = LoginPage(driver, logger)
+
+    login_page.enter_username(USER1_LOGIN)
+    login_page.enter_password(USER1_PASSWORD)
+    login_page.click_login()
+
+    assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
+
+    yield driver  # Передаём драйвер в тесты
+
+    driver_instance.cleanup()  # Закрываем браузер после теста
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
     print(f"Проверяем наличие {LICENCE_OUTPUT_FILE}...")
-    """Добавляет сведения о браузере, url и лицензиях в отчет allure"""
+    """Формирует Licence_Properties. Добавляет сведения о браузере, url и лицензиях в отчет allure"""
     if not hasattr(config, 'workerinput'):  # Проверяем, не является ли это воркером xdist
         os.makedirs("log", exist_ok=True)
         os.makedirs("log/screenshots", exist_ok=True)
         os.makedirs("allure_results", exist_ok=True)
         os.makedirs("allure_reports", exist_ok=True)
+        os.makedirs("resources/downloads", exist_ok=True)
+        os.makedirs("resources/uploads", exist_ok=True)
 
         driver_instance = BrowserDriver(browser_type=BROWSER)
         driver = driver_instance.initialize_driver()

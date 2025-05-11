@@ -26,8 +26,42 @@ class BaseLocators:
     ACCOUNT_SIGNOUT = '//div[contains(@class, "account-panel")]//a[contains(@class, "sign-out")]'
 
     '''SIDE MENU'''
+
     # Кнопки бокового меню
     SIDE_MENU_BUTTONS = '//div[@class="body"]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/a[not(contains(@class, "display-none"))]'
+
+    '''BODY'''
+
+    # Путь до TEXTAREA для ввода названия процесса/документа (например при переименовании)
+    BODY_TEXTAREA = '//div[contains(@class,"textarea")]/div'
+
+    '''DIALOG WINDOW'''
+    # Кнопка подтвердить действие в диалоговом окне
+    DIALOG_WINDOW_CONFIRM = '//div[contains(@class,"dialog")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    # Кнопка отменить действие в диалоговом окне
+    DIALOG_WINDOW_CANCEL = '//div[contains(@class,"dialog")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span'
+
+    '''SHARE WINDOW'''
+
+    # Инпут ввода имени пользователя или группы
+    SHARE_INPUT = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Введите")]'
+    # Элементы выпадашки с пользователями или группами
+    SHARE_DROPDOWN = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"last")]/div/span'
+    # Список строк пользователей или групп с доступом
+    SHARE_LIST = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]/div[contains(@class,"flex-1")]//div[contains(@class,"items")]/table/tbody/tr'
+    # Развернуть список уровней доступа (искать от строки выше + перед действием нужен клик по td с доступами...)
+    SHARE_TRIGGER = '//div[contains(@class,"acces")]/div[contains(@class,"box")]/a[contains(@class,"btn-trigger")]'
+    # Список уровней доступа
+    SHARE_LEVEL = '//td[contains(@class,"column int")]/div[contains(@class,"focus") and contains(@class,"open")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
+    # Кнопка "Сохранить"
+    SHARE_SAVE = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+
+    '''COPY WINDOW'''
+
+    # Инпут ввода нового названия
+    COPY_WINDOW_INPUT = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"body")]//div[contains(@class,"location")]//input'
+	# Кнопка "Копировать"
+    COPY_WINDOW_COPYBTN= '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
 
     '''ERRORS'''
 

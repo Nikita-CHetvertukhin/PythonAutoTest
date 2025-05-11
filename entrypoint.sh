@@ -1,7 +1,7 @@
 #!/bin/bash
 # Запуск виртуального дисплея Xvfb на дисплее :99
 echo "Запуск виртуального дисплея Xvfb..."
-Xvfb :99 -screen 0 1280x1024x16 &
+Xvfb :99 -screen 0 1920x1080x24 &
 export DISPLAY=:99
 
 # Запуск VNC-сервера (x11vnc) на порту 5900
@@ -27,10 +27,6 @@ export PYTHONPATH=/app
 pytest tests/check_url -n auto --alluredir=allure_results
 cat log/project_*.log > log/check_url.log
 rm -f log/project_*.log
-pytest -n auto --dist=loadscope --alluredir=allure_results --ignore=tests/check_url
-cat log/project_*.log > log/tests.log
-rm -f log/project_*.log
-
 echo "Тесты завершены. Формирую отчёт Allure..."
 
 # Генерация статического отчёта Allure
@@ -55,8 +51,9 @@ echo "Копирую отчёт и логи в ${report_dir}..."
 mkdir -p "${report_dir}"
 cp -r /app/allure_report "${report_dir}/allure_report"
 cp -r /app/log "${report_dir}/logs"
+cp -r /app/resources/downloads "${report_dir}/downloads"
 
-echo "Отчёты и логи скопированы в ${report_dir}."
+echo "Отчёты, логи и загрузки скопированы в ${report_dir}."
 
 echo "Контейнер остается запущенным для обзора виртуального рабочего стола."
 tail -f /dev/null
