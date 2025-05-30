@@ -37,7 +37,7 @@
 
   <summary>📊 Указываем глобальные переменные</summary>
 
-  Глобальные переменные динамически указываются в файле `settings/variables.py`.
+  Глобальные переменные динамически указываются в файле `settings/variables.py`. Перед запуском проекта нужно переименовать и убрать '.default'.
 </details>
 
 <details>
@@ -49,10 +49,10 @@ pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.l
 </details>
 
 <details>
-  <summary>⚡ Запускаем параллельную проверку остальных тестов (чем больше потоков тем не стабильнее тесты из ФС и вебсокетов, оптимальное значение -n 3)</summary>
+  <summary>⚡ Запускаем параллельную проверку тестов Workflow</summary>
 
   ```bash
-  pytest -n 3 --dist=loadscope --alluredir=allure_results --ignore=tests/check_url & type log\project_*.log > log\tests.log && del log\project_*.log
+  pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results & type log\project_*.log > log\tests.log && del log\project_*.log
   ```
 </details>
 
@@ -83,6 +83,14 @@ pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.l
 
   ```bash
   python -m http.server 8080
+  ```
+</details>
+
+<details>
+  <summary> ℹ️ Если работаем локально можно почистить все скрины, логи, загрузки после просмотра/сохранения отчетов</summary>
+
+  ```bash
+  python utils/cleaner.py --retention previous
   ```
 </details>
 

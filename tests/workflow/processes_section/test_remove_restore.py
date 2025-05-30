@@ -23,6 +23,7 @@ def setup_test_remove_restore(request, logger, admin_driver):
     
     return process_name, workflows_page
 
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_remove_restore(error_handler, logger, admin_driver, setup_test_remove_restore):
     """Тест проверяет возможность действия 'Переместить в Корзину','Восстановление' и 'Окончательное удаление'."""

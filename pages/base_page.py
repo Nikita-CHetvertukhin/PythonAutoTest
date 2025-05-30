@@ -382,7 +382,9 @@ class BasePage:
         """
         xpath = XPathFinder(self.driver)
         rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}/textarea[contains(@title,"{current_name}")]', timeout=3, few=False)
+        time.sleep(1)  # Пауза для стабильности, чтобы textarea была активной
         rename_path.send_keys(f'{new_name}')
+        time.sleep(1)  # Пауза для стабильности, чтобы textarea была активной
         rename_path.send_keys(Keys.ENTER)
 
     def dialog_window(self, action=True):

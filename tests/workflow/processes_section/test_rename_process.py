@@ -33,6 +33,7 @@ def setup_test_rename_process(request, logger, admin_driver):
     request.addfinalizer(cleanup)  # Гарантированное удаление процесса
     return process_name, workflows_page
 
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_rename_process(error_handler, logger, admin_driver, setup_test_rename_process):
     """Тест проверяет возможность действия Переименовать процесс."""

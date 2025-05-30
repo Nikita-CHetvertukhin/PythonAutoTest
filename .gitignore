@@ -1,7 +1,3 @@
-################################################################################
-# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
-################################################################################
-
 /.idea
 /.pytest_cache
 /env
@@ -24,3 +20,7 @@
 /tests/checking_sections/__pycache__
 /tests/processes_section/__pycache__
 /resources/downloads
+/resources/drivers
+/settings/variables.py
+/settings/Variables.py
+/settings/Variables.py

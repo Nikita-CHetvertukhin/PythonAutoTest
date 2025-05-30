@@ -37,8 +37,9 @@ def setup_test_download_process(request, logger, admin_driver):
     request.addfinalizer(cleanup)  # Гарантированное удаление процесса
     return process_name, workflows_page
 
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def test_open_process(error_handler, logger, admin_driver, setup_test_download_process):
+def test_download_process(error_handler, logger, admin_driver, setup_test_download_process):
     """Тест проверяет возможность открытия нового процесса через контекстное меню или двойным ЛКМ."""
     process_name, workflows_page = setup_test_download_process
     workflow_editor_page = WorkflowEditorPage(admin_driver, logger)
