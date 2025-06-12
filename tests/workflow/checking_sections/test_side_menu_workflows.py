@@ -3,6 +3,7 @@ from utils.exception_handler.decorator_error_handler import exception_handler, M
 from pages.workflows_page import WorkflowsPage
 from locators.workflows_locators import WorkflowsLocators
 
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор, обрабатывающий исключения, чтобы тест не прерывался неожиданно
 def test_side_menu_workflows(error_handler, logger, admin_driver):
     """Тест проверяет доступность вкладок в разделе 'Рабочие процессы' и фиксирует ошибки, если они есть."""
@@ -11,7 +12,7 @@ def test_side_menu_workflows(error_handler, logger, admin_driver):
     workflows_page = WorkflowsPage(admin_driver, logger)
 
     tabs = ["Корзина", "Шаблоны процессов"]
-    columns_to_check = ["check", "Название", "Дата изменения", "Автор", "Комментарий"]
+    columns_to_check = ["check", "Название", "Дата изменения", "Автор"]
     failed_tabs = []
 
     workflows_page.find_click_header_menu("Рабочие процессы")

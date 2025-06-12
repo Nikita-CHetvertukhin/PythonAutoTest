@@ -11,7 +11,7 @@ from utils.exception_handler.error_handler import ErrorHandler
 from utils.element_searching import XPathFinder
 from pages.login_page import LoginPage
 from locators.base_locators import BaseLocators
-from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD,BROWSER, URL, USER1_LOGIN, USER1_PASSWORD
+from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD, URL, USER1_LOGIN, USER1_PASSWORD
 
 # Пути к файлам
 DEFAULT_LICENCE_FILE = "settings/default_licence_properties.json"
@@ -21,7 +21,7 @@ ENV_FILE = "allure_results/environment.properties"
 @pytest.fixture(scope="function")
 def driver():
     """Создание нового драйвера для каждого теста"""
-    driver_instance = BrowserDriver(browser_type=BROWSER)
+    driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome"))
     driver = driver_instance.initialize_driver()
 
     yield driver  # Передаём драйвер в тесты
@@ -59,7 +59,7 @@ def admin_driver(driver, logger, error_handler):
 @pytest.fixture(scope="function")
 def user1_driver(logger, error_handler):
     """Создаёт новый браузер и выполняет авторизацию"""
-    driver_instance = BrowserDriver(browser_type=BROWSER)
+    driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
     driver = driver_instance.initialize_driver()
     login_page = LoginPage(driver, logger)
 
@@ -91,7 +91,7 @@ def pytest_configure(config):
             os.makedirs("resources/downloads", exist_ok=True)
             os.makedirs("resources/uploads", exist_ok=True)
 
-            driver_instance = BrowserDriver(browser_type=BROWSER)
+            driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome"))
             driver = driver_instance.initialize_driver()
 
             xpath = XPathFinder(driver)
@@ -132,7 +132,7 @@ def pytest_configure(config):
             # Открываем `environment.properties` один раз и записываем всё сразу
             with open(ENV_FILE, "w", encoding="utf-8") as file:
                 file.write(f"URL={URL}\n")
-                file.write(f"Browser={BROWSER}\n")
+                file.write(f'Browser={os.getenv("BROWSER")}\n')
 
                 # Записываем только отличающиеся параметры
                 for key, value in diff_licence.items():

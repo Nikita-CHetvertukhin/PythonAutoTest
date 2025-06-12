@@ -17,10 +17,11 @@
 /allure_results
 /tests/check_url/__pycache__
 /log
-/tests/checking_sections/__pycache__
-/tests/processes_section/__pycache__
+/tests/workflow/checking_sections/__pycache__
+/tests/workflow/processes_section/__pycache__
 /resources/downloads
+/settings/variables.py
 /resources/drivers
 /settings/variables.py
-/settings/Variables.py
-/settings/Variables.py
+/settings/variables.py
+/tests/workflow/processes_editor/__pycache__

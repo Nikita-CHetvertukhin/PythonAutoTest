@@ -2,11 +2,14 @@ import pytest
 import time
 from utils.exception_handler.decorator_error_handler import exception_handler
 from pages.workflows_page import WorkflowsPage
+from pages.workflow_editor_page import WorkflowEditorPage
+from utils.refresh_and_wait import refresh_and_wait
 
 @pytest.fixture
-def setup_test_copy_link(request, logger, admin_driver):
+def setup_test_shape_buttons(request, logger, admin_driver):
     """Фикстура для создания и удаления процесса."""
     workflows_page = WorkflowsPage(admin_driver, logger)
+    workflow_editor_page = WorkflowEditorPage(admin_driver, logger)
     process_name = workflows_page.generate_object_name()
 
     logger.info("Создание процесса...")
@@ -24,6 +27,8 @@ def setup_test_copy_link(request, logger, admin_driver):
         """Удаление процесса после теста."""
         logger.info(f"Удаление процесса '{process_name}'...")
         time.sleep(2)  # Ждём явно, пока не появятся статусы сохранения
+        workflows_page.click_header_logo_button()
+        refresh_and_wait(admin_driver, logger)
         workflows_page.find_click_header_menu("Рабочие процессы")
         workflows_page.find_click_side_menu("Шаблоны процессов")
         process_to_delete = workflows_page.find_process_by_name(process_name)
@@ -34,17 +39,33 @@ def setup_test_copy_link(request, logger, admin_driver):
             logger.warning(f"Процесс '{process_name}' не найден для удаления.")
 
     request.addfinalizer(cleanup)  # Гарантированное удаление процесса
-    return process_name, workflows_page
+    return process_name, workflows_page, workflow_editor_page
 
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def test_copy_link(error_handler, logger, admin_driver, setup_test_copy_link):
-    """Тест проверяет возможность действия 'Скопировать ссылку'."""
-    process_name, workflows_page = setup_test_copy_link
+def test_shape_buttons(error_handler, logger, admin_driver, setup_test_shape_buttons):
+    """Тест проверяет создание, перемещение и соединение фигур в редактоер Workflow."""
+    process_name, workflows_page, workflow_editor_page = setup_test_shape_buttons
 
-    logger.info("Начало проверки открытия процесса")
-    workflows_page.right_click_and_select_action(process_name, "Скопировать ссылку")
+    logger.info("Начало проверки фигур WF в редакторе")
     workflows_page.right_click_and_select_action(process_name, "Открыть")
     time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
-    
-    assert workflows_page.compare_clipboard_with_url(), "Ссылка в буфере не равно ссылке на процесс"
+
+    # Массив фигур для проверки
+    shape_names = ["Вход", "Выход", "Задача", "Условие", "Разветвление", "Слияние"]
+
+    #Цикл проверяет возможность создания каждой из фигур и установления связи между ними каждая фигура выступает в роли связеобразующей
+    for primary_shape_name in shape_names:
+        if primary_shape_name == "Выход":
+            continue  # "Выход" не может быть первым
+
+        primary_shape = workflow_editor_page.add_shape(primary_shape_name) # Создание первой фигуры
+
+        for secondary_shape_name in shape_names:
+
+            secondary_shape = workflow_editor_page.add_shape(secondary_shape_name) # Создание второй фигуры и сохранение её model_id
+            workflow_editor_page.drag_element_right(secondary_shape, offset=500) # Поиск и drag&drop второй фигуры по model_id
+            connection_shape = workflow_editor_page.connect_shapes(primary_shape, secondary_shape) # Коннект первой и второй фигур
+            workflow_editor_page.delete_shape(secondary_shape) # Удаление второй фигуры
+
+        workflow_editor_page.delete_shape(primary_shape) # Удаление первой фигуры

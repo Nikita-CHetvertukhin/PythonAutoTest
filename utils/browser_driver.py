@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 import os
+import sys
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.firefox.service import Service as FirefoxService
@@ -13,7 +14,7 @@ from settings.variables import URL
 class BrowserDriver:
     """Класс для управления веб-драйвером, поддерживающим Chrome и Firefox."""
     def __init__(self, browser_type="chrome"):
-        self.browser_type = browser_type.lower()
+        self.browser_type = os.getenv("BROWSER", "chrome").strip().lower()
         self.url = URL
         self.driver = None
         self.temp_profile = None  # Переменная для хранения пути к временной папке
@@ -33,7 +34,8 @@ class BrowserDriver:
     def get_latest_chrome_driver(cls):
         """Использует существующий ChromeDriver или скачивает новый."""
         cls.ensure_directories()
-        chrome_path = os.path.join(cls._custom_driver_dir, "chromedriver.exe")
+        driver_name = "chromedriver.exe" if sys.platform.startswith("win") else "chromedriver"
+        chrome_path = os.path.join(cls._custom_driver_dir, driver_name)
 
         if os.path.exists(chrome_path):
             return chrome_path
@@ -50,7 +52,8 @@ class BrowserDriver:
     def get_latest_gecko_driver(cls):
         """Ищет GeckoDriver в `resources/drivers` или загружает новый."""
         cls.ensure_directories()
-        gecko_path = os.path.join(cls._custom_driver_dir, "geckodriver.exe")
+        driver_name = "geckodriver.exe" if sys.platform.startswith("win") else "geckodriver"
+        gecko_path = os.path.join(cls._custom_driver_dir, driver_name)
 
         if os.path.exists(gecko_path):
             return gecko_path
@@ -83,6 +86,8 @@ class BrowserDriver:
                 "download.prompt_for_download": False,
                 "profile.default_content_setting_values.notifications": 2
             })
+            # Важно для Docker
+            options.add_argument("--no-sandbox")
             # Блокировка всплывающих окон и уведомлений
             options.add_argument("--disable-popup-blocking")
             options.add_argument("--disable-notifications")
@@ -107,6 +112,8 @@ class BrowserDriver:
             options.add_argument(f"--user-data-dir={self.temp_profile}")
 
             self.driver = webdriver.Chrome(service=service, options=options)
+            print(f"Профиль: {self.temp_profile}")
+            print(f"Содержимое: {os.listdir(self.temp_profile)}")
 
         elif self.browser_type == "firefox":
             download_manager = DownloadManager()
@@ -135,7 +142,6 @@ class BrowserDriver:
         else:
             raise ValueError(f"Браузер '{self.browser_type}' не поддерживается.")
 
-        self.driver.maximize_window()
         self.driver.get(self.url)
         return self.driver
 

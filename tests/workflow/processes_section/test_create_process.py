@@ -14,6 +14,7 @@ def setup_test_create_process(request, logger, admin_driver):
     logger.info("Создание процесса...")
     workflows_page.find_click_header_menu("Рабочие процессы")
     workflows_page.find_click_side_menu("Шаблоны процессов")
+    time.sleep(1)  # Ждем, чтобы страница успела загрузиться Потом поправить на ожидание request
     workflows_page.create_process(process_name)
 
     if not workflows_page.find_process_by_name(process_name):

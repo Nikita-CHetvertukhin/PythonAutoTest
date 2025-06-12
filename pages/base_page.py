@@ -1,7 +1,7 @@
 import inspect
 import datetime
 import time
-import pyperclip
+import pyclip
 from selenium.webdriver.common.keys import Keys
 '''Импорт класса ActionChains, который позволяет выполнять сложные действия с элементами веб-страницы,
 такие как перемещение курсора, двойные клики, перетаскивание объектов и другие действия.'''
@@ -381,11 +381,10 @@ class BasePage:
         :param new_name: Новое имя для переименовываемого объекта.
         """
         xpath = XPathFinder(self.driver)
-        rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}/textarea[contains(@title,"{current_name}")]', timeout=3, few=False)
-        time.sleep(1)  # Пауза для стабильности, чтобы textarea была активной
+        rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}[contains(@title,"{current_name}")]', timeout=3, few=False)
         rename_path.send_keys(f'{new_name}')
-        time.sleep(1)  # Пауза для стабильности, чтобы textarea была активной
-        rename_path.send_keys(Keys.ENTER)
+        next_td_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}/ancestor::td[1]/following-sibling::td[contains(@field,"1")]', timeout=3, few=False)
+        next_td_path.click()  # Кликаем по следующему td, чтобы сохранить изменения
 
     def dialog_window(self, action=True):
         if action:
@@ -454,14 +453,19 @@ class BasePage:
         current_url = self.driver.current_url
         self.logger.info(f"Текущий URL: {current_url}")
 
-        # Получаем ссылку из буфера обмена
-        clipboard_url = pyperclip.paste()
-        self.logger.info(f"Ссылка из буфера обмена: {clipboard_url}")
+        try:
+            # Получаем ссылку из буфера обмена через `pyclip`
+            clipboard_url = pyclip.paste(text=True)
+            self.logger.info(f"Ссылка из буфера обмена: {clipboard_url}")
 
-        # Сравниваем ссылки
-        if clipboard_url == current_url:
-            self.logger.info("Ссылка в буфере обмена совпадает с текущим URL.")
-            return True
-        else:
-            self.logger.warning("Ссылка в буфере обмена НЕ совпадает с текущим URL!")
+            # Сравниваем ссылки
+            if clipboard_url == current_url:
+                self.logger.info("Ссылка в буфере обмена совпадает с текущим URL.")
+                return True
+            else:
+                self.logger.warning("Ссылка в буфере обмена НЕ совпадает с текущим URL!")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"Ошибка при получении буфера обмена: {e}")
             return False

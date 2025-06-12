@@ -3,7 +3,6 @@ FROM debian:bullseye-slim
 
 # Установка базовых пакетов, локалей, Python, Java, а также инструментов для виртуального дисплея, VNC и noVNC
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    locales \
     openjdk-11-jre-headless \
     python3 \
     python3-pip \
@@ -16,37 +15,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     x11vnc \
     fluxbox \
+    xclip \
+    xsel \
     git && \
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
-    echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen && \
-    locale-gen && \
-    update-locale LANG=en_US.UTF-8 && \
     apt-get clean
-
-# Установка переменных окружения для локалей
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
 
 # Установка Google Chrome
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && apt-get install -y google-chrome-stable && apt-get clean
 
-# Установка Chromedriver
-RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
-    wget -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver_linux64.zip
-
 # Установка Firefox
 RUN apt-get update && apt-get install -y firefox-esr && apt-get clean
-
-# Установка Geckodriver для Firefox
-RUN GECKO_DRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | \
-    grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/') && \
-    wget -q "https://github.com/mozilla/geckodriver/releases/download/v$GECKO_DRIVER_VERSION/geckodriver-v$GECKO_DRIVER_VERSION-linux64.tar.gz" && \
-    tar -xzf geckodriver-v$GECKO_DRIVER_VERSION-linux64.tar.gz -C /usr/local/bin && \
-    rm geckodriver-v$GECKO_DRIVER_VERSION-linux64.tar.gz
 
 # Установка Allure CLI для генерации отчётов
 RUN curl -sSL https://github.com/allure-framework/allure2/releases/download/2.22.0/allure-2.22.0.tgz | tar -xz -C /opt/ && \

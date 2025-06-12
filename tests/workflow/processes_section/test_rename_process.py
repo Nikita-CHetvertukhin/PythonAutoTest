@@ -13,6 +13,7 @@ def setup_test_rename_process(request, logger, admin_driver):
     logger.info("Создание процесса...")
     workflows_page.find_click_header_menu("Рабочие процессы")
     workflows_page.find_click_side_menu("Шаблоны процессов")
+    time.sleep(1)  # Ждем, чтобы страница успела загрузиться Потом поправить на ожидание request
     workflows_page.create_process(process_name)
 
     # Проверяем, что процесс действительно создался

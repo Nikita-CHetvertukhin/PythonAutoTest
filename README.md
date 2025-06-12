@@ -37,22 +37,24 @@
 
   <summary>📊 Указываем глобальные переменные</summary>
 
-  Глобальные переменные динамически указываются в файле `settings/variables.py`. Перед запуском проекта нужно переименовать и убрать '.default'.
+  Глобальные переменные динамически указываются в файле `settings/variables.py`. Перед запуском проекта нужно переименовать убрав '.default'.
 </details>
 
 <details>
-  <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл "check_url.log"</summary>
+  <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл "check_url.log" <br>
+  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong> и <strong>firefox</strong></summary>
 
   ```bash
-pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.log > log\check_url.log && del log\project_*.log
+set BROWSER=chrome & pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.log > log\check_url.log && del log\project_*.log
   ```
 </details>
 
 <details>
-  <summary>⚡ Запускаем параллельную проверку тестов Workflow</summary>
+  <summary>⚡ Запускаем параллельную проверку тестов Workflow<br>
+  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong> и <strong>firefox</strong></summary>
 
   ```bash
-  pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results & type log\project_*.log > log\tests.log && del log\project_*.log
+  set BROWSER=chrome & pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results & type log\project_*.log > log\tests.log && del log\project_*.log
   ```
 </details>
 
@@ -113,6 +115,11 @@ http://host.docker.internal:9080/
 ```
 </details>  
 
+<details>
+<summary>🔍 Проверить конфигурацию тестов</summary>
+Конфигурация тестов задается в файле `entrypoint.sh` под комментарием `"Запуск основной последовательности тестов"`.
+</details>
+
 <details>  
 <summary>🚀 Выполнить билд контейнера</summary> 
 
@@ -121,16 +128,24 @@ docker build -t python-auto-test .
 ```
 </details> 
 
-<details>
-<summary>🔍 Проверить конфигурацию тестов</summary>
-Конфигурация тестов задается в файле `entrypoint.sh` под комментарием `"Запуск основной последовательности тестов"`.
-</details>
+<details><summary>✅ Запустить контейнер с тестами:</summary>
 
-<details><summary>✅ Запустить контейнер с тестами, например (docker run --rm -it -p 6080:6080 -p 8080:8080 -v "D:/Dev/Auto_Test_DZ/allure_reports:/app/report" python-auto-test)</summary>
-
+С помощью команды, в котором аргументом -e BROWSER=chrome задаем браузер (также поддерживает firefox) например:
 ```bash
-docker run --rm -it -p 6080:6080 -p 8080:8080 -v "полный_путь_до_папки_проекта_на_машине_хосте/allure_reports:/app/allure_report" python-auto-test
+docker run --rm -it -e BROWSER=firefox -p 6080:6080 -p 8080:8080 -v "полный_путь_до_папки_проекта_на_машине_хосте/allure_reports:/app/allure_report" python-auto-test
 ```
+Или через UI Docker Desktop:
+1. Открыть Images и найти сбилденный образ
+2. Нажать Run и открыть Optional Settings
+3. По желанию ввести имя контейнера
+4. Указать порт "6080" для noVNC
+5. Выбрать путь до папки, в которую хотим получить отчёт (обычно папка_проекта/allure_reports)
+6. Указать путь до отчета внутри контейнера "/app/report"
+7. Указать переменную BROWSER со значением chrome или firefox
+8. Нажать Run
+
+![Docker UI](https://drive.google.com/uc?export=view&id=1AThlLXKHwrk-QG25dD3-Mgde9oJgV4T2)
+
 </details>
 
 <details>

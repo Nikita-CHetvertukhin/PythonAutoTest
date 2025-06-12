@@ -14,6 +14,7 @@ def setup_test_share_process(request, logger, admin_driver):
     logger.info("Создание процесса...")
     workflows_admin.find_click_header_menu("Рабочие процессы")
     workflows_admin.find_click_side_menu("Шаблоны процессов")
+    time.sleep(1)  # Ждем, чтобы страница успела загрузиться Потом поправить на ожидание request
     workflows_admin.create_process(process_name)
 
     # Проверяем, что процесс действительно создался

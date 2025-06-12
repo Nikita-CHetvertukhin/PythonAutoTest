@@ -8,7 +8,7 @@ class BaseLocators:
     '''HEADER'''
 
     # Кнопка Лого DZ
-    HEADER_LOGO_BUTTON = '//div[@class = "header"]/a[contains(@class, "logo")]'
+    HEADER_LOGO_BUTTON = '//div[@class = "header"]/a[contains(@class, "logo")]/i'
     # Кнопки меню в Header
     HEADER_MENU_BUTTONS = '//div[contains(@class, "header-menu")]//a[contains(@class, "btn")]'
     # Выпадающий список при нажатии на кнопку из меню в Header
@@ -33,7 +33,7 @@ class BaseLocators:
     '''BODY'''
 
     # Путь до TEXTAREA для ввода названия процесса/документа (например при переименовании)
-    BODY_TEXTAREA = '//div[contains(@class,"textarea")]/div'
+    BODY_TEXTAREA = '//div[contains(@class,"textarea")]/div/textarea'
 
     '''DIALOG WINDOW'''
     # Кнопка подтвердить действие в диалоговом окне

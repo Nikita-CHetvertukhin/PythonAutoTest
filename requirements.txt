@@ -22,6 +22,6 @@ pytest-xdist>=3.0.0
 pytest-rerunfailures>=10.3
 
 # Работа с буфером обмена
-pyperclip>=1.8.2
+pyclip>=0.7.0
 
 #test

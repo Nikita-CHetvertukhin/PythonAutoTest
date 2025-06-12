@@ -3,7 +3,7 @@ import argparse
 from datetime import datetime, timedelta
 
 # Предопределённые директории для очистки
-directories_to_clean = ["allure_reports", "log/screenshots", "resources/downloads"]
+directories_to_clean = ["allure_results", "log/screenshots", "resources/downloads"]
 exclude_paths = ["log/licence_properties.json", "allure_reports/docker_reports.gitkeep"]
 
 def clean_old_files(retention):
