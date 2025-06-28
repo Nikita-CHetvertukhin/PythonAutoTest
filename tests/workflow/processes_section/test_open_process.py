@@ -46,10 +46,4 @@ def test_open_process(error_handler, logger, admin_driver, setup_test_open_proce
 
     logger.info("Начало проверки открытия процесса")
     workflows_page.right_click_and_select_action(process_name, "Открыть")
-    check_open = workflow_editor_page.verify_process_name(process_name)  # Проверяем, что открылся нужный процесс
-
-    if not check_open:
-        logger.error(f"Ошибка: процесс '{process_name}' не открылся корректно.")
-        pytest.fail(f"Тест провален. Открытие процесса '{process_name}' не удалось.", pytrace=False)
-    else:
-        logger.info(f"Процесс '{process_name}' успешно открыт через контекстное меню и двойным кликом.")
+    assert workflow_editor_page.verify_process_name(process_name), f"Ошибка: название '{process_name}' не найдено."

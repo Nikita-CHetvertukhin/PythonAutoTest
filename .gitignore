@@ -25,3 +25,16 @@
 /settings/variables.py
 /settings/variables.py
 /tests/workflow/processes_editor/__pycache__
+/tests/workflow/action_task/__pycache__
+/tests/workflow/8_action_task/__pycache__
+/tests/workflow/checking_sections/__pycache__/test_side_menu_my_tasks.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/checking_sections/__pycache__/test_side_menu_workflows.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/checking_sections/__pycache__/test_workflow_administration_menu.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_copy_link.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_copy_process.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_create_process.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_download_process.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_open_process.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_remove_restore.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_rename_process.cpython-313-pytest-8.3.5.pyc
+/tests/workflow/processes_section/__pycache__/test_share_process.cpython-313-pytest-8.3.5.pyc

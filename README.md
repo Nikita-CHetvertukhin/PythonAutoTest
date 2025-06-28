@@ -42,19 +42,19 @@
 
 <details>
   <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл "check_url.log" <br>
-  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong> и <strong>firefox</strong></summary>
+  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong>, <strong>firefox</strong> или <strong>edge</strong></summary>
 
   ```bash
-set BROWSER=chrome & pytest tests/check_url -n auto --alluredir=allure_results & type log\project_*.log > log\check_url.log && del log\project_*.log
+set BROWSER=chrome & pytest tests/check_url -n auto --alluredir=allure_results
   ```
 </details>
 
 <details>
   <summary>⚡ Запускаем параллельную проверку тестов Workflow<br>
-  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong> и <strong>firefox</strong></summary>
+  <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong>, <strong>firefox</strong> или <strong>edge</strong></summary>
 
   ```bash
-  set BROWSER=chrome & pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results & type log\project_*.log > log\tests.log && del log\project_*.log
+  set BROWSER=chrome & pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results
   ```
 </details>
 
@@ -130,7 +130,12 @@ docker build -t python-auto-test .
 
 <details><summary>✅ Запустить контейнер с тестами:</summary>
 
-С помощью команды, в котором аргументом -e BROWSER=chrome задаем браузер (также поддерживает firefox) например:
+С помощью docker-compose.yml, в котором нужно указать аргументы (порт, пути, тип браузера) и выполнить команду:
+```bash
+docker compose up -d
+```
+
+С помощью команды, в котором аргументом -e BROWSER=chrome задаем браузер (также поддерживает firefox, edge) например:
 ```bash
 docker run --rm -it -e BROWSER=firefox -p 6080:6080 -p 8080:8080 -v "полный_путь_до_папки_проекта_на_машине_хосте/allure_reports:/app/allure_report" python-auto-test
 ```
@@ -141,7 +146,7 @@ docker run --rm -it -e BROWSER=firefox -p 6080:6080 -p 8080:8080 -v "полны�
 4. Указать порт "6080" для noVNC
 5. Выбрать путь до папки, в которую хотим получить отчёт (обычно папка_проекта/allure_reports)
 6. Указать путь до отчета внутри контейнера "/app/report"
-7. Указать переменную BROWSER со значением chrome или firefox
+7. Указать переменную BROWSER со значением chrome, firefox или edge
 8. Нажать Run
 
 ![Docker UI](https://drive.google.com/uc?export=view&id=1AThlLXKHwrk-QG25dD3-Mgde9oJgV4T2)

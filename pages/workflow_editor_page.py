@@ -15,45 +15,35 @@ class WorkflowEditorPage(BasePage):
     """
 
     def verify_process_name(self, name):
-        """Проверяет, что текст label в тулбаре совпадает с name."""
+        """Проверяет, что атрибут title у элемента соответствует ожидаемому name."""
+        xpath = XPathFinder(self.driver)
         try:
-            # Ожидание появления label и текста внутри него
-            WebDriverWait(self.driver, 5).until(
-                EC.text_to_be_present_in_element((By.XPATH, WorkflowEditorLocators.WFEDITOR_PROCESSNAME), name)
-            )
-
-            label_element = WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located((By.XPATH, WorkflowEditorLocators.WFEDITOR_PROCESSNAME))
-            )
-
-            label_text = label_element.text.strip()
-
-            # Проверяем соответствие
-            if label_text == name:
-                self.logger.info(f"Название открытого процесса совпадает: '{label_text}' == '{name}'")
+            self.logger.info(f'Начало поиска элемента по xpath {WorkflowEditorLocators.WFEDITOR_PROPERTIES_NAME}[contains(@title,"{name}")]')
+            label_element = xpath.find_located(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_NAME}[contains(@title,"{name}")]', timeout=3)
+            self.logger.info(f"Элемент с названием процесса {name} найен")
+            
+            label_title = label_element.get_attribute("title").strip()
+            if label_title == name:
+                self.logger.info(f"Название процесса в title совпадает: '{label_title}' == '{name}'")
                 return True
             else:
-                self.logger.warning(f"Несоответствие названия открытого процесса: '{label_text}' != '{name}'")
+                self.logger.warning(f"Несовпадение title у процесса: '{label_title}' != '{name}'")
                 return False
 
         except Exception as e:
-            self.logger.error(f"Ошибка при проверке названия процесса: {e}")
+            self.logger.error(f"Ошибка при проверке title у процесса: {e}")
             return False
 
     def action_from_document(self, action_name):
-        """Нажимает 'Действия', внутри документа и кликает по элементу action_name"""
+        """Нажимает 'Файл', внутри документа и кликает по элементу action_name"""
         xpath = XPathFinder(self.driver)
-        # Кнопка "Действия"
-        EDITOR_ACTIONS_BUTTON = '//div[@class="header"]/div[contains(@class,"content")]/div[contains(@class, "toolbar")]//div[contains(@class,"action")]/div'
-        # Выпадающий список с кнопками из "Действия"
-        EDITOR_ACTIONS_DROPDOWN = '//div[@class="header"]/div[contains(@class,"content")]/div[contains(@class, "toolbar")]//div[contains(@class,"action")]/div/div[contains(@class,"dropdown")]/div/table/tbody/tr'
         
-        self.logger.info("Клик по кнопке 'Действия'")
-        action_button = xpath.find_visible(WorkflowEditorLocators.EDITOR_ACTIONS_BUTTON, timeout=1)
+        self.logger.info("Клик по кнопке 'Файл'")
+        action_button = xpath.find_visible(WorkflowEditorLocators.WFEDITOR_FILE_BUTTON, timeout=1)
         action_button.click()
 
         self.logger.info(f"Клик по кнопке {action_name}")
-        action_xpath = xpath.find_located(f'{WorkflowEditorLocators.EDITOR_ACTIONS_DROPDOWN}/td[@title="{action_name}"]', timeout=3, few=False)
+        action_xpath = xpath.find_located(f'{WorkflowEditorLocators.WFEDITOR_FILE_DROPDOWN}/div/label[text()="{action_name}"]/parent::div', timeout=3, few=False)
         action_xpath.click()
 
     def add_shape(self, shape_name):

@@ -8,17 +8,22 @@ class BaseLocators:
     '''HEADER'''
 
     # Кнопка Лого DZ
-    HEADER_LOGO_BUTTON = '//div[@class = "header"]/a[contains(@class, "logo")]/i'
+    HEADER_LOGO_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/button[1]'
+    # Кнопка выпадашки Doczilla Pro
+    HEADER_DOCZILLA_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/button[2]'
     # Кнопки меню в Header
-    HEADER_MENU_BUTTONS = '//div[contains(@class, "header-menu")]//a[contains(@class, "btn")]'
-    # Выпадающий список при нажатии на кнопку из меню в Header
-    HEADER_DROPDOWN_LIST = '//div[contains(@class, "dropdown") and not(contains(@class, "display-none"))]'
+    HEADER_MENU_BUTTONS = '//div[contains(@class, "entry-buttons")]/button'
+    # Выпадающий список при нажатии на кнопку из меню в Header или выпадашку Doczilla Pro
+    HEADER_DROPDOWN_LIST = '//div[not(contains(@class,"display-none"))and contains(@class,"x-popup")]/div[contains(@class,"menu")]'
+    # Название отвкрытого процесса или документа вместо строки поиска
+    HEADER_FILENAME = '//div[contains(@class,"content")]/div[contains(@class,"edit")]/input'
     # Инпут "Найти"
     HEADER_SEARCH_INPUT = '//div[@class = "header"]/div[contains(@class, "content")]/a[contains(@class, "search")]'
     # Кнопка "Помощь"
     HEADER_HELP_BUTTON = '//div[@class = "header"]/div[contains(@class, "content")]/a[contains(@class, "help")]'
     # Кнопка личного кабинета
-    HEADER_ACCOUNT_BUTTON = '//div[@class="header"]//div[@class="content"]/a[contains(@class, "user")]'
+    HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/button[contains(@class,"account")]/label[not(contains(@class,"display-none"))]'
+
 
     '''ACCOUNT'''
 
@@ -28,7 +33,7 @@ class BaseLocators:
     '''SIDE MENU'''
 
     # Кнопки бокового меню
-    SIDE_MENU_BUTTONS = '//div[@class="body"]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/a[not(contains(@class, "display-none"))]'
+    SIDE_MENU_BUTTONS = '//div[contains(@class,"body")]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/a[not(contains(@class, "display-none"))]'
 
     '''BODY'''
 
@@ -68,4 +73,4 @@ class BaseLocators:
     # Окно ошибки error dzmessage (красная всплывающая) без привязки к конкретному текусту ошибки
     ERROR_NOTIFICATION = '//div[contains(@class, "error")]'
     # Закрытие любого окна ошибки error dzmessage (красная всплывающая)
-    ERROR_CLOSE = '//div[contains(@class, "error")]//a[contains(@class, "close")]'
+    ERROR_CLOSE = '//div[contains(@class, "error")]/button'

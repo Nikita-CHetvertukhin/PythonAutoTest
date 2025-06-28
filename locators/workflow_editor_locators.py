@@ -2,8 +2,10 @@ class WorkflowEditorLocators:
 
    '''Тулбар'''
 
-   # Название процесса в тулбаре
-   WFEDITOR_PROCESSNAME = '//body//div[contains(@class,"wfeditor")]/div[contains(@class,"toolbar")]/div[contains(@class,"label")]'
+    # Кнопка "Файл"
+   WFEDITOR_FILE_BUTTON = '//body//div[contains(@class,"wfeditor")]/div[contains(@class,"toolbar")]/button[contains(@class,"file")]'
+   # Выпадающий список с кнопками из "Файл"
+   WFEDITOR_FILE_DROPDOWN = '//div[not(contains(@class,"display-none"))and contains(@class,"x-popup")]/div[contains(@class,"menu")]'
    # Путь до элементов фигур в тулбаре wfeditor сами - элементы /a внутри
    WFEDITOR_SHAPE_BUTTONS = '//body//div[contains(@class,"wfeditor")]/div[contains(@class,"toolbar")]/div[contains(@class,"shape")]'
    # Путь до кнопок Отменить/Повторить (идут следующими /a)
@@ -16,13 +18,13 @@ class WorkflowEditorLocators:
    '''Лист редактора'''
 
    # Путь до видимой области редактора
-   WFEDITOR_VIEWS = '//body/div[contains(@class, "viewport")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]'
+   WFEDITOR_VIEWS = '//div[contains(@class,"body")]/div[contains(@class,"wfeditor")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]'
    # Область доски процессов ограниченная крайними точками созданных фигур, внутри содержит объекты фигур
-   WFEDITOR_LAYERS = '//body/div[contains(@class, "viewport")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]'
+   WFEDITOR_LAYERS = '//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]'
    # Путь до g внутри которого массив g фигур созданных на доске (можно использовать при проверке автомасштаба)
-   WFEDITOR_SHAPES = '//body/div[contains(@class, "viewport")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]/*[name()="g"][contains(@class, "cells")]'
+   WFEDITOR_SHAPES = '//div[contains(@class,"body")]/div[contains(@class,"wfeditor")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]/*[name()="g"][contains(@class, "cells")]'
    # Путь до элементов массива g с характеристиками фигур
-   WFEDITOR_SHAPES_TOOLS = '//body/div[contains(@class, "viewport")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]/*[name()="g"][contains(@class, "tools")]/*[name()="g"][contains(@class, "tools")]'
+   WFEDITOR_SHAPES_TOOLS = '//div[contains(@class,"body")]/div[contains(@class,"wfeditor")]/div[contains(@class,"body")]//div[contains(@class,"views")]//*[name()="svg"]/*[name()="g"]/*[name()="g"][contains(@class, "tools")]/*[name()="g"][contains(@class, "tools")]'
 
    '''Свойства процесса и фигур'''
 
@@ -130,10 +132,3 @@ class WorkflowEditorLocators:
    WFEDITOR_PROPERTIES_SHARE_READY = '//div[contains(@class,"access-editor")]/div[contains(@class,"footer")]/a/span[text()="Готово"]'
    # Кнопка "Отменить"
    WFEDITOR_PROPERTIES_SHARE_CANCEL = '//div[contains(@class,"access-editor")]/div[contains(@class,"footer")]/a/span[text()="Отменить"]'
-
-   '''Хедер'''
-
-   # Кнопка "Действия"
-   EDITOR_ACTIONS_BUTTON = '//div[@class="header"]/div[contains(@class,"content")]/div[contains(@class, "toolbar")]//div[contains(@class,"action")]/div'
-   # Выпадающий список с кнопками из "Действия"
-   EDITOR_ACTIONS_DROPDOWN = '//div[@class="header"]/div[contains(@class,"content")]/div[contains(@class, "toolbar")]//div[contains(@class,"action")]/div/div[contains(@class,"dropdown")]/div/table/tbody/tr'

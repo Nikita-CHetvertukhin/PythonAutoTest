@@ -44,7 +44,7 @@ def setup_test_task_properties(request, logger, admin_driver):
 
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def test_process_properties(error_handler, logger, admin_driver, setup_test_task_properties):
+def test_task_properties(error_handler, logger, admin_driver, setup_test_task_properties):
     """Тест проверяет доступность для изменения и сохранение после перезагрузки страницы свойств фигуры 'Задача'"""
     process_name, workflows_page, workflow_editor_page = setup_test_task_properties
 
@@ -53,7 +53,7 @@ def test_process_properties(error_handler, logger, admin_driver, setup_test_task
     time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
 
     # Устанавливаем свойства процесса
-    workflow_editor_page.role_properties(role_name="test_role",action="create",checkboxes="ON", access_level="Комментатор",users={USER1_LOGIN})
+    workflow_editor_page.role_properties(role_name="test_role",action="create",checkboxes="ON", access_level="Комментирование",users={USER1_LOGIN})
     workflow_editor_page.stages_properties(action="add", name="test_1", number="1")
 
     # Создаем фигуры и соединяем их

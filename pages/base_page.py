@@ -36,76 +36,75 @@ class BasePage:
         """
         
         # Поиск кнопок меню
-        btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=1, few=True)
+        try:
+            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=1, few=True)
+        except TimeoutException:
+            btns_headerMenu = []
         if not btns_headerMenu:
-            self.logger.warning("Кнопки Header меню не найдены.")
-            return False
-
-        for btn in btns_headerMenu:
-            span = self.xpath.find_inside(btn, f'.//span[text()="{button_name}"]', few=True)
-            if span and span[0].is_displayed():
-                btn.click()
-                self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
-
-                if nested_button_name:
-                    dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
-                    nested_items = [
-                        item for dropdown in dropdown_elements
-                        for item in self.xpath.find_inside(dropdown, f".//div[text()='{nested_button_name}']", few=True)
-                    ]
-                    if nested_items:
-                        nested_items[0].click()
-                        self.logger.info(f"Вложенная кнопка '{nested_button_name}' найдена и кликнута.")
-                        return True
-                    else:
-                        self.logger.warning(f"Вложенная кнопка '{nested_button_name}' не найдена.")
-
-                return True  # Если вложенная кнопка не требуется, завершаем обработку
-
-        # Если основная кнопка не найдена, пробуем кликнуть по третьей кнопке ("Ещё")
-        if len(btns_headerMenu) >= 3:
-            btns_headerMenu[2].click()
-            self.logger.info("Клик по кнопке 'Ещё'.")
-            dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
-        
-            for dropdown in dropdown_elements:
-                potential_items = self.xpath.find_inside(dropdown, f".//div[text()='{button_name}']", few=True)
-                if potential_items:
-                    target_item = potential_items[0]
+            self.logger.warning("Кнопки Header меню не найдены. Пробуем через Doczilla Pro.")
+        else:
+            for btn in btns_headerMenu:
+                label = self.xpath.find_inside(btn, f'.//label[text()="{button_name}"]/parent::button', few=True)
+                if label and label[0].is_displayed():
+                    btn.click()
+                    self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
 
                     if nested_button_name:
-                        ActionChains(self.driver).move_to_element(target_item).perform()
-                        self.logger.info(f"Наведение на элемент '{button_name}' внутри 'Ещё'.")
-                        try:
-                            nested_dropdown = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
-                        except TimeoutException:
-                            self.logger.error(f"Dropdown для '{nested_button_name}' не появился вовремя.")
-                            return False
-                        except NoSuchElementException:
-                            self.logger.error(f"Dropdown для '{nested_button_name}' отсутствует в DOM.")
-                            return False
-                    
+                        dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
                         nested_items = [
-                            item for dropdown in nested_dropdown
-                            for item in self.xpath.find_inside(dropdown, f".//div[text()='{nested_button_name}']", few=True)
+                            item for dropdown in dropdown_elements
+                            for item in self.xpath.find_inside(dropdown, f".//label[text()='{nested_button_name}']/parent::div", few=True)
                         ]
                         if nested_items:
                             nested_items[0].click()
-                            self.logger.info(f"Вложенный элемент '{nested_button_name}' найден и кликнут.")
+                            self.logger.info(f"Вложенная кнопка '{nested_button_name}' найдена и кликнута.")
                             return True
                         else:
-                            self.logger.error(f"Вложенный элемент '{nested_button_name}' не найден.")
-                            return False
-                    else:
-                        target_item.click()
-                        self.logger.info(f"Элемент '{button_name}' найден и кликнут.")
-                        return True
+                            self.logger.warning(f"Вложенная кнопка '{nested_button_name}' не найдена.")
 
-            self.logger.error(f"Элемент '{button_name}' не найден.")
-            return False
-        else:
-            self.logger.error("Меньше 3 кнопок в меню. Невозможно кликнуть кнопку 'Ещё'.")
-            return False
+                    return True  # Если вложенная кнопка не требуется, завершаем обработку
+
+        # Если основная кнопка не найдена, пробуем кликнуть по кнопке Doczilla Pro в лого
+        doczilla_pro = self.xpath.find_clickable(BaseLocators.HEADER_DOCZILLA_BUTTON, timeout=1)
+        doczilla_pro.click()
+        self.logger.info("Клик по кнопке 'Doczilla Pro'")
+        dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
+        
+        for dropdown in dropdown_elements:
+            potential_items = self.xpath.find_inside(dropdown, f".//label[text()='{button_name}']/parent::div", few=True)
+            if potential_items:
+                target_item = potential_items[0]
+
+                if nested_button_name:
+                    ActionChains(self.driver).move_to_element(target_item).perform()
+                    self.logger.info(f"Наведение на элемент '{button_name}' внутри 'Doczilla Pro'.")
+                    try:
+                        nested_dropdown = self.xpath.find_inside(dropdown, BaseLocators.HEADER_DROPDOWN_LIST, few=True)
+                    except TimeoutException:
+                        self.logger.error(f"Dropdown для '{nested_button_name}' не появился вовремя.")
+                        return False
+                    except NoSuchElementException:
+                        self.logger.error(f"Dropdown для '{nested_button_name}' отсутствует в DOM.")
+                        return False
+                    
+                    nested_items = [
+                        item for dropdown in nested_dropdown
+                        for item in self.xpath.find_inside(dropdown, f".//label[text()='{nested_button_name}']/parent::div", few=True)
+                    ]
+                    if nested_items:
+                        nested_items[0].click()
+                        self.logger.info(f"Вложенный элемент '{nested_button_name}' найден и кликнут.")
+                        return True
+                    else:
+                        self.logger.error(f"Вложенный элемент '{nested_button_name}' не найден.")
+                        return False
+                else:
+                    target_item.click()
+                    self.logger.info(f"Элемент '{button_name}' найден и кликнут.")
+                    return True
+
+        self.logger.error(f"Элемент '{button_name}' не найден.")
+        return False
 
     def find_click_side_menu(self, button_name):
         """Основной метод обработки кнопок бокового меню
@@ -128,116 +127,74 @@ class BasePage:
         self.logger.error(f"Кнопка '{button_name}' не найдена в боковом меню.")
         return False         
     
-    def checking_success_side_menu(self, button_name, title_path, column_path, columns_to_check, scroller_path=None):
-        """ Проверяет активность кнопки, соответствие заголовка body, отсутствие всплывающей ошибки и видимость колонок.
-        :param button_name: Название кнопки
-        :param title_path: XPath заголовка body
-        :param column_path: XPath колонок (обязательный)
-        :param columns_to_check: Список названий колонок для проверки
-        :param scroller_path: XPath скроллера (по умолчанию None)
-        """
-
+    def checking_success_side_menu(self, button_name, title_path, column_path, columns_to_check):
+        """Проверяет активность кнопки, соответствие заголовка body, отсутствие ошибки и видимость колонок."""
         xpath = XPathFinder(self.driver)
 
-        # Инициализируем словарь для хранения результатов проверок
         result = {
-            "button_active": False,  # Статус активности кнопки
-            "body_header_correct": False,  # Соответствие заголовка body кнопке
-            "no_popup_error": False,  # Отсутствие всплывающей ошибки
-            "columns_visible": False,  # Видимость колонок
-            "hidden_columns": []  # Список невидимых колонок
+            "button_active": False,
+            "body_header_correct": False,
+            "no_popup_error": False,
+            "columns_visible": False,
+            "hidden_columns": []
         }
 
-        all_checks_passed = True  # Флаг успешности всех проверок
+        all_checks_passed = True
 
-        # Проверка активности кнопки
         try:
             button = xpath.find_visible(f'{BaseLocators.SIDE_MENU_BUTTONS}/span[text()="{button_name}"]/..', timeout=1)
             result["button_active"] = "active" in button.get_attribute("class") if button else False
-
             if not result["button_active"]:
                 all_checks_passed = False
                 self.logger.warning(f"Кнопка '{button_name}' не активна")
-
         except Exception:
             all_checks_passed = False
             self.logger.exception(f"Ошибка при проверке активности кнопки '{button_name}'")
 
-        # Проверка заголовка body
         try:
             title_element = xpath.find_visible(f'{title_path}/span', timeout=1)
             title_text = title_element.text.strip() if title_element else ""
             result["body_header_correct"] = title_text == button_name
-
             if not result["body_header_correct"]:
                 all_checks_passed = False
                 self.logger.warning(f"Заголовок body ('{title_text}') не соответствует кнопке '{button_name}'")
-
         except Exception:
             all_checks_passed = False
             self.logger.exception(f"Ошибка при поиске заголовка body для кнопки '{button_name}'")
 
-        # Проверка отсутствия всплывающей ошибки
         try:
             result["no_popup_error"] = BasePage.check_error(self, False)
-
             if not result["no_popup_error"]:
                 all_checks_passed = False
                 self.logger.warning(f"Обнаружена всплывающая ошибка при нажатии {button_name}")
-
         except Exception:
             all_checks_passed = False
             self.logger.exception(f"Ошибка при проверке всплывающих ошибок для '{button_name}'")
 
-        # **Добавлена проверка колонок**
         try:
-            success, hidden_columns = self.verify_columns_visibility(
-                column_path,  # Обязательный XPath колонок
-                scroller_path,  # Скроллер (может быть None)
-                *columns_to_check  # Передаем список колонок
-            )
-
+            success, hidden_columns = self.verify_columns_visibility(column_path, *columns_to_check)
             result["columns_visible"] = success
             result["hidden_columns"] = hidden_columns
-
             if not success:
                 all_checks_passed = False
                 self.logger.warning(f"Некоторые колонки не видны: {hidden_columns}")
-
         except Exception:
             all_checks_passed = False
             self.logger.exception(f"Ошибка при проверке колонок в '{button_name}'")
 
-        # Логируем общий результат
         if all_checks_passed:
             self.logger.info(f"Кнопка {button_name} обработана успешно")
 
         return all_checks_passed, result
 
-    def verify_columns_visibility(self, columns_xpath, scroller_xpath=None, *types):
-        """
-        Проверяет, видны ли <td> элементы с указанными типами на экране.
-        Если элемент выходит за границы, прокручивает скроллер (если есть) или страницу.
-
-        :param columns_xpath: XPath до <td> элементов таблицы
-        :param scroller_xpath: XPath до скроллера (если есть), иначе None
-        :param types: Список типов для поиска (например, "check", "text")
-        :return: (True, []) если все типы видны, иначе (False, список невидимых типов)
-        """
+    def verify_columns_visibility(self, columns_xpath, *types):
+        """Проверяет, что <td> элементы с указанными типами видимы на странице."""
         self.logger.info("Начало проверки видимости столбцов таблицы.")
-        xpath = XPathFinder(self.driver)
+        self.xpath = XPathFinder(self.driver)
 
-        self.logger.debug("Определение строки со столбцами")
         header_row = self.xpath.find_located(columns_xpath, timeout=5)
-
-        self.logger.debug("Определение всех columns")
-        columns = self.xpath.find_inside(header_row, f".//td[contains(@class, 'column')]", few=True)
+        columns = self.xpath.find_inside(header_row, ".//td[contains(@class, 'column')]", few=True)
         hidden_types = set(types)
-
-        scroller = None
-        if scroller_xpath:
-            self.logger.debug("Загрузка скроллера для горизонтальной прокрутки")
-            scroller = self.xpath.find_visible(scroller_xpath, timeout=5)
 
         for column in columns:
             column_class = column.get_attribute("class")
@@ -247,49 +204,20 @@ class BasePage:
                 if t in column_class or t in column_title:
                     self.logger.info(f"Найден столбец '{t}': class='{column_class}', title='{column_title}'.")
 
-                    is_in_viewport = column.is_displayed() and self.driver.execute_script(
-                        "var rect = arguments[0].getBoundingClientRect();"
-                        "return (rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth);",
-                        column
-                    )
-
-                    if is_in_viewport:
+                    try:
+                        # Убедимся, что элемент действительно видим
+                        WebDriverWait(self.driver, 1).until(EC.visibility_of(column))
                         hidden_types.discard(t)
-                        self.logger.info(f"Столбец '{t}' видим без прокрутки")
-                    else:
-                        self.logger.warning(f"Столбец '{t}' не видим на экране. Требуется прокрутка.")
-
-                        if scroller:
-                            self.driver.execute_script("arguments[0].scrollLeft = arguments[1].offsetLeft;", scroller, column)
-                            self.logger.info(f"Выполнена горизонтальная прокрутка скроллера до столбца '{t}'.")
-                        else:
-                            self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'nearest'});", column)
-                            self.logger.info(f"Выполнена прокрутка страницы до столбца '{t}'.")
-
-                        try:
-                            self.logger.debug(f"Ожидание появления столбца '{t}' после прокрутки.")
-                            WebDriverWait(self.driver, 3).until(EC.visibility_of(column))
-                        except TimeoutException:
-                            self.logger.warning(f"Столбец '{t}' не стал видимым после прокрутки.")
-
-                        is_in_viewport = self.driver.execute_script(
-                            "var rect = arguments[0].getBoundingClientRect();"
-                            "return (rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth);",
-                            column
-                        )
-
-                        if is_in_viewport:
-                            hidden_types.discard(t)
-                            self.logger.info(f"Столбец '{t}' теперь видим после прокрутки.")
-                        else:
-                            self.logger.warning(f"Столбец '{t}' все еще не видим после прокрутки.")
+                        self.logger.info(f"Столбец '{t}' успешно найден и видим.")
+                    except TimeoutException:
+                        self.logger.warning(f"Столбец '{t}' не найден как видимый.")
 
         if hidden_types:
-            self.logger.error(f"Не удалось найти или сделать видимыми следующие столбцы: {', '.join(hidden_types)}")
+            self.logger.error(f"Невидимые или отсутствующие столбцы: {', '.join(hidden_types)}")
         else:
             self.logger.info("Все указанные столбцы успешно найдены и видимы.")
 
-        return (not hidden_types, list(hidden_types))
+        return not hidden_types, list(hidden_types)
 
     def generate_object_name(self):
         """Генерирует уникальное имя процесса на основе имени функции и временной метки."""
@@ -448,14 +376,19 @@ class BasePage:
 
     def compare_clipboard_with_url(self):
         """Сравнивает скопированную ссылку в буфере обмена с текущим URL браузера."""
-    
+
         # Получаем текущий URL
         current_url = self.driver.current_url
         self.logger.info(f"Текущий URL: {current_url}")
 
         try:
             # Получаем ссылку из буфера обмена через `pyclip`
-            clipboard_url = pyclip.paste(text=True)
+            clipboard_url = pyclip.paste()
+
+            # Декодируем в строку, если данные в байтовом формате
+            if isinstance(clipboard_url, bytes):
+                clipboard_url = clipboard_url.decode("utf-8")
+
             self.logger.info(f"Ссылка из буфера обмена: {clipboard_url}")
 
             # Сравниваем ссылки

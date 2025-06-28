@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  python-auto-test:
+    build: .
+    container_name: test_wf
+    ports:
+      - "6080:6080"
+    volumes:
+      - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
+    environment:
+      - BROWSER=chrome

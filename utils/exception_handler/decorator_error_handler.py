@@ -15,7 +15,9 @@ def exception_handler(func):
             raise ValueError("Фикстура `error_handler` не передана! Проверьте тестовую среду.")
 
         try:
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            error_handler.check_browser_logs()  # Проверяем логи браузера на наличие ошибок. Пока отключил на каждом тесте ошибка 403 с request.json
+            return result
 
         except MinorIssue as e:
             with allure.step("Некритическая ошибка"):

@@ -25,9 +25,16 @@ def setup_test_publish_process(request, logger, admin_driver):
         pytest.fail(f"Тест провален. Процесс '{process_name}' не был создан.", pytrace=False)
 
     def cleanup():
-        """Удаление процесса после теста."""
-        logger.info(f"Удаление процесса '{process_name}'...")
+        """Снятие с публикации и Удаление процесса после теста."""
+        logger.info(f"Снятие с публикации '{process_name}'...")
         refresh_and_wait(admin_driver, logger)
+        workflows_page.find_click_header_menu("Рабочие процессы")
+        workflows_page.find_click_side_menu("Шаблоны процессов")
+        workflows_page.right_click_and_select_action(process_name, "Открыть")
+        time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
+        workflow_editor_page.action_from_document("Снять с публикации")
+        logger.info(f"Процесс '{process_name}' снят с публикации.")
+        logger.info(f"Удаление процесса '{process_name}'...")
         workflows_page.find_click_header_menu("Рабочие процессы")
         workflows_page.find_click_side_menu("Шаблоны процессов")
         process_to_delete = workflows_page.find_process_by_name(process_name)

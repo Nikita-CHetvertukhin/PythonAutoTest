@@ -71,7 +71,7 @@ class WorkflowsPage(BasePage):
                     self.logger.info(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
 
                     # Скроллим до элемента
-                    self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
+                    # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
 
                     # Ожидание полной загрузки элемента перед взаимодействием
                     WebDriverWait(self.driver, 5).until(EC.visibility_of(process_element))

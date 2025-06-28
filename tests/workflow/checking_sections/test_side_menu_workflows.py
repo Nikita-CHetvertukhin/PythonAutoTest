@@ -12,7 +12,7 @@ def test_side_menu_workflows(error_handler, logger, admin_driver):
     workflows_page = WorkflowsPage(admin_driver, logger)
 
     tabs = ["Корзина", "Шаблоны процессов"]
-    columns_to_check = ["check", "Название", "Дата изменения", "Автор"]
+    columns_to_check = ["check", "Название", "Дата изменения", "Автор", "Комментарий"]
     failed_tabs = []
 
     workflows_page.find_click_header_menu("Рабочие процессы")
@@ -21,7 +21,7 @@ def test_side_menu_workflows(error_handler, logger, admin_driver):
         workflows_page.find_click_side_menu(tab_name)
 
         success, details = workflows_page.checking_success_side_menu(
-            tab_name, WorkflowsLocators.WORKFLOWS_TITLE, WorkflowsLocators.WORKFLOWS_COLUMNS, columns_to_check, None
+            tab_name, WorkflowsLocators.WORKFLOWS_TITLE, WorkflowsLocators.WORKFLOWS_COLUMNS, columns_to_check
         )
 
         if success:

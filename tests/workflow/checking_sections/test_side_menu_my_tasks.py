@@ -20,7 +20,7 @@ def test_side_menu_my_tasks(error_handler, logger, admin_driver):
         my_tasks_page.find_click_side_menu(tab_name)
 
         success, details = my_tasks_page.checking_success_side_menu(
-            tab_name, MyTasksLocators.MY_TASKS_TITLE, MyTasksLocators.MY_TASKS_COLUMNS, columns_to_check, None
+            tab_name, MyTasksLocators.MY_TASKS_TITLE, MyTasksLocators.MY_TASKS_COLUMNS, columns_to_check
         )
 
         if success:

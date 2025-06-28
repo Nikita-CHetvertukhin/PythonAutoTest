@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 
 class XPathFinder:
@@ -58,6 +59,40 @@ class XPathFinder:
             EC.invisibility_of_element_located((By.XPATH, path))
         )
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
+
+    def not_find(self, path: str, timeout: int = None, few: bool = None):
+        """Проверяет, что элемент(ы) отсутствуют в DOM по заданному XPath."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        try:
+            if search_mode:
+                WebDriverWait(self.driver, wait_time).until(
+                    EC.presence_of_all_elements_located((By.XPATH, path))
+                )
+            else:
+                WebDriverWait(self.driver, wait_time).until(
+                    EC.presence_of_element_located((By.XPATH, path))
+                )
+            # Нашёл элемент
+            return False
+        except TimeoutException:
+            # Не нашёл в течение таймаута → считаем, что отсутствуют
+            return True
+
+    def wait_until_elements_not_present(self, path: str, timeout: int = None, few: bool = None):
+        """Ждёт, пока элемент(ы) исчезнут из DOM."""
+        wait_time = timeout if timeout is not None else self.timeout
+        search_mode = few if few is not None else self.few
+
+        try:
+            WebDriverWait(self.driver, wait_time).until_not(
+                EC.presence_of_all_elements_located((By.XPATH, path)) if search_mode
+                else EC.presence_of_element_located((By.XPATH, path))
+            )
+            return True
+        except TimeoutException:
+            return False
 
     def find_inside(self, element, path, few=None):
         """Ищет элементы внутри другого элемента (WebElement).
