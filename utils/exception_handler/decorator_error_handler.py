@@ -16,7 +16,7 @@ def exception_handler(func):
 
         try:
             result = func(*args, **kwargs)
-            error_handler.check_browser_logs()  # Проверяем логи браузера на наличие ошибок. Пока отключил на каждом тесте ошибка 403 с request.json
+            error_handler.check_browser_logs()  # Проверяем логи браузера на наличие ошибок.
             return result
 
         except MinorIssue as e:

@@ -14,26 +14,18 @@ from utils.exception_handler.error_handler import ErrorHandler
 from utils.element_searching import XPathFinder
 from pages.login_page import LoginPage
 from locators.base_locators import BaseLocators
-from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD, URL, USER1_LOGIN, USER1_PASSWORD
-
-# Пути к файлам
-DEFAULT_LICENCE_FILE = "settings/default_licence_properties.json"
-LICENCE_OUTPUT_FILE = "log/licence_properties.json"
-ENV_FILE = "allure_results/environment.properties"
-WEBSOCKET_PATCH = """
-window.WebSocket = class {
-  constructor() {
-    console.warn("WebSocket блокирован: соединение не устанавливается.");
-    this.readyState = 3; // CLOSED
-  }
-  close() {}
-  send() {}
-  set onopen(_) {}
-  set onmessage(_) {}
-  set onerror(_) {}
-  set onclose(_) {}
-};
-"""
+from settings.variables import *
+from pages.my_tasks_page import MyTasksPage
+from pages.workflows_page import WorkflowsPage
+from pages.workflow_editor_page import WorkflowEditorPage
+from pages.my_files_editor_page import MyFilesEditorPage
+from pages.my_files_page import MyFilesPage
+from utils.refresh_and_wait import refresh_and_wait
+from settings.variables import WEBSOCKET_PATCH, DEFAULT_LICENCE_FILE, LICENCE_OUTPUT_FILE, ENV_FILE
+from api.auth_client import AuthClient
+from api.upload_client import FileUploadClient
+from api.rename_client import RenameClient
+from utils.lists import split_files_by_extension, get_missing_files
 
 @pytest.fixture(scope="function")
 def driver():
@@ -78,31 +70,77 @@ def admin_driver(driver, logger, error_handler):
     return driver  # Передаём браузер без закрытия (его закроет driver)
 
 @pytest.fixture(scope="function")
-def user1_driver(logger, error_handler):
+def user1_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    is_combo_test = request.node.get_closest_marker("combo") is not None
+
+    if is_combo_test:
+        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
+        user_driver = driver_instance.initialize_driver()
+        error_handler = ErrorHandler(user_driver, logger)
+        login_page = LoginPage(user_driver, logger)
+
+        login_page.enter_username(USER1_LOGIN)
+        login_page.enter_password(USER1_PASSWORD)
+        login_page.click_login()
+        assert login_page.check_account_button(), "Авторизация не удалась."
+        error_handler.clear_browser_logs()
+        time.sleep(3)  # В будущем замена на WebDriverWait
+
+        yield user_driver
+        driver_instance.cleanup()
+
+    else:
+        error_handler = ErrorHandler(driver, logger)
+        login_page = LoginPage(driver, logger)
+
+        login_page.enter_username(USER1_LOGIN)
+        login_page.enter_password(USER1_PASSWORD)
+        login_page.click_login()
+        assert login_page.check_account_button(), "Авторизация не удалась."
+        error_handler.clear_browser_logs()
+        time.sleep(3)
+
+        yield driver
+
+@pytest.fixture(scope="function")
+def expert_driver(request, driver, logger):
     """Создаёт новый браузер и выполняет авторизацию"""
-    driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
-    driver = driver_instance.initialize_driver()
-    login_page = LoginPage(driver, logger)
+    is_combo_test = request.node.get_closest_marker("combo") is not None
 
-    login_page.enter_username(USER1_LOGIN)
-    login_page.enter_password(USER1_PASSWORD)
-    login_page.click_login()
+    if is_combo_test:
+        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
+        driver = driver_instance.initialize_driver()
+        error_handler = ErrorHandler(driver, logger)
+        login_page = LoginPage(driver, logger)
 
-    assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
-    # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
-    error_handler.clear_browser_logs()
-    time.sleep(3)  # Доработать в будущем
+        login_page.enter_username(EXPERT_LOGIN)
+        login_page.enter_password(EXPERT_PASSWORD)
+        login_page.click_login()
 
-    yield driver  # Передаём драйвер в тесты
+        assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
+        # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
+        error_handler.clear_browser_logs()
+        time.sleep(3)  # Доработать в будущем
+        yield driver  # Передаём драйвер в тесты
+        driver_instance.cleanup()  # Закрываем браузер после теста
+    else:
+        error_handler = ErrorHandler(driver, logger)
+        login_page = LoginPage(driver, logger)
 
-    driver_instance.cleanup()  # Закрываем браузер после теста
+        login_page.enter_username(EXPERT_LOGIN)
+        login_page.enter_password(EXPERT_PASSWORD)
+        login_page.click_login()
+
+        assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
+        # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
+        error_handler.clear_browser_logs()
+        time.sleep(3)  # Доработать в будущем
+        yield driver  # Передаём драйвер в тесты
 
 @pytest.fixture(scope="function")
 @exception_handler
 def setup_create_delete_task(request, error_handler, logger, admin_driver):
-    from pages.my_tasks_page import MyTasksPage
-    from utils.refresh_and_wait import refresh_and_wait
-
     my_tasks_page = MyTasksPage(admin_driver, logger)
     xpath = my_tasks_page.xpath
 
@@ -121,6 +159,10 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
     task_deadline = params.get("deadline")
     task_description = params.get("description")
     task_executor = params.get("task_executor")
+    task_type = params.get("task_type")
+    from_file = params.get("from_file", False)
+    
+    skip_cleanup = params.get("skip_cleanup")
 
     # Создание задачи с учётом возможных параметров
     kwargs = {}
@@ -130,6 +172,10 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
         kwargs["task_description"] = task_description
     if task_executor:
         kwargs["executor"] = task_executor
+    if task_type:
+        kwargs["task_type"] = task_type
+    if from_file:
+        kwargs["from_file"] = from_file
 
     my_tasks_page.create_task(task_name, **kwargs)
 
@@ -143,6 +189,7 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
             refresh_and_wait(admin_driver, logger)
             my_tasks_page.find_click_header_menu("Мои задачи")
             my_tasks_page.find_click_side_menu("Мои задачи")
+            time.sleep(1)  # TODO: заменить на ожидание состояния страницы
             if my_tasks_page.find_task_by_name(task_name):
                 my_tasks_page.right_click_and_select_action(task_name, "Удалить")
                 logger.info(f"Задача '{task_name}' удалена.")
@@ -152,34 +199,161 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
             logger.error(f"Ошибка при удалении: {e}.")
             error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
 
-    request.addfinalizer(cleanup)
+    if not skip_cleanup:
+        request.addfinalizer(cleanup)
     return task_name, my_tasks_page, xpath
 
 @pytest.fixture(scope="function")
-@exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def setup_create_task(request, error_handler, logger, admin_driver):
-    from pages.my_tasks_page import MyTasksPage
+@exception_handler
+def setup_create_delete_process(request, error_handler, logger, admin_driver):
+    workflows_page = WorkflowsPage(admin_driver, logger)
+    workflow_editor_page = WorkflowEditorPage(admin_driver, logger)
+    xpath = workflows_page.xpath
 
-    my_tasks_page = MyTasksPage(admin_driver, logger)
-    xpath = my_tasks_page.xpath
-
-    # Получаем имя теста
-    test_name = request.node.name  # Например: test_open_task_with_context_menu
+    test_name = request.node.name
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    task_name = f"{test_name}_{timestamp}"
+    generate_name = f"{test_name}_{timestamp}"
 
-    logger.info(f"Создание задачи '{task_name}' из теста '{test_name}'")
+    # Чтение параметров
+    params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
+    upload_file_name = params.get("upload_file_name")
+    publishing = params.get("publishing")
+    skip_cleanup = params.get("skip_cleanup")
 
-    # Логика создания
-    my_tasks_page.find_click_header_menu("Мои задачи")
-    my_tasks_page.find_click_side_menu("Мои задачи")
-    time.sleep(1) # Ждем, чтобы страница успела загрузиться. Потом поправить на ожидание request
-    my_tasks_page.create_task(task_name)
+    if upload_file_name:
+        # Создание через API: Загрузка и переименование
+        auth_client = AuthClient(login={ADMIN_LOGIN}, password={ADMIN_PASSWORD_MD5})
+        session_id = auth_client.get_session()
 
-    if not my_tasks_page.find_task_by_name(task_name):
-        pytest.fail(f"Задача '{task_name}' не была создана или найдена.")
+        upload_client = FileUploadClient(session_id=session_id)
+        record_id = upload_client.upload_file(upload_file_name)
 
-    return task_name, my_tasks_page, xpath
+        rename_client = RenameClient(session_id=session_id)
+        process_name = rename_client.rename_by_recordid(record_id, generate_name)
+    else:
+        # Создание через UI
+        process_name = generate_name
+        workflows_page.find_click_header_menu("Рабочие процессы")
+        workflows_page.find_click_side_menu("Шаблоны процессов")
+        time.sleep(1)  # TODO: заменить на WebDriverWait
+        workflows_page.create_process(process_name)
+
+    # Проверка
+    workflows_page.find_click_header_menu("Рабочие процессы")
+    workflows_page.find_click_side_menu("Шаблоны процессов")
+    if not workflows_page.find_process_by_name(process_name):
+        pytest.fail(f"Процесс '{process_name}' не был создан/загружен или найден.")
+
+    # Публикация процесса, если указано в параметрах
+    if publishing:
+        workflows_page.right_click_and_select_action(process_name, "Открыть")
+        time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
+        workflow_editor_page.action_from_document("Опубликовать")
+        time.sleep(2) # Пока не на что опираться в редакторе
+
+    def cleanup():
+        # Снятие с публикации (если указано в параметрах) и удаление процесса
+        if publishing:
+            logger.info(f"Снятие с публикации процесса '{process_name}'...")
+            workflows_page.click_header_logo_button()
+            refresh_and_wait(admin_driver, logger)
+            workflows_page.find_click_header_menu("Рабочие процессы")
+            workflows_page.find_click_side_menu("Шаблоны процессов")
+            time.sleep(1)
+            workflows_page.right_click_and_select_action(process_name, "Открыть")
+            time.sleep(2)
+            workflow_editor_page.action_from_document("Снять с публикации")
+        try:
+            logger.info(f"Удаление процесса '{process_name}'...")
+            workflows_page.click_header_logo_button()
+            refresh_and_wait(admin_driver, logger)
+            workflows_page.find_click_header_menu("Рабочие процессы")
+            workflows_page.find_click_side_menu("Шаблоны процессов")
+            time.sleep(1)
+            if workflows_page.find_process_by_name(process_name):
+                workflows_page.right_click_and_select_action(process_name, "Переместить в Корзину")
+                logger.info(f"Процесс '{process_name}' удален.")
+            else:
+                logger.warning(f"Процесс '{process_name}' не найден при удалении.")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении: {e}.")
+            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
+
+    if not skip_cleanup:
+        request.addfinalizer(cleanup)
+    return process_name, workflows_page, xpath
+
+@pytest.fixture(scope="function")
+@exception_handler
+def setup_create_delete_file(request, error_handler, logger, admin_driver):
+    my_files_page = MyFilesPage(admin_driver, logger)
+    my_files_editor_page = MyFilesEditorPage(admin_driver, logger)
+    xpath = my_files_page.xpath
+
+    test_name = request.node.name
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    generate_name = f"{test_name}_{timestamp}"
+
+    # Чтение параметров
+    params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
+    upload_file_name = params.get("upload_file_name")
+    publishing = params.get("publishing")
+    skip_cleanup = params.get("skip_cleanup")
+    file_type = params.get("file_type")
+
+    if upload_file_name:
+        # Создание через API: Загрузка и переименование
+        auth_client = AuthClient(login={ADMIN_LOGIN}, password={ADMIN_PASSWORD_MD5})
+        session_id = auth_client.get_session()
+
+        upload_client = FileUploadClient(session_id=session_id)
+        record_id = upload_client.upload_file(upload_file_name)
+
+        rename_client = RenameClient(session_id=session_id)
+        file_name = rename_client.rename_by_recordid(record_id, generate_name)
+    else:
+        # Создание через UI
+        file_name = generate_name
+        my_files_page.click_header_logo_button()
+        my_files_page.find_click_side_menu("Мои файлы")
+        time.sleep(1)  # TODO: заменить на WebDriverWait
+        my_files_page.create_file(file_name, file_type)
+
+    # Проверка
+    my_files_page.click_header_logo_button()
+    my_files_page.find_click_side_menu("Мои файлы")
+    time.sleep(2) # Ждем загрузки раздела (потом заменить на ожидание реквеста)
+    if not my_files_page.find_file_by_name(file_name):
+        pytest.fail(f"Процесс '{file_name}' не был создан/загружен или найден.")
+
+    # Публикация процесса, если указано в параметрах
+    if publishing:
+        my_files_page.right_click_and_select_action(file_name, "Открыть")
+        time.sleep(2)  # Ждем, пока откроется редактор. (потом заменить на ожидание статусов)
+        # Пропишу когда займусь коробкой
+
+    def cleanup():
+        # Снятие с публикации (если указано в параметрах) и удаление файла
+        if publishing:
+            logger.info(f"Снятие с публикации шаблона '{file_name}'...")
+            # Пропишу когда займусь коробкой
+        try:
+            logger.info(f"Удаление файла '{file_name}'...")
+            my_files_page.click_header_logo_button()
+            refresh_and_wait(admin_driver, logger)
+            time.sleep(1)
+            if my_files_page.find_file_by_name(file_name):
+                my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
+                logger.info(f"Файл '{file_name}' удален.")
+            else:
+                logger.warning(f"Файл '{file_name}' не найден при удалении.")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении: {e}.")
+            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
+
+    if not skip_cleanup:
+        request.addfinalizer(cleanup)
+    return file_name, my_files_page, xpath
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
@@ -187,7 +361,7 @@ def pytest_configure(config):
     """Запускаем хук только если pytest вызван с `tests/check_url`."""
     command_line_args = sys.argv  # Получаем аргументы запуска pytest
 
-    # Проверяем, что команда - содержит аргумент `tests/check_url`
+    # Проверяем, что команда - содержит аргумент `tests/check_url` и формируем или ищем файл лицензий
     if "tests/check_url" in command_line_args:
         print("Запускаем проверку лицензий")
         if not hasattr(config, 'workerinput'):  # Проверяем, не является ли это воркером xdist
@@ -248,7 +422,8 @@ def pytest_configure(config):
                 # В конце добавляем путь к файлу с полным списком лицензий
                 file.write(f"Licence.Properties={LICENCE_OUTPUT_FILE}\n")
         if hasattr(config, 'workerinput'):
-            return  # Не вызываем pytest.exit() на воркерах
+            # logger.info("Запуск на воркере — загрузка не производится.")
+            return
     else:
          licence_file = os.path.join("log", "licence_properties.json")  # Путь к файлу лицензий
          if not os.path.exists(licence_file):

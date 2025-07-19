@@ -14,12 +14,19 @@ class MyTasksLocators:
 
     # Инпут наименования задачи
     MY_TASKS_TASK_NAME_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Наименование задачи")]/parent::div/div/input'
-    # Инпут описания
+    # Инпут описания (создания задачи из меню Мои задачи)
     MY_TASKS_TASK_DESCRIPTION_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Описание")]/following-sibling::div//div[contains(@contenteditable,"true")]'
-    # Инпут типа задачи
+    # Инпут описания (создания задачи из файла)
+    MY_TASKS_FROM_FILE_TASK_DESCRIPTION_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Комментарий")]/following-sibling::div//div[contains(@contenteditable,"true")]'
+    # Инпут типа задачи (создания задачи из меню Мои задачи)
     MY_TASKS_TASK_TYPE_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Тип задачи")]/parent::div/div/input'
-    # Найденный span должен содержать атрибут title с названием процесса
+    # Инпут типа задачи (создания задачи из файла)
+    MY_TASKS_FROM_FILE_TASK_TYPE_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Маршрут согласования")]/parent::div/div/input'
+    # Найденный span должен содержать атрибут title с названием процесса (создание задачи из меню Мои задачи)
     MY_TASKS_TASK_TYPE_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Тип задачи")]/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[1]//span'
+    # Найденный span должен содержать атрибут title с названием процесса (создание задачи из файла)
+    MY_TASKS_FROM_FILE_TASK_TYPE_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Маршрут согласования")]/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[1]//span'
+
     # Инпут дедлайна
     MY_TASKS_TASK_DEADLINE_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Дедлайн")]/parent::div/div/input'
     # Инпут исполнителя
@@ -29,12 +36,27 @@ class MyTasksLocators:
 
     # Кнопка "Отменить"
     MY_TASKS_CANCEL_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"footer")]/a/span[text()="Отменить"]'
-    # Кнопка "Создать"
+    # Кнопка "Создать задачу"
     MY_TASKS_CREATE_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"footer")]/a/span[text()="Создать задачу"]'
+    # Кнопка "Отправить на согласование"
+    MY_TASKS_SEND_FOR_APPROVAL_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"footer")]/a/span[text()="Отправить на согласование"]'
+
+    # Кнопка переключения на вкладку "Документы"
+    MY_TASKS_DOCUMENTS_TAB = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"header")]/a[contains(@class,"files")and not(contains(@class,"display-none"))]'
+    # Кнопка добавления документа на вкладке "Документы"
+    MY_TASKS_DOCUMENTS_ADD_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"body")]//span[contains(@class,"toolbar")]//a[contains(@title,"Прикрепить")]'
+    # Путь до td с названием документа в меню прикреплении документа (атрибут title последнего span содержит название документа) 
+    MY_TASKS_DOCUMENTS_ADD_FILE_TD = '//div[contains(@class,"window")]/div[contains(@class,"body")]//div[contains(@class,"workspace")]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"string")]//span'
+    # Кнопка "Выбрать" в меню прикреплении документа
+    MY_TASKS_DOCUMENTS_ADD_FILE_SELECT_BUTTON = '//div[contains(@class,"window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span[text()="Выбрать"]'
 
     '''Окно taskform при открытии задачи'''
     # Сам taskform
     MY_TASKS_TASKFORM = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]'
+    # Кнопка "Действия"
+    MY_TASKS_TASKFORM_ACTIONS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]//a[contains(@class,"primary")]/span[contains(@title,"Действия")]/ancestor::a'
+    # Дропдаун действий с задачей
+    MY_TASKS_TASKFORM_ACTIONS_DROPDOWN = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]//div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//table/tbody/tr'
     # Кнопка создать подзадачу в taskform
     MY_TASKS_TASKFORM_CREATE_SUBTASK_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"subtask")]/i'
     # Кнопка "Удалить" в taskform
@@ -57,12 +79,21 @@ class MyTasksLocators:
     MY_TASKS_TASKFORM_CALENDAR_ACTIVE_DATE = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Дедлайн")]/parent::div/div[contains(@class,"calendar") and not(contains(@class,"display-none"))]/div[contains(@class,"day")and not(contains(@class,"week"))]/div[contains(@class,"selected")]'
     # Инпут описания задачи
     MY_TASKS_TASKFORM_DESCRIPTION_INPUT = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Описание")]/following-sibling::div//div[contains(@contenteditable,"true")]'
+    
     # Кнопка "Показать системные события" задачи
     MY_TASKS_TASKFORM_SHOW_SYSTEM_EVENTS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/div[contains(@class,"checkbox")]/div/div'
     # Отркыть выпадающий список скачивания истории задачи
     MY_TASKS_TASKFORM_DOWNLOAD_HISTORY_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/div[contains(@class,"btn-group")]//a[contains(@class,"trigger")]'
     # Список форматов загрузки истории задачи (атрибут title последнего td можно фильтровать по наличию форматов)
     MY_TASKS_TASKFORM_DOWNLOAD_HISTORY_FORMATS_LIST = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/div[contains(@class,"btn-group")]//div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//td'
+    
+    # Путь до кнокпи "Скачать" в  списках документов задачи
+    MY_TASKS_TASKFORM_DOWNLOAD_FILE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Документы")]/following-sibling::div//div[contains(@class,"items")]//tr//a[contains(@class,"download")]'
+    # Путь до кнопки "Удалить" в списках документов задачи
+    MY_TASKS_TASKFORM_DELETE_FILE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Документы")]/following-sibling::div//div[contains(@class,"items")]//tr//a[contains(@class,"remove")]'
+    # Путь до td содержащий title с названием докмуента в списке документов задачи
+    MY_TASKS_TASKFORM_DOCUMENTS_FILE_TD = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Документы")]/following-sibling::div//div[contains(@class,"items")]//tr/td//span'
+
     # Добавить комментарий к задаче (кликнуть чтобы появился инпут и кнопки сохранить/отменить)
     MY_TASKS_TASKFORM_ADD_COMMENT_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/following-sibling::div[contains(@class,"dummy")]'
     # Текстареа комментария к задаче

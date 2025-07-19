@@ -1,6 +1,8 @@
 import time
+from venv import logger
 from pages.base_page import BasePage  # Импорт базового класса, содержащего общие методы для работы со страницами
 from locators.my_tasks_locators import MyTasksLocators  # Импорт локаторов, относящихся к странице входа (например, поля ввода, кнопки)
+from locators.my_files_editor_locators import MyFilesEditorLocators
 from locators.base_locators import BaseLocators  # Общие локаторы, которые могут использоваться на разных страницах
 from utils.element_searching import XPathFinder
 from selenium.webdriver.common.keys import Keys
@@ -32,25 +34,33 @@ class MyTasksPage(BasePage):
         self.logger.info("Кнопка 'Создать задачу' нажата")
         input_element = xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_TYPE_INPUT, timeout=5)
         input_element.click()  # Кликаем по полю ввода типа задачи
+        time.sleep(0.5)  # Ждем, для стабильности 
         input_element.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
         input_element.send_keys(Keys.DELETE)  # Удалить выделенное
+        time.sleep(0.5)  # Ждем, для стабильности
         input_element.send_keys(process_name)
         self.logger.info(f"Имя процесса '{process_name}' введено в поле типа задачи")
-        if xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{process_name}")]', timeout=5):
+        try:
+            match = xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{process_name}")]', timeout=3)
+        except TimeoutException:
+            match = None
+        if match:
             self.logger.info(f"Процесс '{process_name}' найден в списке типов задач")
             xpath.find_clickable(MyTasksLocators.MY_TASKS_CANCEL_BUTTON, timeout=3).click()
             self.logger.info("Окно создания задачи закрыто")
             return True
         else:
-            self.logger.error(f"Процесс '{process_name}' не найден в списке типов задач")
+            self.logger.info(f"Процесс '{process_name}' не найден в списке типов задач")
             xpath.find_clickable(MyTasksLocators.MY_TASKS_CANCEL_BUTTON, timeout=3).click()
             self.logger.info("Окно создания задачи закрыто")
             return False
 
-    def create_task(self, task_name, task_description=None, task_type=None, deadline=None, executor=None):
+    def create_task(self, task_name, task_description=None, task_type=None, deadline=None, executor=None, attache_file=None, from_file=False):
 
-        self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_TASK_BUTTON, timeout=3).click()
-        
+        if not from_file:
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_TASK_BUTTON, timeout=3).click()
+        else:
+            self.xpath.find_clickable(MyFilesEditorLocators.SEND_FOR_APPROVAL_BUTTON, timeout=3).click()
         input_name = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_NAME_INPUT, timeout=3)
         input_name.click()  # Кликаем по полю ввода названия задачи
         input_name.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
@@ -59,7 +69,10 @@ class MyTasksPage(BasePage):
         self.logger.info("Название задачи успешно установлено.")
 
         if task_description:
-            input_description = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_DESCRIPTION_INPUT, timeout=3)
+            if not from_file:
+                input_description = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_DESCRIPTION_INPUT, timeout=3)
+            else:
+                input_description = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_FROM_FILE_TASK_DESCRIPTION_INPUT, timeout=3)
             input_description.click()  # Кликаем по полю ввода описания задачи
             input_description.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_description.send_keys(Keys.DELETE)  # Удалить
@@ -67,13 +80,17 @@ class MyTasksPage(BasePage):
             self.logger.info("Описание задачи успешно установлено.")
 
         if task_type:
-            input_type = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_TYPE_INPUT, timeout=5)
+            if not from_file:
+                input_type = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_TYPE_INPUT, timeout=5)
+                succes_path = f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{task_type}")]'
+            else:
+                input_type = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_FROM_FILE_TASK_TYPE_INPUT, timeout=5)
+                succes_path = f'{MyTasksLocators.MY_TASKS_FROM_FILE_TASK_TYPE_TRS}[contains(@title,"{task_type}")]'
             input_type.click()  # Кликаем по полю ввода типа задачи
             input_type.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_type.send_keys(Keys.DELETE)  # Удалить выделенное
             input_type.send_keys(task_type)
             self.logger.info(f"Имя процесса '{task_type}' введено в поле типа задачи")
-            succes_path = f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{task_type}")]'
             if self.xpath.find_clickable(succes_path, timeout=3):
                 self.logger.info(f"Процесс '{task_type}' найден в списке типов задач")
                 self.xpath.find_clickable(succes_path, timeout=3).click()
@@ -101,8 +118,22 @@ class MyTasksPage(BasePage):
                 self.xpath.find_clickable(succes_path, timeout=3).click()
             else:
                 self.logger.error(f"Пользователь '{executor}' не найден в списке исполнителей задач")
+        
+        if attache_file:
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_TAB, timeout=3).click()
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_BUTTON, timeout=3).click()
+            search_file_by_name = f'{MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_FILE_TD}[contains(@title,"{attache_file}")]'
+            element = self.xpath.find_visible(search_file_by_name, timeout=3)
+            ActionChains(self.driver).move_to_element(element).perform()
+            checkbox = f'{search_file_by_name}/ancestor::tr/td[contains(@class,"check")]//i'
+            self.xpath.find_clickable(checkbox, timeout=3).click()
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_FILE_SELECT_BUTTON, timeout=3).click()
+            self.logger.info(f"Файл '{attache_file}' успешно прикреплен к задаче.")
 
-        self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_BUTTON).click()
+        if not from_file:
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_BUTTON).click()
+        else:
+            self.xpath.find_clickable(MyTasksLocators.MY_TASKS_SEND_FOR_APPROVAL_BUTTON).click()
         self.logger.info("Задача успешно создана.")
 
     def create_subtask(self, subtask_name, task_description=None, deadline=None, executor=None):
@@ -394,7 +425,7 @@ class MyTasksPage(BasePage):
             raise ValueError("action должен быть 'set' или 'check'")
 
     def download_history_task(self, task_name, format_name):
-        '''Метод проверяет успешное скачивания истории таска у указанном формате'''
+        '''Метод проверяет успешное скачивания истории таска в указанном формате'''
         xpath = XPathFinder(self.driver)
         dropdown_button = MyTasksLocators.MY_TASKS_TASKFORM_DOWNLOAD_HISTORY_BUTTON
         download_by_format = f'{MyTasksLocators.MY_TASKS_TASKFORM_DOWNLOAD_HISTORY_FORMATS_LIST}[contains(@title,"{format_name}")]'
@@ -407,3 +438,44 @@ class MyTasksPage(BasePage):
         download_manager.verify_downloaded_file(f"История согласования '{task_name}'.{format_name}")
         self.logger.info(
             f"Файл 'История согласования {task_name}.{format_name}' успешно загружен!")
+
+    def complete_task(self, task_name: str, subtask_massive: list):
+        # Ищем основной tr по task_name
+        xpath = XPathFinder(self.driver)
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{task_name}"]'
+
+        for position, subtask_name, action in subtask_massive:
+            try:
+                # Получаем tr на указанной позиции после основной
+                indexed_tr_xpath = f"{target_span_xpath}/ancestor::tr/following-sibling::tr[{position}]"
+
+                # Ищем span внутри этого tr и открываем таск кликом
+                xpath.find_clickable(f'{indexed_tr_xpath}//span[@title="{subtask_name}"]', timeout=3).click()
+                self.logger.info(f"Найдена подзадача '{subtask_name}' на позиции {position}")
+
+                # Ждём, чтобы форма открылась и клкиаем по кнопке действий
+                actions_btn = xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_ACTIONS_BUTTON, timeout=3)
+                time.sleep(1)
+                actions_btn.click()
+
+                # Выбираем и нажимаем действие из выпадающего списка и закрываем taskform
+                xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASKFORM_ACTIONS_DROPDOWN}//td[contains(@title,"{action}")]', timeout=3).click()
+                xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_CLOSE_BUTTON, timeout=3).click()
+                
+                self.logger.info(f"Подзадача '{subtask_name}' на позиции {position} успешно завершена с действием '{action}'")
+
+            except Exception as e:
+                self.logger.warning(f"Ошибка при обработке подзадачи '{subtask_name}' действием '{action}' на позиция {position}): {e}")
+                raise
+
+    def find_document_in_task(self, file_name):
+        '''Метод проверяет наличие/отсутствие прикрепленного к задаче докмуента'''
+        xpath = XPathFinder(self.driver)
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_DOCUMENTS_FILE_TD}[@title="{file_name}"]'
+        try:
+            xpath.find_visible(target_span_xpath, timeout=3)
+            self.logger.info(f"Документ '{file_name}' найден в задаче.")
+            return True
+        except Exception:
+            self.logger.info(f"Документ '{file_name}' не найден в задаче.")
+            return False

@@ -25,7 +25,7 @@ echo "Подключайтесь к noVNC по адресу http://localhost:608
 # Запуск основной последовательности тестов
 export PYTHONPATH=/app
 pytest tests/check_url -n auto --alluredir=allure_results
-pytest tests/workflow/ -n auto --dist=loadfile --alluredir=allure_results
+pytest tests/workflow_smoke -n auto --alluredir=allure_results
 echo "Тесты завершены. Формирую отчёт Allure..."
 
 # Генерация статического отчёта Allure

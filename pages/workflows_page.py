@@ -87,7 +87,7 @@ class WorkflowsPage(BasePage):
 
                     # Ожидаем появления контекстного меню
                     action_element = WebDriverWait(self.driver, 5).until(
-                        EC.presence_of_element_located((By.XPATH, action_xpath))
+                        EC.element_to_be_clickable((By.XPATH, action_xpath))
                     )
 
                     # Кликаем по нужному пункту меню

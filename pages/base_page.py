@@ -28,6 +28,20 @@ class BasePage:
         self.logger = logger
         self.xpath = XPathFinder(driver)  
 
+    def exit_from_account(self):
+        """Метод для выхода из УЗ."""
+        try:
+            self.logger.info("Поиск и клик иконки УЗ в хедере")
+            account_button = self.xpath.find_clickable(BaseLocators.HEADER_ACCOUNT_BUTTON, timeout=3, few=False)
+            account_button.click()
+            self.logger.info("Кнопка личного кабинета нажата. Переход к поиску и клику кнопки выхода.")
+            signout_button = self.xpath.find_clickable(BaseLocators.ACCOUNT_SIGNOUT, timeout=3, few=False)
+            signout_button.click()
+            self.logger.info("Кнопка 'Выйти' нажата. Выход из учетной записи выполнен.")
+        except Exception as e:
+            self.logger.error(f"Не удалось выйти из учетной записи: {str(e)}")
+            raise
+
     def find_click_header_menu(self, button_name, nested_button_name=None):
         """Основной метод обработки кнопок меню Header, включая вложенные элементы.
         :param button_name: Название основной кнопки меню, которую нужно найти и нажать.
@@ -309,9 +323,13 @@ class BasePage:
         :param new_name: Новое имя для переименовываемого объекта.
         """
         xpath = XPathFinder(self.driver)
-        rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}[contains(@title,"{current_name}")]', timeout=3, few=False)
+        self.logger.info(f"Переименование: current='{current_name}', new='{new_name}'")
+        rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}', timeout=3, few=False)
+        self.logger.info(f"Xpath {rename_path} найден")
         rename_path.send_keys(f'{new_name}')
+        self.logger.info(f"Имя объекта '{current_name}' изменено на '{new_name}'")
         next_td_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}/ancestor::td[1]/following-sibling::td[contains(@field,"1")]', timeout=3, few=False)
+        self.logger.info(f"Xpath {next_td_path} найден")
         next_td_path.click()  # Кликаем по следующему td, чтобы сохранить изменения
 
     def dialog_window(self, action=True):

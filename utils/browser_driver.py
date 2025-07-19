@@ -14,10 +14,11 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from utils.download_manager import DownloadManager
 from settings.variables import URL
 
+BROWSER_TYPE = os.getenv("BROWSER", "chrome").strip().lower()
 class BrowserDriver:
     """Класс для управления веб-драйвером, поддерживающим Chrome и Firefox."""
     def __init__(self, browser_type="chrome"):
-        self.browser_type = os.getenv("BROWSER", "chrome").strip().lower()
+        self.browser_type = BROWSER_TYPE
         self.url = URL
         self.driver = None
         self.temp_profile = None  # Переменная для хранения пути к временной папке
@@ -126,6 +127,10 @@ class BrowserDriver:
             options.add_argument("--disable-angle")
             options.add_argument("--disable-accelerated-2d-canvas")
             options.add_argument("--disable-accelerated-video-decode")
+            # Только fatal (без предупреждений из-за GPU и тд)
+            options.add_argument("--log-level=3")
+            # Для контейнера (без UI)
+            options.add_argument("--headless=new")
             
             # Добавляем временный профиль
             options.add_argument(f"--user-data-dir={self.temp_profile}")
@@ -151,6 +156,8 @@ class BrowserDriver:
             options.set_preference("pdfjs.disabled", True)  # Отключает встроенный PDF viewer
             options.add_argument("--width=1920")
             options.add_argument("--height=1080")
+            # Для контейнера (без UI)
+            options.add_argument("--headless")
 
             # Добавляем временный профиль
             options.set_preference("browser.profile.path", self.temp_profile)
@@ -176,7 +183,9 @@ class BrowserDriver:
             options.add_argument("--no-first-run")  # Отключает окно первого запуска
             options.add_argument("--no-default-browser-check")  # Запрещает проверку браузера по умолчанию
             options.add_argument("--disable-features=msEdgeWelcomePage,PreloadMediaEngagementData,PreloadNetworkData")
-        
+            # Для контейнера (без UI)
+            options.add_argument("--headless=new")
+
             # Указываем путь временного профиля
             options.add_argument(f"--user-data-dir={self.temp_profile}")
         

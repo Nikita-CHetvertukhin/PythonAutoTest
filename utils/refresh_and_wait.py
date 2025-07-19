@@ -1,6 +1,6 @@
 import time
 from selenium.webdriver.support.ui import WebDriverWait
-from tests.conftest import WEBSOCKET_PATCH
+from settings.variables import WEBSOCKET_PATCH
 
 def refresh_and_wait(driver, logger=None, timeout=10):
     """Перезагружает страницу и ждет полной загрузки."""

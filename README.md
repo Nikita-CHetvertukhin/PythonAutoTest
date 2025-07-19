@@ -50,11 +50,11 @@ set BROWSER=chrome & pytest tests/check_url -n auto --alluredir=allure_results
 </details>
 
 <details>
-  <summary>⚡ Запускаем параллельную проверку тестов Workflow<br>
+  <summary>⚡ Запускаем параллельную проверку тестов workflow_smoke_<br>
   <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong>, <strong>firefox</strong> или <strong>edge</strong></summary>
 
   ```bash
-  set BROWSER=chrome & pytest tests/workflow -n auto --dist=loadscope --alluredir=allure_results
+  set BROWSER=chrome & pytest tests/workflow_smoke -n auto --alluredir=allure_results
   ```
 </details>
 

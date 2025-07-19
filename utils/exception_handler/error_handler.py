@@ -4,9 +4,10 @@ import logging  # Модуль для логирования событий, о�
 import allure  # Интеграция с Allure для отчётов и вложений тестов
 import time  # Работа с временными метками, задержками и вычислением времени выполнения
 from pathlib import Path
+import uuid
 
 from selenium.common.exceptions import WebDriverException
-
+from utils.browser_driver import BROWSER_TYPE
 # Класс для обработки ошибок
 class ErrorHandler:
     """Класс для обработки ошибок, логирования и создания скриншотов с интеграцией Allure.
@@ -28,9 +29,10 @@ class ErrorHandler:
         :param screenshot_name: Имя файла скриншота (по умолчанию генерируется автоматически).
         """
         timestamp = time.strftime("%Y%m%d_%H%M%S")
+        unique_id = uuid.uuid4().hex[:8]  # Например: a3b7f9c1
         screenshot_dir = Path("log/screenshots")
         screenshot_dir.mkdir(parents=True, exist_ok=True)
-        screenshot_path = screenshot_dir / (screenshot_name or f"screenshot_{timestamp}.png")
+        screenshot_path = screenshot_dir / (screenshot_name or f"{unique_id}_screenshot_{timestamp}.png")
 
         self.driver.save_screenshot(screenshot_path)
         self.logger.error(f"Ошибка: {exception}. Скриншот сохранён: {screenshot_path}")
@@ -42,6 +44,9 @@ class ErrorHandler:
 
     def check_browser_logs(self):
         """Проверяет консоль браузера и прикрепляет скриншот и ошибки в Allure при наличии SEVERE-сообщений."""
+        if BROWSER_TYPE == "firefox":
+            self.logger.debug("Пропускаем сбор логов — Firefox не поддерживает get_log('browser').")
+            return
         try:
             logs = self.driver.get_log("browser")
             errors = [entry for entry in logs if entry["level"] == "SEVERE"]
@@ -50,11 +55,13 @@ class ErrorHandler:
 
                 # Сохраняем скриншот текущего состояния страницы
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
+                unique_id = uuid.uuid4().hex[:8]  # Например: a3b7f9c1
                 screenshot_dir = Path("log/screenshots")
                 screenshot_dir.mkdir(parents=True, exist_ok=True)
-                screenshot_path = screenshot_dir / f"console_error_{timestamp}.png"
+                screenshot_path = screenshot_dir / f"console_error_{unique_id}_{timestamp}.png"
                 self.driver.save_screenshot(screenshot_path)
-                self.logger.error(f"Обнаружены ошибки в консоли браузера. Скриншот: {screenshot_path}")
+                self.logger.error("Обнаружены ошибки в консоли браузера:\n" + error_messages)
+                self.logger.error(f"Скриншот сохранён: {screenshot_path}")
 
                 # Прикрепляем текст ошибок и скриншот к Allure
                 if "pytest" in sys.modules:
@@ -69,6 +76,9 @@ class ErrorHandler:
 
     def clear_browser_logs(self):
         """Очищает текущие логи браузера, чтобы не мешали анализу новых ошибок."""
+        if BROWSER_TYPE == "firefox":
+            self.logger.debug("Пропускаем сбор логов — Firefox не поддерживает get_log('browser').")
+            return
         try:
             # Просто считываем все текущие логи, чтобы их сбросить и далее учитывать только новые
             self.driver.get_log("browser")

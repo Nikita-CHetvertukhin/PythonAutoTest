@@ -28,7 +28,7 @@ class BaseLocators:
     '''ACCOUNT'''
 
     # Кнопка "Выйти"
-    ACCOUNT_SIGNOUT = '//div[contains(@class, "account-panel")]//a[contains(@class, "sign-out")]'
+    ACCOUNT_SIGNOUT = '//div[contains(@class, "account-panel")]//div[contains(@class, "sign-out")]'
 
     '''SIDE MENU'''
 
