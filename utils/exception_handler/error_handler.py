@@ -5,6 +5,7 @@ import allure  # Интеграция с Allure для отчётов и вло�
 import time  # Работа с временными метками, задержками и вычислением времени выполнения
 from pathlib import Path
 import uuid
+from utils.refresh_and_wait import refresh_and_wait
 
 from selenium.common.exceptions import WebDriverException
 from utils.browser_driver import BROWSER_TYPE
@@ -21,7 +22,7 @@ class ErrorHandler:
         self.driver = driver
         self.logger = logger  or logging.getLogger(__name__)
 
-    def handle_exception(self, exception, screenshot_name=None):
+    def handle_exception(self, exception, screenshot_name=None, critical=True):
         """
         Обрабатывает исключение: сохраняет скриншот, логирует ошибку и прикрепляет к отчету Allure.
     
@@ -41,6 +42,10 @@ class ErrorHandler:
         if "pytest" in sys.modules:
             with open(screenshot_path, "rb") as image_file:
                 allure.attach(image_file.read(), name=f"Ошибка: {exception}", attachment_type=allure.attachment_type.PNG)
+
+        # Если ошибка критическая - обновляем страницу
+        if critical:
+            refresh_and_wait(self.driver, self.logger)
 
     def check_browser_logs(self):
         """Проверяет консоль браузера и прикрепляет скриншот и ошибки в Allure при наличии SEVERE-сообщений."""
@@ -83,5 +88,6 @@ class ErrorHandler:
             # Просто считываем все текущие логи, чтобы их сбросить и далее учитывать только новые
             self.driver.get_log("browser")
             self.logger.debug("Консоль браузера очищена перед выполнением теста.")
+            time.sleep(1)
         except Exception as e:
             self.logger.warning(f"Не удалось очистить логи браузера: {e}")

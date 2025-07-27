@@ -26,3 +26,11 @@ class MyFilesEditorPage(BasePage):
         if variable_type == "Текст":
             textarea = self.xpath.find_clickable(textarea_box_path, timeout=3)
             textarea.send_keys(content)
+
+    def wf_action_in_file(self, action_name):
+        '''Метод октрывает кнопку "Действия" в тулбаре wf документа и кликает по указанному действию'''
+        self.xpath.find_clickable(MyFilesEditorLocators.WF_ACTIONS_BUTTON, timeout=3).click()
+        action_xpath = f'{MyFilesEditorLocators.WF_ACTIONS_LIST_ITEM}[contains(text(),"{action_name}")]/ancestor::div[1]'
+        self.xpath.find_clickable(action_xpath, timeout=3).click()
+        self.close_all_windows()
+        self.logger.info(f"Выполнено действие WF '{action_name}' в документе.")

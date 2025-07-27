@@ -6,7 +6,7 @@ class MyTasksLocators:
     # Поиск всех строк в столбце "Название" в body "Мои задачи"
     MY_TASKS_LIST = '//div[contains(@class,"finder") and not(contains(@class,"none"))]//div[contains(@class, "tab")and contains(@class,"task") and not(contains(@class,"inactive"))]//div[@class="scroller items"]/table/tbody/tr/td[contains(@class,"column")and contains(@class,"first")]/div'
     # Путь до tr dropdown выпадающего списка действий с файлом
-    MY_TASKS_DROPDOWN = '//body/div[contains(@class,"dropdown")]/div/table/tbody/tr'
+    MY_TASKS_DROPDOWN = '//body/div[contains(@class,"dropdown")and not(contains(@class, "display-none"))]/div/table/tbody/tr'
     # Кнопка "Создать задачу"
     MY_TASKS_CREATE_TASK_BUTTON = '//div[contains(@class,"tasks") and not(contains(@class,"inactive"))]//div[contains(@class,"location")]//a[contains(@class,"create")]/span'
 
@@ -30,9 +30,17 @@ class MyTasksLocators:
     # Инпут дедлайна
     MY_TASKS_TASK_DEADLINE_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Дедлайн")]/parent::div/div/input'
     # Инпут исполнителя
-    MY_TASKS_TASK_PERFORMER_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Исполнитель")]/parent::div/div/input'
+    MY_TASKS_TASK_PERFORMER_INPUT = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Исполнитель")or contains(@title,"Согласующие")]/parent::div/div/input'
     # Найденный span должен содержать атрибут title с именем пользователя
-    MY_TASKS_TASK_PERFORMER_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Исполнитель")]/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[2]//span'
+    MY_TASKS_TASK_PERFORMER_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span[contains(@title,"Исполнитель")or contains(@title,"Согласующие")]/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[2]//span'
+    # Для множества ролей - кастомный путь до span title которого содержит название роли
+    MY_TASKS_TASK_ROLE = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span'
+    # Для можества согласующих - путь до строк таблиц согалсующих
+    MY_TASKS_TASK_ACTORS_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"actors")]/div[contains(@class,"items")]/table/tbody/tr'
+    # Тригер выпадашки уровня доступа к задаче
+    MY_TASKS_TASK_ACCESS_TRIGGER = '//div[contains(@class,"acces")]/div[contains(@class,"box")]/a[contains(@class,"btn-trigger")]'
+    # Список уровней доступа к задаче
+    MY_TASKS_TASK_ACCESS_LEVELS = '//td[contains(@class,"column int")]/div[contains(@class,"acces")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
 
     # Кнопка "Отменить"
     MY_TASKS_CANCEL_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"footer")]/a/span[text()="Отменить"]'
@@ -57,8 +65,20 @@ class MyTasksLocators:
     MY_TASKS_TASKFORM_ACTIONS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]//a[contains(@class,"primary")]/span[contains(@title,"Действия")]/ancestor::a'
     # Дропдаун действий с задачей
     MY_TASKS_TASKFORM_ACTIONS_DROPDOWN = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]//div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//table/tbody/tr'
+    # Кнопка "Наблюдать" в taskform
+    MY_TASKS_TASKFORM_WATCH_BUTTON = '//div[@class="taskform"]/div[contains(@class,"toolbox")]/div[contains(@class,"eye")]/a[not(contains(@class,"display-none"))]'
+    # Инпут добавления наблюдателя в taskform
+    MY_TASKS_TASKFORM_WATCHER_INPUT = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/div[contains(@class,"eye")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"observers")and contains(@class,"users")]/div[contains(@class,"box")]/input'
+    # Выпадающий список добавления наблюдателей (атрибут title последнего span содержит имя пользователя)
+    MY_TASKS_TASKFORM_ADD_WATCHER_TRS = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/div[contains(@class,"eye")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"observers")and contains(@class,"users")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"items")]//tr/td[contains(@class,"last")]//span'
+    # Список наблюдателей задачи (атрибут title последнего span содержит имя пользователя)
+    MY_TASKS_TASKFORM_WATCHERS_LIST = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/div[contains(@class,"eye")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"observers")and contains(@class,"list")]//tr//span[2]'
+    # Кнопка "Добавить файл"
+    MY_TASKS_TASKFORM_ADD_FILE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"attach")]'
     # Кнопка создать подзадачу в taskform
-    MY_TASKS_TASKFORM_CREATE_SUBTASK_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"subtask")]/i'
+    MY_TASKS_TASKFORM_CREATE_SUBTASK_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"subtask")]'
+    # Мпециальный xpath для проверки недоступности кнопки создания подзадачи (Т.К. селениум всегда считает кликабельной)
+    MY_TASKS_TASKFORM_CREATE_SUBTASK_BUTTON_DISABLED = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"subtask") and contains(@class,"disabled")]'
     # Кнопка "Удалить" в taskform
     MY_TASKS_TASKFORM_DELETE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]/div[contains(@class,"toolbox")]/a[contains(@class,"remove")]/i'
     # Кнопка "Закрыть" в taskform
@@ -106,3 +126,10 @@ class MyTasksLocators:
     MY_TASKS_TASKFORM_COMMENT_EDIT_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/following-sibling::div[contains(@class,"dummy")]/following-sibling::div[contains(@class, "box")]//div[contains(@class,"items")]//tr//div[contains(@class,"toolbox")]/a/span[text()="Изменить"]'
     # Кнопка "Удалить" комментарий к задаче
     MY_TASKS_TASKFORM_COMMENT_DELETE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"tasks")]//div[@class="taskform"]//div[@class="row"]//span[contains(@title,"Активность")]/following-sibling::div[contains(@class,"dummy")]/following-sibling::div[contains(@class, "box")]//div[contains(@class,"items")]//tr//div[contains(@class,"toolbox")]/a/span[text()="Удалить"]'
+
+    # Инпут всплывающего окна обязательного комменатрия
+    MY_TASKS_TASKFORM_REQUIRED_COMMENT_INPUT = '//div[contains(@class,"window")]//div[contains(@class,"header")]//div[contains(text(),"Введите комментарий")]/ancestor::div[contains(@class,"window")][1]//textarea'
+    # Кнопка "Сохранить" в окне обязательного комментария
+    MY_TASKS_TASKFORM_REQUIRED_COMMENT_SAVE_BUTTON = '//div[contains(@class,"window")]//div[contains(@class,"footer")]/a/span[text()="Сохранить"]'
+    # Кнопка "Отменить" в окне обязательного комментария
+    MY_TASKS_TASKFORM_REQUIRED_COMMENT_CANCEL_BUTTON = '//div[contains(@class,"window")]//div[contains(@class,"footer")]/a/span[text()="Отменить"]'

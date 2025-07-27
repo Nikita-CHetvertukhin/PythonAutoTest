@@ -26,34 +26,6 @@ class WorkflowsPage(BasePage):
         textarea.send_keys(Keys.ENTER)
         self.logger.info(f"Имя процесса '{name}' введено и подтверждено Enter")
 
-    def find_process_by_name(self, name):
-        """Ищет процесс по имени и скроллит до него, если он не виден."""
-        xpath = XPathFinder(self.driver)
-
-        try:
-            # Формируем xpath до интересуещего процесса
-            target_xpath = f'{WorkflowsLocators.WORKFLOWS_LIST}/span[@title="{name}"]'
-
-            # Ищем сам элемент внутри списка
-            process_element = xpath.find_located(target_xpath, timeout=5, few=False)
-
-            if process_element:
-                self.logger.info(f"Процесс '{name}' найден в DOM.")
-
-                # Скроллим до элемента
-                self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
-
-                # Ожидание, чтобы элемент был видимым и доступным для клика
-                WebDriverWait(self.driver, 5).until(EC.visibility_of(process_element))
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(process_element))
-
-                self.logger.info(f"Процесс '{name}' отображается на экране и доступен")
-                return process_element
-
-        except TimeoutException:
-            self.logger.warning(f"Процесс '{name}' не найден в DOM!")
-            return None
-
     def right_click_and_select_action(self, object_name, action_name, max_retries=5):
         """Находит процесс по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
         обеспечивая устойчивость к изменениям DOM."""
@@ -65,24 +37,26 @@ class WorkflowsPage(BasePage):
         for attempt in range(max_retries):
             try:
                 # Перепроверяем список элементов и ищем процесс
-                process_element = xpath.find_located(target_xpath, timeout=10, few=False)
-
-                if process_element:
+                if xpath.find_located(target_xpath, timeout=10, few=False):
                     self.logger.info(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
 
                     # Скроллим до элемента
                     # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
 
                     # Ожидание полной загрузки элемента перед взаимодействием
-                    WebDriverWait(self.driver, 5).until(EC.visibility_of(process_element))
-                    WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(process_element))
-
+                    WebDriverWait(self.driver, 5).until(
+                        EC.visibility_of_element_located((By.XPATH, target_xpath))
+                    )
+                    WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, target_xpath))
+                    )
                     time.sleep(0.5)  # Небольшая пауза для стабильности
 
                     # Кликаем ПКМ по элементу
+                    # Получаем элемент прямо перед действием
+                    element = self.driver.find_element(By.XPATH, target_xpath)
                     actions = ActionChains(self.driver)
-                    actions.move_to_element(process_element).perform()
-                    actions.context_click(process_element).perform()
+                    actions.move_to_element(element).context_click(element).perform()
                     self.logger.info(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
@@ -98,7 +72,9 @@ class WorkflowsPage(BasePage):
             except StaleElementReferenceException:
                 self.logger.warning(f"Элемент '{object_name}' устарел, пробуем заново...")
                 time.sleep(1)  # Ждем, чтобы дать DOM перестроиться
-
+            except Exception as e:
+                self.logger.warning(f"Попытка {attempt + 1} не удалась: {e}")
+                time.sleep(1)
         self.logger.error(f"Не удалось выполнить действие '{action_name}' для '{object_name}' после {max_retries} попыток.")
         return False
 

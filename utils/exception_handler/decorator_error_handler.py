@@ -21,7 +21,7 @@ def exception_handler(func):
 
         except MinorIssue as e:
             with allure.step("Некритическая ошибка"):
-                error_handler.handle_exception(e)  # Логируем и создаем скриншот
+                error_handler.handle_exception(e, critical=False)  # Логируем и создаем скриншотб не перезагружаю старницу
                 pytest.mark.xfail(run=True, reason=f"Обработанная некритическая ошибка: {e}")
 
         except Exception as e:

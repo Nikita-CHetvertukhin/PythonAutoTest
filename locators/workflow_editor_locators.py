@@ -55,7 +55,9 @@ class WorkflowEditorLocators:
    WFEDITOR_PROPERTIES_START_AUTO_FIRST_BUTTON = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"старте")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")][1]//div[contains(@class,"combobox")]/div/a'
    # Элементы span выпадающего списка видов автоматизаций только для первого комбобокса. По атрибуту title можно выбирать
    WFEDITOR_PROPERTIES_START_AUTO_FIRST_lIST = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"старте")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")][1]//div[contains(@class,"combobox")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"items")]/table/tbody/tr/td/div/span'
-   
+    # Путь до иконки выбора каталога в автоматизациях при старте
+   WFEDITOR_PROPERTIES_START_AUTO_FOLDER_ICON = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"старте")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")]/div[contains(@class,"parameters")]//span[contains(@title,"Каталог")]/ancestor::div[1]//a[contains(@title,"каталог")]'
+
    # Чекбокс "Автоматизация при завершении" процесса или фигуры
    WFEDITOR_PROPERTIES_FINISH_AUTO = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"завершении")]/parent::div/div[contains(@class,"box")]/div[contains(@class,"checkbox")]'
    # Первый экземпляр автоматизации при завершении, инпут. Можно проверять по атрибуту title
@@ -64,6 +66,8 @@ class WorkflowEditorLocators:
    WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_BUTTON = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"завершении")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")][1]//div[contains(@class,"combobox")]/div/a'
    # Элементы span выпадающего списка видов автоматизаций только для первого комбобокса. По атрибуту title можно выбирать
    WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_lIST = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"завершении")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")][1]//div[contains(@class,"combobox")]/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]/div[contains(@class,"items")]/table/tbody/tr/td/div/span'
+   # Путь до всех иконок выбора каталога в автоматизациях при завершении
+   WFEDITOR_PROPERTIES_FINISH_AUTO_FOLDER_ICON = '//div[contains(@class,"properties")]/div[contains(@class,"properties")and not(contains(@class,"display-none"))]//div[contains(@class,"checkbox")]/span[contains(@title,"завершении")]/parent::div/following-sibling::div[1][not(contains(@class,"display-none"))]/div[contains(@class,"form")]/div[contains(@class,"parameters")]//span[contains(@title,"Каталог")]/ancestor::div[1]//a[contains(@title,"каталог")]'
 
    '''Свойства только фигур'''
 
@@ -132,3 +136,11 @@ class WorkflowEditorLocators:
    WFEDITOR_PROPERTIES_SHARE_READY = '//div[contains(@class,"access-editor")]/div[contains(@class,"footer")]/a/span[text()="Готово"]'
    # Кнопка "Отменить"
    WFEDITOR_PROPERTIES_SHARE_CANCEL = '//div[contains(@class,"access-editor")]/div[contains(@class,"footer")]/a/span[text()="Отменить"]'
+
+   '''Окно выбора каталога'''
+   # Выбор секции в которой нахожится каталог (text() последнего span равен нужной секции)
+   WFEDITOR_PROPERTIES_CATALOG_SECTIONS = '//div[contains(@class,"window")]/div[contains(@class,"body")]//div[contains(@class,"btn-group")]/a[not(contains(@class,"disabled"))]/span'
+   # Поиск каталога в айтемах (title последнего span содержит название нужного файла)
+   WFEDITOR_PROPERTIES_CATALOG_ITEMS = '//div[contains(@class,"window")]/div[contains(@class,"body")]//div[contains(@class,"workspace")]/div[contains(@class,"items")]/table/tbody//tr//td[contains(@class,"first")]//span'
+   # Кнопка "Выбрать" в окне выбора каталога
+   WFEDITOR_PROPERTIES_CATALOG_SELECT = '//div[contains(@class,"window")]/div[contains(@class,"footer")]/a[not(contains(@class,"disabled"))]/span[text()="Выбрать"]'

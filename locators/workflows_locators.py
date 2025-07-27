@@ -13,4 +13,4 @@ class WorkflowsLocators:
     # Активный процесс в body рабочих процессов
     WORKFLOWS_ACTIVE = '//div[contains(@class,"finder") and not(contains(@class,"none"))]//div[contains(@class, "tab") and not(contains(@class,"inactive"))]//div[@class="scroller items"]/table/tbody/tr[contains(@class,"active")]/td[contains(@class,"column")and contains(@class,"first")]/div/span'
     # Элементы dropdown при нажатии ПКМ по процессу
-    WORKFLOWS_DROPDOWN = '//body/div[contains(@class,"dropdown")]/div/table/tbody/tr'
+    WORKFLOWS_DROPDOWN = '//body/div[contains(@class,"dropdown")and not(contains(@class, "display-none"))]/div/table/tbody/tr'

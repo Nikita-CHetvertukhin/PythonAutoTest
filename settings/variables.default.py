@@ -4,19 +4,35 @@
 # url адрес тестируемой сборки (по умолчанию локальный, при использовании docker вместо localhost следует указать host.docker.internal)
 URL = 'http://localhost:9080/'
 # Логин УЗ Администартора
-ADMIN_LOGIN = 'admin'
+ADMIN_LOGIN = 'AQA_admin'
 # Пароль от УЗ администратора
 ADMIN_PASSWORD = '11111111'
 # MD5 от пароля администратора
 ADMIN_PASSWORD_MD5 = '11111111111111111111111111111111'
 # Логин от УЗ Эксперта
-EXPERT_LOGIN = 'expert'
+EXPERT_LOGIN = 'AQA_expert'
 # Пароль от УЗ Эксперта
 EXPERT_PASSWORD = '11111111'
 # Логин первой тестовой УЗ
-USER1_LOGIN = 'user1'
+USER1_LOGIN = 'AQA_user1'
 # Пароль от первой тестовой УЗ
 USER1_PASSWORD = '11111111'
+# Логин второй тестовой УЗ
+USER2_LOGIN = 'AQA_user2'
+# Пароль от второй тестовой УЗ
+USER2_PASSWORD = '11111111'
+# Логин третьей тестовой УЗ
+USER3_LOGIN = 'AQA_user3'
+# Пароль от третьей тестовой УЗ
+USER3_PASSWORD = '11111111'
+# Логин четвертой тестовой УЗ
+USER4_LOGIN = 'AQA_user4'
+# Пароль от четвертой тестовой УЗ
+USER4_PASSWORD = '11111111'
+# Логин пятой тестовой УЗ
+USER5_LOGIN = 'AQA_user5'
+# Пароль от пятой тестовой УЗ
+USER5_PASSWORD = '11111111'
 
 '''API константы для тестов'''
 
@@ -54,3 +70,8 @@ window.WebSocket = class {
   set onclose(_) {}
 };
 """
+
+'''Лицензии'''
+
+# Общие диски
+SHARE_DRIVES = 'pro.doczilla.sharing.drives'

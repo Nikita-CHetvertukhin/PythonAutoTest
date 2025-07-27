@@ -41,20 +41,23 @@
 </details>
 
 <details>
-  <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл "check_url.log" <br>
+  <summary>✅ Запускаем чекинг лицензий и параллельную проверку доступности сборки, авторизации с логированием в единый файл" <br>
   <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong>, <strong>firefox</strong> или <strong>edge</strong></summary>
 
   ```bash
-set BROWSER=chrome & pytest tests/check_url -n auto --alluredir=allure_results
+set BROWSER=chrome & pytest -m prepare
   ```
 </details>
 
 <details>
-  <summary>⚡ Запускаем параллельную проверку тестов workflow_smoke_<br>
+  <summary>⚡ Запуск тестов:<br>
   <u>BROWSER</u> поддерживает аргументы <strong>chrome</strong>, <strong>firefox</strong> или <strong>edge</strong></summary>
 
   ```bash
-  set BROWSER=chrome & pytest tests/workflow_smoke -n auto --alluredir=allure_results
+  set BROWSER=chrome & pytest -m workflow_smoke
+  ```
+  ```bash
+  set BROWSER=chrome & pytest -m workflow
   ```
 </details>
 

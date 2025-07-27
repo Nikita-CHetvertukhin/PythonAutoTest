@@ -14,79 +14,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import StaleElementReferenceException
 
 class MyFilesPage(BasePage):
-    
-    def upload_file(self, filename):
-        xpath = XPathFinder(self.driver)
-        wait = WebDriverWait(self.driver, 5)
-        UPLOADS_PATH = Path("resources/uploads/workflow")
-        file_path = (UPLOADS_PATH / filename).resolve()
-        assert file_path.exists(), f"Файл {file_path} не найден."
-
-        create_button = xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE_FILE_BUTTON, timeout=3, few=False)
-        create_button.click()
-        self.logger.info("Открыта выпадашка 'Создать' в разделе 'Мои файлы'.")
-
-        dropdown_xpath = f'{MyFilesLocators.MY_FILES_CREATE_FILE_DROPDOWN}[contains(@title, "Загрузить файлы")]'
-        dropdown_item = xpath.find_clickable(dropdown_xpath, timeout=3, few=False)
-
-        # JS-хук: заранее переопределяем input.click, чтобы подавить системное окно
-        self.driver.execute_script("""
-            const observer = new MutationObserver(() => {
-                const input = document.querySelector('input[type="file"]');
-                if (input) {
-                    input.click = function() {};  // Отключаем вызов системного окна
-                    input.removeAttribute('disabled');
-                    input.style.display = 'block';
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-        """)
-        self.logger.info("Попытка переопределить input.click до открытия dropdown.")
-
-        dropdown_item.click()
-        self.logger.info("Выбрано действие 'Загрузить файлы'.")
-
-        input_field = wait.until(EC.presence_of_element_located((By.XPATH, MyFilesLocators.MY_FILES_UPLOAD_INPUT)))
-        self.logger.info(f"Input найден. Сформирован путь: {file_path}")
-
-        # Передаём файл через send_keys
-        try:
-            input_field.send_keys(str(file_path))
-            self.driver.execute_script("""
-                arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
-            """, input_field)
-            self.logger.info(f"Файл {filename} успешно загружен в 'Мои файлы'.")
-        except Exception as e:
-            self.logger.error(f"Ошибка загрузки файла: {e}")
-            raise
-
-    def find_file_by_name(self, name):
-        """Ищет процесс по имени и скроллит до него, если он не виден."""
-        xpath = XPathFinder(self.driver)
-
-        try:
-            # Формируем xpath до интересуещего процесса
-            target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[@title="{name}"]'
-
-            # Ищем сам элемент внутри списка
-            file_element = xpath.find_located(target_xpath, timeout=5, few=False)
-
-            if file_element:
-                self.logger.info(f"Файл '{name}' найден в DOM.")
-
-                # Скроллим до элемента
-                self.driver.execute_script("arguments[0].scrollIntoView(true);", file_element)
-
-                # Ожидание, чтобы элемент был видимым и доступным для клика
-                WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(file_element))
-
-                self.logger.info(f"Файл '{name}' отображается на экране и доступен")
-                return file_element
-
-        except TimeoutException:
-            self.logger.warning(f"Файл '{name}' не найден в DOM!")
-            return None
 
     def right_click_and_select_action(self, object_name, action_name, max_retries=5):
         """Находит файл по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
@@ -134,6 +61,9 @@ class MyFilesPage(BasePage):
         return False
 
     def create_file(self, file_name, file_type):
+        """Создает новый файл в разделе 'Мои файлы' с указанным именем и типом.
+        Поддерживаемые типы: "Новый документ","Интерактивный шаблон","Новую папку"
+        """
         xpath = XPathFinder(self.driver)
         xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
         self.logger.info("Кнопка 'Создать' нажата")
@@ -144,3 +74,15 @@ class MyFilesPage(BasePage):
         self.logger.info("название файла введено")
         textarea.send_keys(Keys.ENTER)
         self.logger.info(f"Имя файла '{file_name}' введено и подтверждено Enter")
+
+    def create_drive(self, drive_name):
+        """Создает новый общий диск с указанным именем."""
+        xpath = XPathFinder(self.driver)
+        xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
+        self.logger.info("Кнопка 'Создать' нажата")
+        textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
+        self.logger.info("xpath textarea найден")
+        textarea.send_keys(drive_name)
+        self.logger.info(f"Имя общего диска введено")
+        textarea.send_keys(Keys.ENTER)
+        self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")

@@ -45,6 +45,8 @@ class WorkflowEditorPage(BasePage):
         self.logger.info(f"Клик по кнопке {action_name}")
         action_xpath = xpath.find_located(f'{WorkflowEditorLocators.WFEDITOR_FILE_DROPDOWN}/div/label[text()="{action_name}"]/parent::div', timeout=3, few=False)
         action_xpath.click()
+        if action_name in {"Опубликовать", "Снять с публикации"}:
+            self.close_all_windows()
 
     def add_shape(self, shape_name):
         """Добавляет фигуру в редактор рабочего процесса, проверяет её наличие и возвращает уникальный model_id."""
@@ -134,6 +136,59 @@ class WorkflowEditorPage(BasePage):
         # Выполнение клика напрямую
         ActionChains(self.driver).move_to_element(element).click().perform()
         self.logger.info(f'Клик по {model_id}')
+
+    def click_shape_by_text(self, text):
+        """Метод кликаем по фигуре на основани и текста (подходит не для всех фигур, толкьо с аргументом text)"""
+        xpath = XPathFinder(self.driver)
+        shape_path = f'{WorkflowEditorLocators.WFEDITOR_SHAPES}/*[name()="g"]/*[name()="text"][contains(@text,"{text}")]/ancestor::*[name()="g"][1]'
+        # Ожидание, пока элемент станет доступным
+        element = xpath.find_visible(shape_path, timeout=3)
+        # Выполнение клика напрямую
+        ActionChains(self.driver).move_to_element(element).click().perform()
+        self.logger.info(f'Клик по фигуре с текстом {text}')
+
+    def change_catalog_in_auto(self, type_auto, type_section, name_catalog=None):
+        """Метод устанавливает каталог в автоматизациях при старте/завершении, поддерживает аргументы:
+        type_auto: "start", "finish" - тип автоматизации (при старте или при завершении)
+        type_section: "Мои файлы", "Доступные мне", "Общие диски" - тип секции
+        name_catalog: "имя каталога", если нужно выбрать конкретный каталог
+        """
+        VALID_AUTOS = {"start", "finish"}
+        VALID_SECTIONS = {"Мои файлы", "Доступные мне", "Общие диски"}
+
+        if type_auto not in VALID_AUTOS:
+            raise ValueError(f"Недопустимое значение type_auto: '{type_auto}'. Допустимые: {VALID_AUTOS}")
+        if type_section not in VALID_SECTIONS:
+            raise ValueError(f"Недопустимое значение type_section: '{type_section}'. Допустимые: {VALID_SECTIONS}")
+
+        xpath = XPathFinder(self.driver)
+        action = ActionChains(self.driver)
+        
+        # Клик по иконке каталога в зависимости от типа автоматизации
+        if type_auto == "start":
+            icon = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FOLDER_ICON, timeout=3).click()
+        if type_auto == "finish":
+            icon = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FOLDER_ICON, timeout=3).click()
+        self.logger.info(f'Клик по иконке каталога в автоматизации {type_auto}')
+        
+        # Выбор секции каталога
+        target_section = xpath.find_clickable(
+            f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_SECTIONS}[contains(text(), "{type_section}")]/ancestor::a', timeout=3)
+        target_section.click()
+        self.logger.info(f'Клик по секции {type_section}')
+        time.sleep(1)  # Пауза для стабильности
+        
+        # Если указан каталог, ищем его в списке и делаем двойной клик
+        if name_catalog:
+            xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_ITEMS}[contains(@title,"{name_catalog}")]/ancestor::tr', timeout=3).click()
+            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
+            time.sleep(1)  # Пауза для стабильности
+            self.logger.info(f'Двойной клик по каталогу {name_catalog}')
+        
+        # Подтверждаем выбор
+        xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_SELECT, timeout=3).click()
+        time.sleep(0.5)  # Пауза для стабильности
+        self.logger.info('Клик по кнопке "Выбрать" в каталоге')
 
     def connect_shapes(self, first_model_id, second_model_id):
         xpath = XPathFinder(self.driver)
@@ -1038,3 +1093,23 @@ class WorkflowEditorPage(BasePage):
             else:
                 self.logger.warning(f"Ожидался статус '{content}', но он не соответствует")
                 return False
+
+    def special_check_url(self):
+        '''Метод предназначени только для специфического кейса проверки скопированной ссылки на процесс и ссылки в url'''
+        xpath = XPathFinder(self.driver)
+        input_description_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_DESCRIPTIONS
+        # Вставка скопированной ссылки процесса в поле "Описание"
+        element = xpath.find_clickable(input_description_xpath, timeout=3)
+        element.click()
+        element.send_keys(Keys.CONTROL, 'v')
+        # Получение текущего URL в переменную
+        current_url = self.driver.current_url
+        self.logger.info(f"Текущий URL вкладки: {current_url}")
+
+        check_description_xpath = f'{input_description_xpath}/p[contains(text(),"{current_url}")]'
+        if xpath.find_located(check_description_xpath, timeout=3):
+            self.logger.info(f"Скопированная ссылка процесса соответствует текущему URL: {current_url}")
+            return True
+        else:
+            self.logger.warning(f"Скопированная ссылка процесса не соответствует текущему URL: {current_url}")
+            return False  

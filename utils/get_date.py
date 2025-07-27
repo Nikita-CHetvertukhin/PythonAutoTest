@@ -10,3 +10,8 @@ def get_date(day_label):
     
     target_date = today + timedelta(days=delta)
     return target_date.strftime('%d.%m.%Y')
+
+def get_timestamp():
+    """Возвращает текущую дату и время в формате YYYYMMDD_HHMMSS."""
+    return datetime.now().strftime("%Y%m%d_%H%M%S")
+    

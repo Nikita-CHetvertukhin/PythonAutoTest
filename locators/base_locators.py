@@ -24,7 +24,6 @@ class BaseLocators:
     # Кнопка личного кабинета
     HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/button[contains(@class,"account")]/label[not(contains(@class,"display-none"))]'
 
-
     '''ACCOUNT'''
 
     # Кнопка "Выйти"
@@ -37,8 +36,20 @@ class BaseLocators:
 
     '''BODY'''
 
-    # Путь до TEXTAREA для ввода названия процесса/документа (например при переименовании)
+    # Заголовок раздела
+    BODY_TITLE = '//div[contains(@class,"body")]/div[contains(@class,"tabs")]/div[contains(@class,"body")]/div[not(contains(@class,"inactive"))]//div[contains(@class,"commands")]/a[contains(@class,"folder")]'
+    # Путь до иконки загрузки списка (песочные часы в заголовке раздела)
+    BODY_STATUS = f'{BODY_TITLE}/i[contains(@class,"hourglass")and not(contains(@class,"empty"))]'
+    # Путь до TR с заголовками столбоц TD
+    BODY_COLUMNS = '//div[contains(@class,"body")]/div[contains(@class,"tabs")]/div[contains(@class,"body")]/div[not(contains(@class,"inactive"))]//div[@class="scroller headers"]/table/tbody/tr[@class="header"]'
+    # Универсальный путь до строк списка файлов в любом активном боковом меню
+    BODY_LIST = '//div[contains(@class,"body")]/div[contains(@class,"tabs")]/div[contains(@class,"body")]/div[not(contains(@class,"inactive"))]//div[contains(@class,"items")]/table/tbody/tr'
+    # Универсальный путь до ячейки строки с названием файла
+    BODY_NAMES = '//div[contains(@class,"body")]/div[contains(@class,"tabs")]/div[contains(@class,"body")]/div[not(contains(@class,"inactive"))]//div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"column")and contains(@class,"first")]/div'
+    # Путь до TEXTAREA для ввода названия процесса/документа (например при переименовании) PS старый xpath нужен анализ
     BODY_TEXTAREA = '//div[contains(@class,"textarea")]/div/textarea'
+    # Универсальный dropdown после ПКМ по файлу
+    BODY_DROPDOWN = '//body/div[contains(@class,"dropdown")and not(contains(@class, "display-none"))]/div/table/tbody/tr'
 
     '''DIALOG WINDOW'''
     # Кнопка подтвердить действие в диалоговом окне
@@ -60,13 +71,25 @@ class BaseLocators:
     SHARE_LEVEL = '//td[contains(@class,"column int")]/div[contains(@class,"focus") and contains(@class,"open")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
     # Кнопка "Сохранить"
     SHARE_SAVE = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    # Кнопка "Отменить"
+    SHARE_CANCEL = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span[contains(text(),"Отменить")]'
 
     '''COPY WINDOW'''
 
     # Инпут ввода нового названия
     COPY_WINDOW_INPUT = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"body")]//div[contains(@class,"location")]//input'
 	# Кнопка "Копировать"
-    COPY_WINDOW_COPYBTN= '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    COPY_WINDOW_COPYBTN = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+
+    '''POPUR WINDOWS'''
+    # Любой информативный POPUP
+    POPUP = '//div[contains(@class, "dzmessage")and (contains(@class,"info"))]'
+    # Кнопка закрытия любого попапа
+    POPUP_CLOSE = '//div[contains(@class, "dzmessage")]/button'
+    # Кнопка подтверждения действия в всплывающем информативном окне
+    POPUP_CONFIRM = '//div[contains(@class, "popup")]/div[contains(@class, "footer")]/a[contains(@class, "primary")]/span'
+    # Кнопка отмены действия в всплывающем информативном окне
+    POPUP_CANCEL = '//div[contains(@class, "popup")]/div[contains(@class, "footer")]/a[contains(@class, "default")]/span'
 
     '''ERRORS'''
 

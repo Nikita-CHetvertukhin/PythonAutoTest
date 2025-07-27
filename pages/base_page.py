@@ -1,7 +1,7 @@
 import inspect
+from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD_MD5
 import datetime
 import time
-import pyclip
 from selenium.webdriver.common.keys import Keys
 '''Импорт класса ActionChains, который позволяет выполнять сложные действия с элементами веб-страницы,
 такие как перемещение курсора, двойные клики, перетаскивание объектов и другие действия.'''
@@ -15,6 +15,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from locators.base_locators import BaseLocators # Импорт локаторов, относящихся к базовым элементам страницы
 from utils.element_searching import XPathFinder # Импорт вспомогательного класса XPathFinder, который упрощает поиск элементов на странице
+# API для загрузки файла
+from api.auth_client import AuthClient
+from api.upload_client import FileUploadClient
+from api.rename_client import RenameClient
 
 class BasePage:
     """Базовый класс, методы которого могут быть использованы на всех (почти) страницах"""
@@ -51,7 +55,7 @@ class BasePage:
         
         # Поиск кнопок меню
         try:
-            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=1, few=True)
+            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=5, few=True)
         except TimeoutException:
             btns_headerMenu = []
         if not btns_headerMenu:
@@ -85,7 +89,7 @@ class BasePage:
         dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
         
         for dropdown in dropdown_elements:
-            potential_items = self.xpath.find_inside(dropdown, f".//label[text()='{button_name}']/parent::div", few=True)
+            potential_items = self.xpath.find_inside(dropdown, f"./div/label[text()='{button_name}']/parent::div", few=True)
             if potential_items:
                 target_item = potential_items[0]
 
@@ -136,11 +140,101 @@ class BasePage:
             if span and span[0].is_displayed():
                 btn.click()
                 self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
-                return True
+                try:
+                    # 1 Попытка найти строки сразу
+                    try:
+                        WebDriverWait(self.driver, 1).until(
+                            EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
+                        )
+                        self.logger.info("Строки таблицы найдены сразу.")
+                        return True
+                    except TimeoutException:
+                        self.logger.info("Строки сразу не найдены.")
+
+                     # 2️ Проверка наличия индикатора загрузки
+                    try:
+                        loading_icon = WebDriverWait(self.driver, 1).until(
+                            EC.visibility_of_element_located((By.XPATH, BaseLocators.BODY_STATUS))
+                        )
+                        self.logger.info("Обнаружен индикатор загрузки. Ожидание завершения...")
+                        try:
+                            WebDriverWait(self.driver, 5).until(
+                                EC.invisibility_of_element(loading_icon)
+                            )
+                            self.logger.info("Индикатор загрузки исчез. Повторная проверка строк...")
+                            try:
+                                WebDriverWait(self.driver, 1).until(
+                                    EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
+                                )
+                                self.logger.info("Строки таблицы загружены после ожидания.")
+                                return True
+                            except TimeoutException:
+                                self.logger.info("Страница пуста после исчезновения индикатора.")
+                        except TimeoutException:
+                            self.logger.warning("Страница не загружена в течение 5 секунд.")
+                            return False
+                    except TimeoutException:
+                        self.logger.info("Индикатор загрузки не найден. Повторная проверка строк...")
+                        try:
+                            WebDriverWait(self.driver, 1).until(
+                                EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
+                            )
+                            self.logger.info("Строки таблицы найдены.")
+                            return True
+                        except TimeoutException:
+                            self.logger.warning("Страница пуста. Строки таблицы не найдены.")
+                            return True
+                except Exception as e:
+                    self.logger.error(f"Ошибка при ожидании загрузки таблицы в течение 5 секунд: {e}")
+                    return False
+
          # Если после цикла кнопка не найдена
         self.logger.error(f"Кнопка '{button_name}' не найдена в боковом меню.")
         return False         
     
+    def find_file_by_name(self, name, format_file=None):
+        """Ищет файл по имени и скроллит до него, если он не виден.
+        Аргумент format позволяет указать формат файла, если необходимо.
+        Возможные значения fromats: 'docz', 'docx', 'dotx', 'folder'.
+        """
+        xpath = XPathFinder(self.driver)
+        # Проверяем допустимые форматы файлов если указаны
+        VALID_FORMATS = {"docz", "docx", 'dotx', "folder"}
+        if format_file and format_file not in VALID_FORMATS:
+            self.logger.warning(f"Недопустимый формат файла: '{format_file}'. Допустимые: {VALID_FORMATS}")
+            return None
+
+        try:
+            # Формируем xpath до интересуещего процесса
+            target_xpath = f'{BaseLocators.BODY_NAMES}/span[@title="{name}"]'
+
+            # Ищем сам элемент внутри списка
+            file_element = xpath.find_located(target_xpath, timeout=1, few=False)
+
+            if file_element:
+                self.logger.info(f"Файл '{name}' найден в DOM.")
+
+                xpath.find_visible(target_xpath, timeout=5, few=False)
+                xpath.find_clickable(target_xpath, timeout=5, few=False)
+
+                self.logger.info(f"Файл '{name}' отображается на экране и доступен")
+                # Проверяем формат если указан
+                if format_file:
+                    icon_xpath = f'{target_xpath}/preceding-sibling::i[contains(@class,"{format_file}")]'
+                    try:
+                        xpath.find_visible(icon_xpath, timeout=3)
+                        self.logger.info(f"Файл '{name}' подтвержден формат '{format_file}'.")
+                    except TimeoutException:
+                        message = f"Файл '{name}' найден, но формат '{format_file}' не подтверждён."
+                        self.logger.error(f"Файл '{name}' найден, но формат '{format_file}' не подтверждён.")
+                        raise AssertionError(message)
+
+                return file_element
+
+        except TimeoutException:
+            self.logger.warning(f"Файл '{name}' не найден в DOM!")
+            return None
+
     def checking_success_side_menu(self, button_name, title_path, column_path, columns_to_check):
         """Проверяет активность кнопки, соответствие заголовка body, отсутствие ошибки и видимость колонок."""
         xpath = XPathFinder(self.driver)
@@ -240,66 +334,97 @@ class BasePage:
         process_name = f"{function_name}_{timestamp}"  # Формируем имя процесса
         return process_name
 
-    def share_access(self, login_or_group, access_level):
-        """Настраивает доступ для пользователя или группы с заданным уровнем."""
+    def share_access(self, login_or_group=None, access_level=None, action="set", logins_and_access=None):
+        """
+        Настраивает или проверяет доступ для пользователя/группы.
 
-        #Проверяем, есть ли уже доступ
+        :param login_or_group: Логин или группа (используется при action='set')
+        :param access_level: Уровень доступа (используется при action='set')
+        :param action: 'set' — установить доступ, 'check' — проверить соответствие
+        :param logins_and_access: Список пар (логин, уровень доступа) для проверки (используется при action='check')
+        """
+        xpath = XPathFinder(self.driver)
+
+        if action == "check":
+            mismatches = []
+
+            for login, expected_level in logins_and_access:
+                try:
+                    row_xpath = f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login}"]/ancestor::tr'
+                    row_element = WebDriverWait(self.driver, 2).until(
+                        EC.presence_of_element_located((By.XPATH, row_xpath))
+                    )
+                    access_cell = row_element.find_element(By.XPATH, './td[contains(@class,"int")]')
+                    actual_level = access_cell.text.strip()
+
+                    if actual_level != expected_level:
+                        mismatches.append((login, actual_level, expected_level))
+                        self.logger.warning(f"Несоответствие: '{login}' — текущий уровень '{actual_level}', ожидаемый '{expected_level}'")
+                    else:
+                        self.logger.info(f"Проверка пройдена: '{login}' имеет уровень доступа '{actual_level}'")
+
+                except TimeoutException:
+                    mismatches.append((login, None, expected_level))
+                    self.logger.warning(f"Пользователь '{login}' не найден в списке доступа")
+
+            # Закрываем окно доступа
+            xpath.find_clickable(BaseLocators.SHARE_CANCEL, timeout=3).click()
+            if mismatches:
+                self.logger.error(f"Обнаружены несоответствия: {mismatches}")
+                return False, mismatches
+            else:
+                self.logger.info("Все уровни доступа соответствуют ожидаемым")
+                return True
+
+        # Если установка доступа
         current_setting = None
         try:
-            # Ожидаем появления списка пользователей/групп с доступом
-            current_setting = WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr')))
+            current_setting = WebDriverWait(self.driver, 1).until(
+                EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
+            )
         except TimeoutException:
             self.logger.info("Проверка доступа не найдена. Устанавливаем новый доступ.")
 
-        # Если доступ уже есть, переходим к настройке уровня доступа
-        if current_setting:
-            self.logger.info(f"Доступ для '{login_or_group}' уже устанавливался. Переход к настройке уровня доступа.")
-        else:
-            # Вводим логин или группу
-            share_input_xpath = BaseLocators.SHARE_INPUT
-            input_element = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, share_input_xpath)))
+        if not current_setting:
+            input_element = WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INPUT))
+            )
             input_element.send_keys(login_or_group)
 
-            # Ожидаем появления выпадающего списка
-            share_dropdown_xpath = BaseLocators.SHARE_DROPDOWN
-            dropdown_elements = WebDriverWait(self.driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, share_dropdown_xpath)))
+            dropdown_elements = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_DROPDOWN))
+            )
 
-            # Ищем нужный элемент в выпадающем списке
             for element in dropdown_elements:
                 if element.get_attribute("title") == login_or_group:
                     self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
                     element.click()
                     break
 
-            # Ожидаем появления списка пользователей/групп с доступом
             current_setting = WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
             )
 
-        # Кликаем по `td[contains(@class,"int")]`
-        access_trigger_xpath = './td[contains(@class,"int")]'
-        access_trigger = current_setting.find_element(By.XPATH, access_trigger_xpath)
+        access_trigger = current_setting.find_element(By.XPATH, './td[contains(@class,"int")]')
         access_trigger.click()
-        time.sleep(0.5) # Первый клик чтобы сделать строку активной, пауза для стабильности
+        time.sleep(0.5)
         access_trigger.click()
 
-        # Кликаем по `SHARE_TRIGGER`
-        share_trigger_xpath = BaseLocators.SHARE_TRIGGER
-        share_trigger = current_setting.find_element(By.XPATH, share_trigger_xpath)
+        share_trigger = current_setting.find_element(By.XPATH, BaseLocators.SHARE_TRIGGER)
         share_trigger.click()
 
-        # Выбираем уровень доступа
-        share_level_xpath = BaseLocators.SHARE_LEVEL
-        level_elements = WebDriverWait(self.driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, share_level_xpath)))
+        level_elements = WebDriverWait(self.driver, 5).until(
+            EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
+        )
 
         for level in level_elements:
             if level.get_attribute("title") == access_level:
                 level.click()
                 break
 
-        # Сохраняем изменения
-        share_save_xpath = BaseLocators.SHARE_SAVE
-        save_button = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, share_save_xpath)))
+        save_button = WebDriverWait(self.driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_SAVE))
+        )
         save_button.click()
 
         self.logger.info(f"Доступ для '{login_or_group}' успешно установлен на уровень '{access_level}'.")
@@ -388,35 +513,59 @@ class BasePage:
         """Ищет и нажимает кнопку HEADER_LOGO_BUTTON. Если кнопка не найдена, выбрасывает TimeoutException."""
         xpath = XPathFinder(self.driver)
         # Ожидание появления и кликабельности кнопки
-        logo_button = xpath.find_clickable(BaseLocators.HEADER_LOGO_BUTTON,timeout=3,few=False)
+        logo_button = xpath.find_clickable(BaseLocators.HEADER_LOGO_BUTTON,timeout=10,few=False)
         logo_button.click()
         self.logger.info("Кнопка HEADER_LOGO_BUTTON успешно нажата.")
 
-    def compare_clipboard_with_url(self):
-        """Сравнивает скопированную ссылку в буфере обмена с текущим URL браузера."""
-
-        # Получаем текущий URL
-        current_url = self.driver.current_url
-        self.logger.info(f"Текущий URL: {current_url}")
-
+    def close_all_windows(self):
+        """Метод ищет все всплывающие окна и закрывает их, если найдены."""
+        xpath = XPathFinder(self.driver)
+        xpath.find_visible(BaseLocators.POPUP, timeout=5)
         try:
-            # Получаем ссылку из буфера обмена через `pyclip`
-            clipboard_url = pyclip.paste()
-
-            # Декодируем в строку, если данные в байтовом формате
-            if isinstance(clipboard_url, bytes):
-                clipboard_url = clipboard_url.decode("utf-8")
-
-            self.logger.info(f"Ссылка из буфера обмена: {clipboard_url}")
-
-            # Сравниваем ссылки
-            if clipboard_url == current_url:
-                self.logger.info("Ссылка в буфере обмена совпадает с текущим URL.")
-                return True
-            else:
-                self.logger.warning("Ссылка в буфере обмена НЕ совпадает с текущим URL!")
+            close_buttons = self.driver.find_elements(By.XPATH, BaseLocators.POPUP_CLOSE)
+            if not close_buttons:
+                self.logger.info("Нет всплывающих окон для закрытия.")
                 return False
 
+            for btn in close_buttons:
+                try:
+                    btn.click()
+                except Exception as e:
+                    self.logger.warning(f"Не удалось закрыть окно: {e}")
+
+            # Ждём, пока попапы исчезнут из DOM
+            WebDriverWait(self.driver, 5).until(
+                lambda d: not d.find_elements(By.XPATH, BaseLocators.POPUP)
+            )
+            self.logger.info(f"Закрыто {len(close_buttons)} всплывающих окон.")
+            return True
         except Exception as e:
-            self.logger.error(f"Ошибка при получении буфера обмена: {e}")
+            self.logger.error(f"Ошибка при поиске всплывающих окон: {e}")
             return False
+
+    def upload_file(self, upload_file_name, new_name):
+        # Создание через API: Загрузка и переименование
+        auth_client = AuthClient(login={ADMIN_LOGIN}, password={ADMIN_PASSWORD_MD5})
+        session_id = auth_client.get_session()
+
+        upload_client = FileUploadClient(session_id=session_id)
+        record_id = upload_client.upload_file(upload_file_name)
+
+        rename_client = RenameClient(session_id=session_id)
+        file_name = rename_client.rename_by_recordid(record_id, new_name)
+        return file_name
+
+    def popup_action(self, action=True):
+        """Метод для обработки действий в всплывающем окне."""
+        xpath = XPathFinder(self.driver)
+        if action:
+            # Кнопка подтверждения действия в всплывающем окне
+            confirm_button = xpath.find_clickable(BaseLocators.POPUP_CONFIRM, timeout=3, few=False)
+            confirm_button.click()
+            self.logger.info("Кнопка подтверждения действия в всплывающем окне нажата.")
+        else:
+            # Кнопка отмены действия в всплывающем окне
+            cancel_button = xpath.find_clickable(BaseLocators.POPUP_CANCEL, timeout=3, few=False)
+            cancel_button.click()
+            self.logger.info(
+                "Кнопка отмены действия в всплывающем окне нажата.")

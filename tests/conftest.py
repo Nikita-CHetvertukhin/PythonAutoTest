@@ -6,6 +6,8 @@ import time
 import datetime
 import sys
 import glob
+import re
+import allure
 #Локальный импорт
 from utils.browser_driver import BrowserDriver
 from utils.exception_handler.configure_logging import configure_logging
@@ -21,11 +23,11 @@ from pages.workflow_editor_page import WorkflowEditorPage
 from pages.my_files_editor_page import MyFilesEditorPage
 from pages.my_files_page import MyFilesPage
 from utils.refresh_and_wait import refresh_and_wait
+from utils.get_date import get_timestamp
 from settings.variables import WEBSOCKET_PATCH, DEFAULT_LICENCE_FILE, LICENCE_OUTPUT_FILE, ENV_FILE
 from api.auth_client import AuthClient
 from api.upload_client import FileUploadClient
 from api.rename_client import RenameClient
-from utils.lists import split_files_by_extension, get_missing_files
 
 @pytest.fixture(scope="function")
 def driver():
@@ -65,78 +67,38 @@ def admin_driver(driver, logger, error_handler):
     assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
     # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
     error_handler.clear_browser_logs()
-    time.sleep(3)  # Доработать в будущем
 
     return driver  # Передаём браузер без закрытия (его закроет driver)
 
 @pytest.fixture(scope="function")
-def user1_driver(request, driver, logger):
-    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
-    is_combo_test = request.node.get_closest_marker("combo") is not None
-
-    if is_combo_test:
-        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
-        user_driver = driver_instance.initialize_driver()
-        error_handler = ErrorHandler(user_driver, logger)
-        login_page = LoginPage(user_driver, logger)
-
-        login_page.enter_username(USER1_LOGIN)
-        login_page.enter_password(USER1_PASSWORD)
-        login_page.click_login()
-        assert login_page.check_account_button(), "Авторизация не удалась."
-        error_handler.clear_browser_logs()
-        time.sleep(3)  # В будущем замена на WebDriverWait
-
-        yield user_driver
-        driver_instance.cleanup()
-
-    else:
-        error_handler = ErrorHandler(driver, logger)
-        login_page = LoginPage(driver, logger)
-
-        login_page.enter_username(USER1_LOGIN)
-        login_page.enter_password(USER1_PASSWORD)
-        login_page.click_login()
-        assert login_page.check_account_button(), "Авторизация не удалась."
-        error_handler.clear_browser_logs()
-        time.sleep(3)
-
-        yield driver
-
-@pytest.fixture(scope="function")
 def expert_driver(request, driver, logger):
     """Создаёт новый браузер и выполняет авторизацию"""
-    is_combo_test = request.node.get_closest_marker("combo") is not None
+    yield from login_user(request, driver, logger, EXPERT_LOGIN, EXPERT_PASSWORD)
 
-    if is_combo_test:
-        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
-        driver = driver_instance.initialize_driver()
-        error_handler = ErrorHandler(driver, logger)
-        login_page = LoginPage(driver, logger)
+@pytest.fixture(scope="function")
+def user1_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    yield from login_user(request, driver, logger, USER1_LOGIN, USER1_PASSWORD)
 
-        login_page.enter_username(EXPERT_LOGIN)
-        login_page.enter_password(EXPERT_PASSWORD)
-        login_page.click_login()
+@pytest.fixture(scope="function")
+def user2_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    yield from login_user(request, driver, logger, USER2_LOGIN, USER2_PASSWORD)
 
-        assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
-        # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
-        error_handler.clear_browser_logs()
-        time.sleep(3)  # Доработать в будущем
-        yield driver  # Передаём драйвер в тесты
-        driver_instance.cleanup()  # Закрываем браузер после теста
-    else:
-        error_handler = ErrorHandler(driver, logger)
-        login_page = LoginPage(driver, logger)
+@pytest.fixture(scope="function")
+def user3_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    yield from login_user(request, driver, logger, USER3_LOGIN, USER3_PASSWORD)
 
-        login_page.enter_username(EXPERT_LOGIN)
-        login_page.enter_password(EXPERT_PASSWORD)
-        login_page.click_login()
+@pytest.fixture(scope="function")
+def user4_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    yield from login_user(request, driver, logger, USER4_LOGIN, USER4_PASSWORD)
 
-        assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
-        # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
-        error_handler.clear_browser_logs()
-        time.sleep(3)  # Доработать в будущем
-        yield driver  # Передаём драйвер в тесты
+@pytest.fixture(scope="function")
+def user5_driver(request, driver, logger):
+    """Создаёт новый браузер или наследует существующий — в зависимости от контекста теста."""
+    yield from login_user(request, driver, logger, USER5_LOGIN, USER5_PASSWORD)
 
 @pytest.fixture(scope="function")
 @exception_handler
@@ -144,25 +106,51 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
     my_tasks_page = MyTasksPage(admin_driver, logger)
     xpath = my_tasks_page.xpath
 
-    test_name = request.node.name
+    test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     task_name = f"{test_name}_{timestamp}"
 
     logger.info(f"Создание задачи '{task_name}' из теста '{test_name}'")
-
-    my_tasks_page.find_click_header_menu("Мои задачи")
-    my_tasks_page.find_click_side_menu("Мои задачи")
-    time.sleep(1)  # TODO: заменить на ожидание состояния страницы
 
     # Извлекаем параметр deadline, если передан
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     task_deadline = params.get("deadline")
     task_description = params.get("description")
     task_executor = params.get("task_executor")
+    task_executors = params.get("task_executors")
+    executors_massive = params.get("executors_massive")
     task_type = params.get("task_type")
     from_file = params.get("from_file", False)
-    
-    skip_cleanup = params.get("skip_cleanup")
+    attache_file = params.get("attache_file")
+    custom_task_name = params.get("task_name")
+    if custom_task_name:
+        task_name = custom_task_name
+
+    def cleanup():
+        try:
+            logger.info(f"Очистка: попытка удалить задачу '{task_name}'...")
+            my_tasks_page.click_header_logo_button()
+            my_tasks_page.find_click_header_menu("Мои задачи")
+            my_tasks_page.find_click_side_menu("Мои задачи")
+
+            if my_tasks_page.find_file_by_name(task_name):
+                try:
+                    my_tasks_page.right_click_and_select_action(task_name, "Удалить")
+                    logger.info(f"Задача '{task_name}' успешно удалена.")
+                except Exception as delete_error:
+                    logger.error(f"Ошибка при удалении: {delete_error}")
+                    error_handler.handle_exception(MinorIssue("Задача осталась и не удалось её удалить."), critical=False)
+            else:
+                logger.info(f"Задача '{task_name}' не найдена — возможно, удалена в теле теста.")
+        except Exception as e:
+            logger.error(f"Ошибка при очистке: {e}")
+            error_handler.handle_exception(MinorIssue("Очистка провалилась, но тест пройден."), critical=False)
+
+    request.addfinalizer(cleanup)
+
+    if not from_file:
+        my_tasks_page.find_click_header_menu("Мои задачи")
+        my_tasks_page.find_click_side_menu("Мои задачи")
 
     # Создание задачи с учётом возможных параметров
     kwargs = {}
@@ -172,35 +160,23 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
         kwargs["task_description"] = task_description
     if task_executor:
         kwargs["executor"] = task_executor
+    if task_executors:
+        kwargs["executors"] = task_executors
+    if executors_massive:
+        kwargs["executors_massive"] = executors_massive
     if task_type:
         kwargs["task_type"] = task_type
     if from_file:
         kwargs["from_file"] = from_file
+    if attache_file:
+        kwargs["attache_file"] = attache_file
 
     my_tasks_page.create_task(task_name, **kwargs)
 
-    if not my_tasks_page.find_task_by_name(task_name):
-        pytest.fail(f"Задача '{task_name}' не была создана или найдена.")
+    if not from_file:
+        if not my_tasks_page.find_file_by_name(task_name):
+            raise AssertionError(f"Задача '{task_name}' не была создана или найдена.")
 
-    def cleanup():
-        try:
-            logger.info(f"Удаление задачи '{task_name}'...")
-            my_tasks_page.click_header_logo_button()
-            refresh_and_wait(admin_driver, logger)
-            my_tasks_page.find_click_header_menu("Мои задачи")
-            my_tasks_page.find_click_side_menu("Мои задачи")
-            time.sleep(1)  # TODO: заменить на ожидание состояния страницы
-            if my_tasks_page.find_task_by_name(task_name):
-                my_tasks_page.right_click_and_select_action(task_name, "Удалить")
-                logger.info(f"Задача '{task_name}' удалена.")
-            else:
-                logger.warning(f"Задача '{task_name}' не найдена при удалении.")
-        except Exception as e:
-            logger.error(f"Ошибка при удалении: {e}.")
-            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
-
-    if not skip_cleanup:
-        request.addfinalizer(cleanup)
     return task_name, my_tasks_page, xpath
 
 @pytest.fixture(scope="function")
@@ -210,15 +186,60 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
     workflow_editor_page = WorkflowEditorPage(admin_driver, logger)
     xpath = workflows_page.xpath
 
-    test_name = request.node.name
+    test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    generate_name = f"{test_name}_{timestamp}"
+    process_name = f"{test_name}_{timestamp}"
 
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     upload_file_name = params.get("upload_file_name")
     publishing = params.get("publishing")
-    skip_cleanup = params.get("skip_cleanup")
+    # Специальная логика для выбора каталога в автоматизациях
+    shape_name = params.get("shape_name")
+    type_auto = params.get("type_auto")
+    type_section = params.get("type_section")
+    name_catalog = params.get("name_catalog")
+    custom_name = params.get("process_name")
+    if custom_name:
+        process_name = custom_name
+    unique_check = params.get("unique_check", False)
+    
+    def cleanup():
+        # Снятие с публикации (если указано в параметрах) и удаление процесса
+        if publishing:
+            logger.info(f"Снятие с публикации процесса '{process_name}'...")
+            workflows_page.click_header_logo_button()
+            workflows_page.find_click_header_menu("Рабочие процессы")
+            workflows_page.find_click_side_menu("Шаблоны процессов")
+            workflows_page.right_click_and_select_action(process_name, "Открыть")
+            time.sleep(2) # TODO заменить на ожидание реквеста
+            workflow_editor_page.action_from_document("Снять с публикации")
+        try:
+            logger.info(f"Удаление процесса '{process_name}'...")
+            workflows_page.click_header_logo_button()
+            workflows_page.find_click_header_menu("Рабочие процессы")
+            workflows_page.find_click_side_menu("Шаблоны процессов")
+            if workflows_page.find_file_by_name(process_name):
+                workflows_page.right_click_and_select_action(process_name, "Переместить в Корзину")
+                logger.info(f"Процесс '{process_name}' удален.")
+            else:
+                logger.warning(f"Процесс '{process_name}' не найден при удалении.")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении: {e}.")
+            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
+
+    request.addfinalizer(cleanup)
+    
+    if unique_check:
+        # Проверка на уникальность имени процесса
+        workflows_page.find_click_header_menu("Рабочие процессы")
+        workflows_page.find_click_side_menu("Шаблоны процессов")
+        # Если файл с таким именем уже существует, то продолжаем работать с существующим
+        if  workflows_page.find_file_by_name(process_name):
+            return process_name, workflows_page, xpath
+        else:
+            # Если файл не найден, то продолжаем создание нового
+            workflows_page.click_header_logo_button()
 
     if upload_file_name:
         # Создание через API: Загрузка и переименование
@@ -229,58 +250,45 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
         record_id = upload_client.upload_file(upload_file_name)
 
         rename_client = RenameClient(session_id=session_id)
-        process_name = rename_client.rename_by_recordid(record_id, generate_name)
-    else:
-        # Создание через UI
-        process_name = generate_name
+        process_name = rename_client.rename_by_recordid(record_id, process_name)
+
         workflows_page.find_click_header_menu("Рабочие процессы")
         workflows_page.find_click_side_menu("Шаблоны процессов")
-        time.sleep(1)  # TODO: заменить на WebDriverWait
+    else:
+        # Создание через UI
+        workflows_page.find_click_header_menu("Рабочие процессы")
+        workflows_page.find_click_side_menu("Шаблоны процессов")
         workflows_page.create_process(process_name)
 
     # Проверка
-    workflows_page.find_click_header_menu("Рабочие процессы")
-    workflows_page.find_click_side_menu("Шаблоны процессов")
-    if not workflows_page.find_process_by_name(process_name):
-        pytest.fail(f"Процесс '{process_name}' не был создан/загружен или найден.")
+    if not workflows_page.find_file_by_name(process_name):
+        raise AssertionError(f"Процесс '{process_name}' не был создан/загружен или найден.")
+
+    # Открытие процесса если переданы параметры натсреок внутри процесса
+    if any([shape_name, publishing]):
+        workflows_page.right_click_and_select_action(process_name, "Открыть")
+        time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
+        workflow_editor_page.name_properties(name=process_name,action="set")
+
+    # Установка пути источника для автоматизаций, если указано
+    if type_section:
+        workflow_editor_page.click_shape_by_text(text=shape_name)
+        # Выбор каталога с учетом параметров
+        kwargs = {}
+        if type_auto:
+            kwargs["type_auto"] = type_auto
+        if type_section:
+            kwargs["type_section"] = type_section
+        if name_catalog:
+            kwargs["name_catalog"] = name_catalog
+
+        workflow_editor_page.change_catalog_in_auto(**kwargs)
 
     # Публикация процесса, если указано в параметрах
     if publishing:
-        workflows_page.right_click_and_select_action(process_name, "Открыть")
-        time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
         workflow_editor_page.action_from_document("Опубликовать")
         time.sleep(2) # Пока не на что опираться в редакторе
 
-    def cleanup():
-        # Снятие с публикации (если указано в параметрах) и удаление процесса
-        if publishing:
-            logger.info(f"Снятие с публикации процесса '{process_name}'...")
-            workflows_page.click_header_logo_button()
-            refresh_and_wait(admin_driver, logger)
-            workflows_page.find_click_header_menu("Рабочие процессы")
-            workflows_page.find_click_side_menu("Шаблоны процессов")
-            time.sleep(1)
-            workflows_page.right_click_and_select_action(process_name, "Открыть")
-            time.sleep(2)
-            workflow_editor_page.action_from_document("Снять с публикации")
-        try:
-            logger.info(f"Удаление процесса '{process_name}'...")
-            workflows_page.click_header_logo_button()
-            refresh_and_wait(admin_driver, logger)
-            workflows_page.find_click_header_menu("Рабочие процессы")
-            workflows_page.find_click_side_menu("Шаблоны процессов")
-            time.sleep(1)
-            if workflows_page.find_process_by_name(process_name):
-                workflows_page.right_click_and_select_action(process_name, "Переместить в Корзину")
-                logger.info(f"Процесс '{process_name}' удален.")
-            else:
-                logger.warning(f"Процесс '{process_name}' не найден при удалении.")
-        except Exception as e:
-            logger.error(f"Ошибка при удалении: {e}.")
-            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
-
-    if not skip_cleanup:
-        request.addfinalizer(cleanup)
     return process_name, workflows_page, xpath
 
 @pytest.fixture(scope="function")
@@ -290,16 +298,53 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
     my_files_editor_page = MyFilesEditorPage(admin_driver, logger)
     xpath = my_files_page.xpath
 
-    test_name = request.node.name
+    test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    generate_name = f"{test_name}_{timestamp}"
+    file_name = f"{test_name}_{timestamp}"
 
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     upload_file_name = params.get("upload_file_name")
     publishing = params.get("publishing")
-    skip_cleanup = params.get("skip_cleanup")
     file_type = params.get("file_type")
+    custom_file_name = params.get("file_name")
+    if custom_file_name:
+        file_name = custom_file_name
+    open_file = params.get("open_file", False)
+    unique_check = params.get("unique_check", False)
+
+    # Блок отвечает за очистку в любом случае после завершения теста
+    def cleanup():
+        # Снятие с публикации (если указано в параметрах) и удаление файла
+        if publishing:
+            logger.info(f"Снятие с публикации шаблона '{file_name}'...")
+            # Пропишу когда займусь коробкой
+        try:
+            logger.info(f"Удаление файла '{file_name}'...")
+            my_files_page.click_header_logo_button()
+            my_files_page.find_click_header_menu("Документы")
+            my_files_page.find_click_side_menu("Мои файлы")
+            if my_files_page.find_file_by_name(file_name):
+                my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
+                logger.info(f"Файл '{file_name}' удален.")
+            else:
+                logger.warning(f"Файл '{file_name}' не найден при удалении.")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении: {e}.")
+            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
+    
+    request.addfinalizer(cleanup)
+    
+    if unique_check:
+        # Проверка на уникальность имени файла
+        my_files_page.find_click_header_menu("Документы")
+        my_files_page.find_click_side_menu("Мои файлы")
+        # Если файл с таким именем уже существует, то продолжаем работать с существующим
+        if  my_files_page.find_file_by_name(file_name):
+            return file_name, my_files_page, xpath
+        else:
+            # Если файл не найден, то продолжаем создание нового
+            my_files_page.click_header_logo_button()
 
     if upload_file_name:
         # Создание через API: Загрузка и переименование
@@ -310,59 +355,135 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
         record_id = upload_client.upload_file(upload_file_name)
 
         rename_client = RenameClient(session_id=session_id)
-        file_name = rename_client.rename_by_recordid(record_id, generate_name)
+        file_name = rename_client.rename_by_recordid(record_id, file_name)
+        
+        my_files_page.click_header_logo_button()
+        my_files_page.find_click_header_menu("Документы")
+        my_files_page.find_click_side_menu("Мои файлы")
     else:
         # Создание через UI
-        file_name = generate_name
         my_files_page.click_header_logo_button()
+        my_files_page.find_click_header_menu("Документы")
         my_files_page.find_click_side_menu("Мои файлы")
-        time.sleep(1)  # TODO: заменить на WebDriverWait
         my_files_page.create_file(file_name, file_type)
 
     # Проверка
-    my_files_page.click_header_logo_button()
-    my_files_page.find_click_side_menu("Мои файлы")
-    time.sleep(2) # Ждем загрузки раздела (потом заменить на ожидание реквеста)
-    if not my_files_page.find_file_by_name(file_name):
-        pytest.fail(f"Процесс '{file_name}' не был создан/загружен или найден.")
+    if open_file:
+        my_files_page.right_click_and_select_action(file_name, "Открыть")
+        time.sleep(2) # TODO Ждем загрузки раздела (потом заменить на ожидание реквеста)
+    else:
+        if not my_files_page.find_file_by_name(file_name):
+            raise AssertionError(f"Файл '{file_name}' не был создан/загружен или найден.")
 
-    # Публикация процесса, если указано в параметрах
+    # Публикация файла, если указано в параметрах
     if publishing:
         my_files_page.right_click_and_select_action(file_name, "Открыть")
         time.sleep(2)  # Ждем, пока откроется редактор. (потом заменить на ожидание статусов)
         # Пропишу когда займусь коробкой
-
-    def cleanup():
-        # Снятие с публикации (если указано в параметрах) и удаление файла
-        if publishing:
-            logger.info(f"Снятие с публикации шаблона '{file_name}'...")
-            # Пропишу когда займусь коробкой
-        try:
-            logger.info(f"Удаление файла '{file_name}'...")
-            my_files_page.click_header_logo_button()
-            refresh_and_wait(admin_driver, logger)
-            time.sleep(1)
-            if my_files_page.find_file_by_name(file_name):
-                my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
-                logger.info(f"Файл '{file_name}' удален.")
-            else:
-                logger.warning(f"Файл '{file_name}' не найден при удалении.")
-        except Exception as e:
-            logger.error(f"Ошибка при удалении: {e}.")
-            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"))
-
-    if not skip_cleanup:
-        request.addfinalizer(cleanup)
+    
     return file_name, my_files_page, xpath
 
+@pytest.fixture(scope="function")
+@exception_handler
+def setup_create_delete_drive(request, error_handler, logger, admin_driver):
+    my_files_page = MyFilesPage(admin_driver, logger)
+    xpath = my_files_page.xpath
+
+    test_name = request.node.name.split("[")[0]
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    drive_name = f"{test_name}_{timestamp}"
+    # Извлекаем параметры из запроса, если они есть
+    params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
+    custom_drive_name = params.get("drive_name")
+    if custom_drive_name:
+        drive_name = custom_drive_name
+    unique_check = params.get("unique_check", False)
+
+    def cleanup():
+        try:
+            logger.info(f"Удаление диск '{drive_name}'...")
+            my_files_page.find_click_header_menu("Документы")
+            my_files_page.find_click_side_menu("Общие диски")
+            if my_files_page.find_file_by_name(drive_name):
+                my_files_page.right_click_and_select_action(drive_name, "Переместить в Корзину")
+                my_files_page.popup_action(True)
+                logger.info(f"Диск '{drive_name}' удален.")
+            else:
+                logger.warning(f"Диск '{drive_name}' не найдена при удалении.")
+        except Exception as e:
+            logger.error(f"Ошибка при удалении: {e}.")
+            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
+
+    request.addfinalizer(cleanup)
+
+    if unique_check:
+        # Проверка на уникальность имени диска
+        my_files_page.find_click_header_menu("Документы")
+        my_files_page.find_click_side_menu("Общие диски")
+        # Если диск с таким именем уже существует, то продолжаем работать с существующим
+        if  my_files_page.find_file_by_name(drive_name):
+            return drive_name, my_files_page, xpath
+        else:
+            # Если диск не найден, то продолжаем создание нового
+            my_files_page.click_header_logo_button()
+
+    logger.info(f"Создание диска '{drive_name}' из теста '{test_name}'")
+
+    my_files_page.click_header_logo_button()
+    my_files_page.find_click_side_menu("Общие диски")
+
+    # Создание общего диска
+    my_files_page.create_drive(drive_name)
+
+    if not my_files_page.find_file_by_name(drive_name):
+        raise AssertionError(f"Диск '{drive_name}' не был создан или найден.")
+
+    return drive_name, my_files_page, xpath
+
+# Метод авторизации для УЗ пользователей и эксперта (вызывается в создании соответствующих дарйверов)
+def login_user(request, driver, logger, username, password):
+    is_combo_test = request.node.get_closest_marker("combo") is not None
+
+    if is_combo_test:
+        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
+        driver = driver_instance.initialize_driver()
+        error_handler = ErrorHandler(driver, logger)
+        login_page = LoginPage(driver, logger)
+
+        login_page.enter_username(username)
+        login_page.enter_password(password)
+        login_page.click_login()
+        assert login_page.check_account_button(), "Авторизация не удалась."
+        error_handler.clear_browser_logs()
+
+        yield driver
+        driver_instance.cleanup()
+
+    else:
+        error_handler = ErrorHandler(driver, logger)
+        login_page = LoginPage(driver, logger)
+
+        login_page.enter_username(username)
+        login_page.enter_password(password)
+        login_page.click_login()
+        assert login_page.check_account_button(), "Авторизация не удалась."
+        error_handler.clear_browser_logs()
+
+        yield driver
+
+# Хук для настройки окружения перед запуском тестов
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
     """Формирует Licence_Properties. Добавляет сведения о браузере, url и лицензиях в отчет allure"""
     """Запускаем хук только если pytest вызван с `tests/check_url`."""
     command_line_args = sys.argv  # Получаем аргументы запуска pytest
 
+    #Уникальная временная метка начала теста
+    if not hasattr(config, 'workerinput'):  # Проверяем, не является ли это воркером xdist
+        config._log_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
     # Проверяем, что команда - содержит аргумент `tests/check_url` и формируем или ищем файл лицензий
-    if "tests/check_url" in command_line_args:
+    if "prepare" in getattr(config.option, "markexpr", ""):
         print("Запускаем проверку лицензий")
         if not hasattr(config, 'workerinput'):  # Проверяем, не является ли это воркером xdist
             os.makedirs("log", exist_ok=True)
@@ -431,39 +552,47 @@ def pytest_configure(config):
          else:
             print("Пропускаем проверку лицензий, лицензии сформированы")
 
-def pytest_sessionfinish(session, exitstatus):
-    args = session.config.invocation_params.args
+# Код действий в конце всех тестов
+def pytest_unconfigure(config):
+    if hasattr(config, 'workerinput'):
+        return  # Это воркер — выходим сразу
 
-    test_path = next((arg for arg in args if arg.startswith("tests/")), None)
-    if test_path:
-        print(f"Путь до тестов: {test_path}")
-        # Берём последнюю часть пути как имя
-        log_name = os.path.basename(test_path.strip("/\\"))
-        merged_log_path = f"log/{log_name}.log"
-    else:
-        merged_log_path = "log/merged.log"  # fallback, если путь не найден
+    args = config.invocation_params.args
+    timestamp = getattr(config, "_log_timestamp", "unknown_time")
 
-    should_merge_logs = False
-    if "-n" in args:
+    # Извлекаем маркер из -m
+    marker_name = None
+    if "-m" in args:
         try:
-            index = args.index("-n")
-            value = args[index + 1]
-            if value == "auto" or (value.isdigit() and int(value) > 1):
-                should_merge_logs = True
-        except (IndexError, ValueError):
+            index = args.index("-m")
+            marker_name = args[index + 1].strip('"\'')
+        except IndexError:
             pass
 
-    if should_merge_logs:
-        print("Множественные воркеры — выполняем склейку логов...")
-
-        log_files = glob.glob("log/project_*.log")
-        if log_files:
-            with open(merged_log_path, "w", encoding="utf-8") as merged:
-                for f in log_files:
-                    with open(f, "r", encoding="utf-8") as part:
-                        merged.write(part.read())
-            for f in log_files:
-                os.remove(f)
-            print(f"Логи из {len(log_files)} файлов объединены в {merged_log_path}")
+    # Если маркер не указан — берём имя первого тестового файла
+    if not marker_name:
+        test_files = [arg for arg in args if arg.endswith(".py")]
+        if test_files:
+            marker_name = os.path.splitext(os.path.basename(test_files[0]))[0]
         else:
-            print("Не найдено логов для склейки")
+            marker_name = "no_marker"
+
+    # Очистка URL и маркера — компактно и прямо тут
+    url_clean = re.sub(r"_+", "_", re.sub(r"[^\w]", "_", re.sub(r"^https?://", "", URL or "no_url"))).strip("_")
+    marker_clean = re.sub(r"_+", "_", re.sub(r"[^\w]", "_", marker_name or "no_marker")).strip("_")
+
+    # Финальное имя лога
+    merged_log_name = f"log/{marker_clean}_{url_clean}_{timestamp}.log"
+
+    # Склейка логов
+    log_files = glob.glob("log/project_*.log")
+    if log_files:
+        with open(merged_log_name, "w", encoding="utf-8") as merged:
+            for f in log_files:
+                with open(f, "r", encoding="utf-8") as part:
+                    merged.write(part.read())
+        for f in log_files:
+            os.remove(f)
+        print(f"[xdist] Логи из {len(log_files)} файлов объединены в {merged_log_name}")
+    else:
+        print("[xdist] Не найдено логов для склейки")
