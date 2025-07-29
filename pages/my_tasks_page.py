@@ -395,7 +395,7 @@ class MyTasksPage(BasePage):
         """Метод для установки или проверки исполнителя задачи."""
         xpath = XPathFinder(self.driver)
         input_xpath = MyTasksLocators.MY_TASKS_TASKFORM_EXECUTOR_INPUT
-        select_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_EXECUTOR_TRS}//ancestor::tr'
+        select_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_EXECUTOR_TRS}'
         check_xpath = f'{input_xpath}[@title="{executor_login}"]'
 
         if action == "set":
@@ -431,7 +431,7 @@ class MyTasksPage(BasePage):
 
         observe_button_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCH_BUTTON
         input_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCHER_INPUT
-        add_observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_ADD_WATCHER_TRS}[contains(@title,"{observer_login}")]/ancestor::tr'
+        add_observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_ADD_WATCHER_TRS}[contains(@title,"{observer_login}")]'
         observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_WATCHERS_LIST}[@title="{observer_login}"]'
 
         self.xpath.find_clickable(observe_button_xpath, timeout=3).click()

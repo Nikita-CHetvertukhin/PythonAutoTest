@@ -8,12 +8,11 @@ import uuid
 from utils.refresh_and_wait import refresh_and_wait
 
 from selenium.common.exceptions import WebDriverException
-from utils.browser_driver import BROWSER_TYPE
 # Класс для обработки ошибок
 class ErrorHandler:
     """Класс для обработки ошибок, логирования и создания скриншотов с интеграцией Allure.
     """
-    def __init__(self, driver, logger=None):
+    def __init__(self, driver, logger=None, browser_type="chrome"):
         """Инициализация ErrorHandler.
 
         :param driver: WebDriver для работы с браузером.
@@ -21,6 +20,7 @@ class ErrorHandler:
         """
         self.driver = driver
         self.logger = logger  or logging.getLogger(__name__)
+        self.browser_type = browser_type.strip().lower()
 
     def handle_exception(self, exception, screenshot_name=None, critical=True):
         """
@@ -49,7 +49,7 @@ class ErrorHandler:
 
     def check_browser_logs(self):
         """Проверяет консоль браузера и прикрепляет скриншот и ошибки в Allure при наличии SEVERE-сообщений."""
-        if BROWSER_TYPE == "firefox":
+        if self.browser_type == "firefox":
             self.logger.debug("Пропускаем сбор логов — Firefox не поддерживает get_log('browser').")
             return
         try:
@@ -81,7 +81,7 @@ class ErrorHandler:
 
     def clear_browser_logs(self):
         """Очищает текущие логи браузера, чтобы не мешали анализу новых ошибок."""
-        if BROWSER_TYPE == "firefox":
+        if self.browser_type == "firefox":
             self.logger.debug("Пропускаем сбор логов — Firefox не поддерживает get_log('browser').")
             return
         try:

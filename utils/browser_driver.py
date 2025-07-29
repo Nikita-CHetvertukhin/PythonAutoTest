@@ -14,11 +14,10 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from utils.download_manager import DownloadManager
 from settings.variables import URL
 
-BROWSER_TYPE = os.getenv("BROWSER", "chrome").strip().lower()
 class BrowserDriver:
     """Класс для управления веб-драйвером, поддерживающим Chrome и Firefox."""
     def __init__(self, browser_type="chrome"):
-        self.browser_type = BROWSER_TYPE
+        self.browser_type = browser_type.strip().lower()
         self.url = URL
         self.driver = None
         self.temp_profile = None  # Переменная для хранения пути к временной папке

@@ -1,8 +1,11 @@
+import os
 
 '''Стандартные константы для тестов'''
 
-# url адрес тестируемой сборки (по умолчанию локальный, при использовании docker вместо localhost следует указать host.docker.internal)
-URL = 'http://localhost:9080/'
+# URL адрес тестируемой сборки если не задан в аргументах используется прописанный вручную
+# (по умолчанию локальный, при использовании docker вместо localhost следует указать host.docker.internal)
+# Адрес для docker берется из TEST_URL docker-compose.yml
+URL = os.getenv('TEST_URL', 'http://localhoat:9080')
 # Логин УЗ Администартора
 ADMIN_LOGIN = 'AQA_admin'
 # Пароль от УЗ администратора
@@ -55,6 +58,8 @@ LICENCE_OUTPUT_FILE = "log/licence_properties.json"
 ENV_FILE = "allure_results/environment.properties"
 # Путь до папки с файлами необходимыми для тестов
 UPLOADS_PATH = "resources/uploads"
+# Путь до папки с профилями браузеров
+PROFILES_PATH = "resources/profiles"
 # Скрипт вебсокет
 WEBSOCKET_PATCH = """
 window.WebSocket = class {

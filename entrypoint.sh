@@ -1,50 +1,56 @@
 #!/bin/bash
-# Запуск виртуального дисплея Xvfb на дисплее :99
-echo "Запуск виртуального дисплея Xvfb..."
-Xvfb :99 -screen 0 1920x1080x24 &
-export DISPLAY=:99
+# Извлекаю URL как строку для формирвоания названия отчета в самом начале из-за особенностей BASH
+url_clean="$(echo "${TEST_URL%/}" | sed -E 's|^https?://||' | tr -c '[:alnum:]' '_' | tr -s '_')"
 
-# Запуск VNC-сервера (x11vnc) на порту 5900
-echo "Запуск x11vnc-сервера..."
-x11vnc -display :99 -forever -nopw -shared -rfbport 5900 &
-
-# Запуск лёгкого оконного менеджера (fluxbox)
-echo "Запуск оконного менеджера fluxbox..."
-fluxbox &
-
-# Добавляем задержку, чтобы x11vnc успел запуститься
-sleep 2
-
-# Запуск noVNC proxy для предоставления HTML5-интерфейса
-echo "Запуск noVNC proxy..."
-/opt/novnc/utils/novnc_proxy --vnc localhost:5900 --listen 6080 &
-
-echo "Виртуальный дисплей, VNC-сервер и noVNC запущены."
-echo "Подключайтесь к noVNC по адресу http://localhost:6080/vnc.html"
-
-# Запуск основной последовательности тестов
+# Запуск тестов
 export PYTHONPATH=/app
-pytest -m prepare
-pytest -m workflow
+
+BROWSER=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --browser)
+      BROWSER="$2"
+      shift 2
+      ;;
+    --browser=*)
+      BROWSER="${1#--browser=}"
+      shift
+      ;;
+    *)
+      ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+echo "[ENTRYPOINT] Браузер: $BROWSER"
+echo "[ENTRYPOINT] Аргументы для тестов: ${ARGS[*]}"
+
+echo "[ENTRYPOINT] Запускаю prepare..."
+pytest -m prepare --browser "$BROWSER"
+
+echo "[ENTRYPOINT] Запускаю тесты: ${ARGS[*]}"
+pytest "${ARGS[@]}" --browser "$BROWSER"
+
 echo "Тесты завершены. Формирую отчёт Allure..."
 
 # Генерация статического отчёта Allure
 allure generate allure_results -o allure_report --clean
 
-echo "Запуск HTTP-сервера для отчёта Allure..."
-cd /app/allure_report
-python3 -m http.server 8080 &
-cd /app
+filtered_args=()
+for arg in "${ARGS[@]}"; do
+  [[ "$arg" == -* ]] && continue  # пропускаем флаги
+  filtered_args+=("$arg")
+done
 
-# Автоматическое открытие браузера с Allure-отчётом с флагом --no-sandbox
-echo "Автоматически запускаю браузер на http://localhost:8080..."
-google-chrome --no-sandbox --new-window "http://localhost:8080" &
-
-echo "Отчёт Allure доступен по адресу http://localhost:8080."
+args_str="${filtered_args[*]}"
+args_str="${args_str// /_}"  # пробелы → _
 
 # Автоматическое копирование отчётов и логов в отдельную папку с отметкой времени
 timestamp=$(date +%Y%m%d_%H%M%S)
-report_dir="/app/report/report_$timestamp"
+report_dir="/app/report/${args_str}_${url_clean}_$timestamp"
 
 echo "Копирую отчёт и логи в ${report_dir}..."
 mkdir -p "${report_dir}"
@@ -53,6 +59,3 @@ cp -r /app/log "${report_dir}/logs"
 cp -r /app/resources/downloads "${report_dir}/downloads"
 
 echo "Отчёты, логи и загрузки скопированы в ${report_dir}."
-
-echo "Контейнер остается запущенным для обзора виртуального рабочего стола."
-tail -f /dev/null

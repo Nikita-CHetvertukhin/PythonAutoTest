@@ -5,9 +5,9 @@ from pages.my_tasks_page import MyTasksPage
 from utils.refresh_and_wait import refresh_and_wait
 from settings.variables import ADMIN_LOGIN
 import allure
-from utils.get_date import get_timestamp
+from utils.get_date import get_timestamp, get_uuid
 
-process_name = f"AQA_test_automat_create_subtask_{get_timestamp()}"
+process_name = f"{get_uuid()}_test_automat_create_subtask_{get_timestamp()}"
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow_smoke

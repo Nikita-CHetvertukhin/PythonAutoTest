@@ -8,9 +8,9 @@ from pages.my_files_editor_page import MyFilesEditorPage
 from utils.exception_handler.decorator_error_handler import exception_handler, MinorIssue
 from settings.variables import ADMIN_LOGIN
 import allure
-from utils.get_date import get_timestamp
+from utils.get_date import get_timestamp, get_uuid
 
-folder_name = f"AQA_FOLDER_DOCZ_DOCX_{get_timestamp()}"
+folder_name = f"{get_uuid()}_FOLDER_DOCZ_DOCX_{get_timestamp()}"
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow_smoke

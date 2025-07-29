@@ -6,10 +6,10 @@ from utils.exception_handler.decorator_error_handler import exception_handler
 from settings.variables import ADMIN_LOGIN, SHARE_DRIVES
 from utils.licence_checker import is_licence_enabled
 import allure
-from utils.get_date import get_timestamp
+from utils.get_date import get_timestamp, get_uuid
 
-drive_name = f"AQA_transform_docx_drives_drive_{get_timestamp()}"
-process_name = f"AQA_transform_docx_drives_process_{get_timestamp()}"
+drive_name = f"{get_uuid()}_transform_docx_drives_drive_{get_timestamp()}"
+process_name = f"{get_uuid()}_transform_docx_drives_process_{get_timestamp()}"
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow_smoke

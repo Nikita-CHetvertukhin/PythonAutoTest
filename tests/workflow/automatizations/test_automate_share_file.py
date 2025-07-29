@@ -8,9 +8,9 @@ from utils.refresh_and_wait import refresh_and_wait
 from pages.my_files_editor_page import MyFilesEditorPage
 from locators.my_files_editor_locators import MyFilesEditorLocators
 import allure
-from utils.get_date import get_timestamp
+from utils.get_date import get_timestamp, get_uuid
 
-process_name = f"AQA_test_automate_share_file_{get_timestamp()}"
+process_name = f"{get_uuid()}_test_automate_share_file_{get_timestamp()}"
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow_smoke

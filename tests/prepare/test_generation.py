@@ -7,10 +7,10 @@ import allure
 @allure.severity(allure.severity_level.BLOCKER) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.prepare
 @exception_handler
-def test_generateDatabaseSchema(error_handler, logger, admin_driver):
+def test_generateDatabaseSchema(request, error_handler, logger, admin_driver):
     """Тест на генерацию схемы базы данных."""
     generation_page = GenerationPage(admin_driver, logger)
-    
+
     logger.info("Поиск кнопок по пути 'Администрирование' - 'Генерация схемы данных'")
     generation_page.find_click_header_menu("Администрирование", "Генерация схемы данных")
 

@@ -8,6 +8,7 @@ import sys
 import glob
 import re
 import allure
+import shutil
 #Локальный импорт
 from utils.browser_driver import BrowserDriver
 from utils.exception_handler.configure_logging import configure_logging
@@ -23,21 +24,46 @@ from pages.workflow_editor_page import WorkflowEditorPage
 from pages.my_files_editor_page import MyFilesEditorPage
 from pages.my_files_page import MyFilesPage
 from utils.refresh_and_wait import refresh_and_wait
-from utils.get_date import get_timestamp
+from utils.get_date import get_timestamp, get_uuid
 from settings.variables import WEBSOCKET_PATCH, DEFAULT_LICENCE_FILE, LICENCE_OUTPUT_FILE, ENV_FILE
 from api.auth_client import AuthClient
 from api.upload_client import FileUploadClient
 from api.rename_client import RenameClient
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        default="chrome",
+        help="Браузеры через запятую: chrome,firefox,edge или all"
+    )
+
+def pytest_generate_tests(metafunc):
+    if "browser_type" in metafunc.fixturenames:
+        raw = metafunc.config.getoption("browser")
+        browsers = [b.strip().lower() for b in raw.split(",")]
+
+        if "all" in browsers:
+            browsers = ["chrome", "firefox", "edge"]
+
+        # Убираем дубликаты
+        # browsers = list(dict.fromkeys(browsers))
+        if metafunc.function.__name__ == "test_generateDatabaseSchema":
+            browsers = [browsers[0]]
+
+        print(f"Параметры browser_type: {browsers}")
+        metafunc.parametrize("browser_type", browsers)
+
 @pytest.fixture(scope="function")
-def driver():
-    """Создание нового драйвера для каждого теста"""
-    driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome"))
+def driver(browser_type):
+    """Создание драйвера с параметризацией браузера"""
+    driver_instance = BrowserDriver(browser_type=browser_type)
     driver = driver_instance.initialize_driver()
 
-    yield driver  # Передаём драйвер в тесты
-
-    driver_instance.cleanup()  # Закрываем браузер после теста
+    try:
+        yield driver
+    finally:
+        driver_instance.cleanup()
 
 @pytest.fixture(scope="function")
 def logger():
@@ -47,11 +73,11 @@ def logger():
     return configure_logging()
 
 @pytest.fixture(scope="function")
-def error_handler(driver, logger):
+def error_handler(driver, logger, browser_type):
     """
     Фикстура для инициализации ErrorHandler с использованием driver и logger.
     """
-    return ErrorHandler(driver, logger)
+    return ErrorHandler(driver, logger, browser_type)
 
 @pytest.fixture(scope="function")
 def admin_driver(driver, logger, error_handler):
@@ -108,7 +134,7 @@ def setup_create_delete_task(request, error_handler, logger, admin_driver):
 
     test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    task_name = f"{test_name}_{timestamp}"
+    task_name = f"{test_name}_{get_uuid()}_{timestamp}"
 
     logger.info(f"Создание задачи '{task_name}' из теста '{test_name}'")
 
@@ -188,7 +214,7 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
 
     test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    process_name = f"{test_name}_{timestamp}"
+    process_name = f"{test_name}_{get_uuid()}_{timestamp}"
 
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
@@ -300,7 +326,7 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
 
     test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"{test_name}_{timestamp}"
+    file_name = f"{test_name}_{get_uuid()}_{timestamp}"
 
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
@@ -391,7 +417,7 @@ def setup_create_delete_drive(request, error_handler, logger, admin_driver):
 
     test_name = request.node.name.split("[")[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    drive_name = f"{test_name}_{timestamp}"
+    drive_name = f"{test_name}_{get_uuid()}_{timestamp}"
     # Извлекаем параметры из запроса, если они есть
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     custom_drive_name = params.get("drive_name")
@@ -443,9 +469,10 @@ def setup_create_delete_drive(request, error_handler, logger, admin_driver):
 # Метод авторизации для УЗ пользователей и эксперта (вызывается в создании соответствующих дарйверов)
 def login_user(request, driver, logger, username, password):
     is_combo_test = request.node.get_closest_marker("combo") is not None
+    browser_type = request.node.callspec.params.get("browser_type", "chrome")
 
     if is_combo_test:
-        driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome").strip())
+        driver_instance = BrowserDriver(browser_type=browser_type)
         driver = driver_instance.initialize_driver()
         error_handler = ErrorHandler(driver, logger)
         login_page = LoginPage(driver, logger)
@@ -493,7 +520,15 @@ def pytest_configure(config):
             os.makedirs("resources/downloads", exist_ok=True)
             os.makedirs("resources/uploads", exist_ok=True)
 
-            driver_instance = BrowserDriver(browser_type=os.getenv("BROWSER", "chrome"))
+            raw = config.getoption("browser")
+            browsers = [b.strip().lower() for b in raw.split(",")]
+            if "all" in browsers:
+                browser_list = ["chrome", "firefox", "edge"]
+            else:
+                browser_list = list(dict.fromkeys(browsers))  # Убираем дубликаты, сохраняем порядок
+            browser_type = browser_list[0]  # Первый браузер для инициализации
+            driver_instance = BrowserDriver(browser_type=browser_type)
+
             driver = driver_instance.initialize_driver()
 
             xpath = XPathFinder(driver)
@@ -534,21 +569,21 @@ def pytest_configure(config):
             # Открываем `environment.properties` один раз и записываем всё сразу
             with open(ENV_FILE, "w", encoding="utf-8") as file:
                 file.write(f"URL={URL}\n")
-                file.write(f'Browser={os.getenv("BROWSER")}\n')
+                file.write(f"Browser={','.join(browser_list)}\n")
 
                 # Записываем только отличающиеся параметры
                 for key, value in diff_licence.items():
                     file.write(f"{key}={value}\n")
 
                 # В конце добавляем путь к файлу с полным списком лицензий
-                file.write(f"Licence.Properties={LICENCE_OUTPUT_FILE}\n")
+                # file.write(f"Licence.Properties={LICENCE_OUTPUT_FILE}\n")
         if hasattr(config, 'workerinput'):
             # logger.info("Запуск на воркере — загрузка не производится.")
             return
     else:
          licence_file = os.path.join("log", "licence_properties.json")  # Путь к файлу лицензий
          if not os.path.exists(licence_file):
-             pytest.exit("Файл licence_properties.json отсутствует! Запустите `pytest tests/check_url` для его формирования.")
+             pytest.exit("Файл licence_properties.json отсутствует! Запустите `pytest -m prepare` для его формирования.")
          else:
             print("Пропускаем проверку лицензий, лицензии сформированы")
 
@@ -596,3 +631,17 @@ def pytest_unconfigure(config):
         print(f"[xdist] Логи из {len(log_files)} файлов объединены в {merged_log_name}")
     else:
         print("[xdist] Не найдено логов для склейки")
+
+    if os.path.exists(PROFILES_PATH):
+        for item in os.listdir(PROFILES_PATH):
+            item_path = os.path.join(PROFILES_PATH, item)
+            try:
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path, ignore_errors=True)
+                else:
+                    os.remove(item_path)
+            except Exception as e:
+                print(f"[CLEANUP] Не удалось удалить {item_path}: {e}")
+        print(f"[CLEANUP] Все профили в '{PROFILES_PATH}' удалены.")
+    else:
+        print(f"[CLEANUP] Папка '{PROFILES_PATH}' не найдена.")

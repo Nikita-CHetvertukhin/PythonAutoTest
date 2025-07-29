@@ -1,22 +1,15 @@
-# Базовый образ Debian
+# Легковесный образ Debian
 FROM debian:bullseye-slim
 
-# Установка базовых пакетов, локалей, Python, Java, а также инструментов для виртуального дисплея, VNC и noVNC
+# Установка базовых пакетов, Python, Java
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-11-jre-headless \
     python3 \
     python3-pip \
+    gnupg \
     curl \
     tar \
-    gnupg \
     wget \
-    software-properties-common \
-    unzip \
-    xvfb \
-    x11vnc \
-    fluxbox \
-    xclip \
-    xsel \
     git && \
     apt-get clean
 
@@ -37,10 +30,6 @@ RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add 
 RUN curl -sSL https://github.com/allure-framework/allure2/releases/download/2.22.0/allure-2.22.0.tgz | tar -xz -C /opt/ && \
     ln -s /opt/allure-2.22.0/bin/allure /usr/bin/allure
 
-# Клонирование noVNC и websockify (без них noVNC работать не будет)
-RUN git clone --depth=1 https://github.com/novnc/noVNC.git /opt/novnc && \
-    git clone --depth=1 https://github.com/novnc/websockify.git /opt/novnc/utils/websockify
-
 # Рабочая директория и переменная PYTHONPATH
 WORKDIR /app
 ENV PYTHONPATH="/app"
@@ -52,13 +41,9 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 # Копирование всех остальных файлов проекта
 COPY . .
 
-# Копирование скрипта-стартапа
-COPY entrypoint.sh /app/entrypoint.sh
+# Подготовка entrypoint
 RUN apt-get update && apt-get install -y dos2unix && dos2unix /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
-
-# Проброс порта для доступа к noVNC (HTML5-интерфейсу)
-EXPOSE 6080
 
 # Точка входа
 ENTRYPOINT ["/app/entrypoint.sh"]
