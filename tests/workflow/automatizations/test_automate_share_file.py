@@ -21,6 +21,9 @@ process_name = f"{get_uuid()}_test_automate_share_file_{get_timestamp()}"
         {
             "process_name": process_name,
             "upload_file_name": "AQA_Automatizations_Share.dzwf",
+            "type_auto": "start",
+            "shape_name": "Sharing_test",
+            "box_name": "Пользователь (группа)",
             "publishing": True,
             "unique_check": True
         },

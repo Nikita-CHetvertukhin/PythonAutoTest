@@ -1,9 +1,26 @@
 services:
   dz_autotest:
+    # Имя образа из билда  
     image: dz_autotest
+    # Имя контейнера, который будет создан
     container_name: test_container
     volumes:
-      - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
+        #  Твой путь до папки сохранения отчета : Константа
+        - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
+    # Путь до скрипта запуска внутри контейнера
     entrypoint: "/app/entrypoint.sh"
+    deploy:
+      resources:
+        limits:
+          # Лимит потоков (рекомендуется примерно 80% остальное в резерв)
+          cpus: '14.0'
+          # Лимит памяти, чем больше тестов и браузеров тем больше нужно, минимум 5Гб
+          memory: 12G
+        reservations:
+            # Резерв потоков
+            cpus: '2.0'
+            # Резерв памяти
+            memory: 8G
     environment:
-    - TEST_URL=https://clm.doczilla.pro/dev
+        # Ссылка на сборку для теста
+        - TEST_URL=https://clm.doczilla.pro/dev

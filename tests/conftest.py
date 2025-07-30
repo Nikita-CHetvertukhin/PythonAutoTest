@@ -226,6 +226,7 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
     type_section = params.get("type_section")
     name_catalog = params.get("name_catalog")
     custom_name = params.get("process_name")
+    box_name = params.get("box_name")
     if custom_name:
         process_name = custom_name
     unique_check = params.get("unique_check", False)
@@ -309,6 +310,17 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
             kwargs["name_catalog"] = name_catalog
 
         workflow_editor_page.change_catalog_in_auto(**kwargs)
+
+    if box_name:
+        workflow_editor_page.click_shape_by_text(text=shape_name)
+        # Перевыбор УЗ в автоматизации
+        kwargs = {}
+        if type_auto:
+            kwargs["type_auto"] = type_auto
+        if box_name:
+            kwargs["box_name"] = box_name
+
+        workflow_editor_page.rechange_user_in_auto(**kwargs)
 
     # Публикация процесса, если указано в параметрах
     if publishing:

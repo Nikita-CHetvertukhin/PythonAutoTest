@@ -8,7 +8,6 @@ import allure
 DRIVERS = ["admin_driver", "expert_driver", "user1_driver"]
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
-@pytest.mark.skip(reason="Известный баг, временно отключено")
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @pytest.mark.parametrize("driver_fixture_name", DRIVERS)

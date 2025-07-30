@@ -190,6 +190,28 @@ class WorkflowEditorPage(BasePage):
         time.sleep(0.5)  # Пауза для стабильности
         self.logger.info('Клик по кнопке "Выбрать" в каталоге')
 
+    def rechange_user_in_auto(self, type_auto, box_name):
+        '''Метод предназначен для перевыбора УЗ в настройках автомтаизации публикации, шеринга при загрузке маршрута на новую сборку
+        type_auto может быть равен start или finish'''
+        start_input = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_BOXNAME}[contains(@title,"{box_name}")]//parent::div/div/input'
+        finish_input = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_BOXNAME}[contains(@title,"{box_name}")]//parent::div/div/input'
+        start_target_element = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_BOXNAME}[contains(@title,"{box_name}")]//parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tr//td[2]//span'
+        finish_target_element = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_BOXNAME}[contains(@title,"{box_name}")]//parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tr//td[2]//span'
+        if type_auto == "start":
+            input_elements = self.xpath.find_clickable(start_input, timeout=3, few=True)
+            for input_el in input_elements:
+                input_el.click()
+                input_el.send_keys(Keys.SPACE)
+                self.xpath.find_clickable(start_target_element, timeout=3).click()
+        elif type_auto == "finish":
+            input_elements = self.xpath.find_clickable(finish_input, timeout=3, few=True)
+            for input_el in input_elements:
+                input_el.click()
+                input_el.send_keys(Keys.SPACE)
+                self.xpath.find_clickable(finish_target_element, timeout=3).click()
+        else:
+            raise ValueError(f"Неверное значение type_auto: '{type_auto}'. Ожидается 'start' или 'finish'.")
+
     def connect_shapes(self, first_model_id, second_model_id):
         xpath = XPathFinder(self.driver)
         action = ActionChains(self.driver)
