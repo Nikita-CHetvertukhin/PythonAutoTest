@@ -23,4 +23,4 @@ services:
             memory: 8G
     environment:
         # Ссылка на сборку для теста
-        - TEST_URL=https://clm.doczilla.pro/dev
+        - TEST_URL=https://clm.doczilla.pro/master

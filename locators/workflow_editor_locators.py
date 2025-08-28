@@ -1,4 +1,6 @@
-class WorkflowEditorLocators:
+from locators.base_locators import BaseLocators
+
+class WorkflowEditorLocators(BaseLocators):
 
    '''Тулбар'''
 

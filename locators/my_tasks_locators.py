@@ -1,4 +1,6 @@
-class MyTasksLocators:
+from locators.base_locators import BaseLocators
+
+class MyTasksLocators(BaseLocators):
     # Заголовок активного раздела в "Мои задачи"
     MY_TASKS_TITLE = '//div[contains(@class, "tasks") and contains(@class, "tab") and not(contains(@class, "inactive"))]//a[contains(@class, "folder") and contains(@class, "btn")]'
     # Столбцы body

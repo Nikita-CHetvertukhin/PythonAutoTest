@@ -33,6 +33,10 @@ class BaseLocators:
 
     # Кнопки бокового меню
     SIDE_MENU_BUTTONS = '//div[contains(@class,"body")]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/a[not(contains(@class, "display-none"))]'
+    # Иконка добавления обещго диска
+    SIDE_MENU_ADD_SHARE_DRIVE = '//div[contains(@class,"body")]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/div[contains(@class,"shared-drives")]/a[contains(@class,"new")]/i'
+    # Активная текстареа нового названия общего диска
+    SIDE_MENU_TEXTAREA_SHARE_DRIVE = '//div[contains(@class,"body")]/div[not(contains(@class, "display-none"))]/div[contains(@class, "header") and contains(@class, "radio")]/div[contains(@class,"shared-drives")]//div[contains(@class,"items")]//tr[contains(@class,"active")]//textarea'
 
     '''BODY'''
 
@@ -74,12 +78,31 @@ class BaseLocators:
     # Кнопка "Отменить"
     SHARE_CANCEL = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span[contains(text(),"Отменить")]'
 
+    '''PUBLISH WINDOW'''
+
+    # Инпут ввода директории публикации
+    PUBLISH_DIRECTORY_INPUT = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Шаблоны")]'
+    # Путь до выпадающего списка со строками директорий
+    PUBLISH_DIRECTORY_DROPDOWN = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"first")]/div/span'
+    # Путь до инпута имени пользователя или группы
+    PUBLISH_INPUT = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Введите")]'
+    # Элементы выпадашки с пользователями или группами
+    PUBLISH_DROPDOWN = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"last")]/div/span'
+    # Список УЗ или групп на публикацию
+    PUBLISH_LIST = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]/div[contains(@class,"flex-1")]//div[contains(@class,"items")]/table/tbody/tr'
+    # Кнопка "Готово"
+    PUBLISH_FINISH = '//div[contains(@class,"publish-window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    # Кнопка "Отменить"
+    PUBLISH_CANCEL = '//div[contains(@class,"publish-window")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span[contains(text(),"Отменить")]'
+
     '''COPY WINDOW'''
 
     # Инпут ввода нового названия
     COPY_WINDOW_INPUT = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"body")]//div[contains(@class,"location")]//input'
 	# Кнопка "Копировать"
     COPY_WINDOW_COPYBTN = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    # Список доступных папок для перемещения
+    COPY_WINDOW_LIST = '//div[contains(@class,"window") and contains(@class,"selector")]/div[contains(@class,"body")]//div[contains(@class,"items")]//tr'
 
     '''POPUR WINDOWS'''
     # Любой информативный POPUP

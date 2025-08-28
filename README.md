@@ -60,6 +60,12 @@ pytest -m prepare --browser chrome
   ```bash
   pytest -m workflow --browser chrome
   ```
+  ```bash
+  pytest -m base_smoke --browser chrome
+  ```
+  ```bash
+  pytest -m base --browser chrome
+  ```
 </details>
 
 ---
@@ -137,6 +143,15 @@ docker build -t dz_autotest .
 Аргументы -m и --browser те же, что и при запуске тестов локально
 ```bash
 docker compose run --rm dz_autotest -m workflow_smoke --browser chrome
+```
+```bash
+docker compose run --rm dz_autotest -m workflow --browser chrome
+```
+```bash
+docker compose run --rm dz_autotest -m base_smoke --browser chrome
+```
+```bash
+docker compose run --rm dz_autotest -m base --browser chrome
 ```
 
 </details>

@@ -6,6 +6,8 @@ import os
 # (по умолчанию локальный, при использовании docker вместо localhost следует указать host.docker.internal)
 # Адрес для docker берется из TEST_URL docker-compose.yml
 URL = os.getenv('TEST_URL', 'http://localhoat:9080')
+# Логин группы для тестов
+AQA_GROUP = 'AQA_GROUP'
 # Логин УЗ Администартора
 ADMIN_LOGIN = 'AQA_admin'
 # Пароль от УЗ администратора

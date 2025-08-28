@@ -1,4 +1,6 @@
-class WorkflowAdministrationLocators:
+from locators.base_locators import BaseLocators
+
+class WorkflowAdministrationLocators(BaseLocators):
     # Столбцы Navigator Listbox со списком задач
     COLUMN_NAVIGATOR_LISTBOX = '//div[contains(@class, "body")]/div[contains(@class, "navigator")]/div[contains(@class, "box")]//div[@class="scroller headers"]/table/tbody/tr[@class="header"]'
     # Скроллер Navigator Listbox со списком задач

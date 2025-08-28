@@ -343,33 +343,61 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     upload_file_name = params.get("upload_file_name")
-    publishing = params.get("publishing")
+    publishing_from = params.get("publishing_from")
+    publishing_where = params.get("publishing_where")
     file_type = params.get("file_type")
     custom_file_name = params.get("file_name")
     if custom_file_name:
         file_name = custom_file_name
     open_file = params.get("open_file", False)
     unique_check = params.get("unique_check", False)
+    folder_in_templates = params.get("folder_in_templates", False)
 
     # Блок отвечает за очистку в любом случае после завершения теста
     def cleanup():
         # Снятие с публикации (если указано в параметрах) и удаление файла
-        if publishing:
-            logger.info(f"Снятие с публикации шаблона '{file_name}'...")
-            # Пропишу когда займусь коробкой
-        try:
-            logger.info(f"Удаление файла '{file_name}'...")
-            my_files_page.click_header_logo_button()
-            my_files_page.find_click_header_menu("Документы")
-            my_files_page.find_click_side_menu("Мои файлы")
-            if my_files_page.find_file_by_name(file_name):
-                my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
-                logger.info(f"Файл '{file_name}' удален.")
-            else:
-                logger.warning(f"Файл '{file_name}' не найден при удалении.")
-        except Exception as e:
-            logger.error(f"Ошибка при удалении: {e}.")
-            error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
+        if publishing_from:
+            try:
+                logger.info(f"Снятие с публикации шаблона '{file_name}'...")
+                my_files_page.click_header_logo_button()
+                my_files_page.find_click_header_menu("Документы")
+                my_files_page.find_click_side_menu("Шаблоны")
+                if my_files_page.find_file_by_name(file_name):
+                    my_files_page.right_click_and_select_action(file_name, "Снять с публикации")
+                    logger.info(f"Файл '{file_name}' снят с публикации.")
+                else:
+                    logger.warning(f"Файл '{file_name}' не найден при снятии с публикации.")
+            except Exception as e:
+                logger.error(f"Ошибка при снятии с публикации: {e}.")
+                error_handler.handle_exception(MinorIssue("Снятие с публикации провалилось, но тест пройден"), critical=False)
+        if not folder_in_templates:
+            try:
+                logger.info(f"Удаление файла '{file_name}'...")
+                my_files_page.click_header_logo_button()
+                my_files_page.find_click_header_menu("Документы")
+                my_files_page.find_click_side_menu("Мои файлы")
+                if my_files_page.find_file_by_name(file_name):
+                    my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
+                    logger.info(f"Файл '{file_name}' удален.")
+                else:
+                    logger.warning(f"Файл '{file_name}' не найден при удалении.")
+            except Exception as e:
+                logger.error(f"Ошибка при удалении: {e}.")
+                error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
+        else:
+            try:
+                logger.info(f"Удаление папки '{file_name}' из раздела 'Шаблоны'...")
+                my_files_page.click_header_logo_button()
+                my_files_page.find_click_header_menu("Документы")
+                my_files_page.find_click_side_menu("Шаблоны")
+                if my_files_page.find_file_by_name(file_name):
+                    my_files_page.right_click_and_select_action(file_name, "Удалить")
+                    logger.info(f"Папка '{file_name}' удалена.")
+                else:
+                    logger.warning(f"Папка '{file_name}' не найдена при удалении.")
+            except Exception as e:
+                logger.error(f"Ошибка при удалении: {e}.")
+                error_handler.handle_exception(MinorIssue("Удаление провалилось, но тест пройден"), critical=False)
     
     request.addfinalizer(cleanup)
     
@@ -398,6 +426,12 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
         my_files_page.click_header_logo_button()
         my_files_page.find_click_header_menu("Документы")
         my_files_page.find_click_side_menu("Мои файлы")
+    elif folder_in_templates:
+        # Создание папки в разделе "Шаблоны"
+        my_files_page.click_header_logo_button()
+        my_files_page.find_click_header_menu("Документы")
+        my_files_page.find_click_side_menu("Шаблоны")
+        my_files_page.create_folder_in_templates(file_name)
     else:
         # Создание через UI
         my_files_page.click_header_logo_button()
@@ -408,16 +442,23 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
     # Проверка
     if open_file:
         my_files_page.right_click_and_select_action(file_name, "Открыть")
-        time.sleep(2) # TODO Ждем загрузки раздела (потом заменить на ожидание реквеста)
+        my_files_editor_page.waiting_status_after("open")
     else:
         if not my_files_page.find_file_by_name(file_name):
             raise AssertionError(f"Файл '{file_name}' не был создан/загружен или найден.")
 
     # Публикация файла, если указано в параметрах
-    if publishing:
+    if publishing_from:
         my_files_page.right_click_and_select_action(file_name, "Открыть")
-        time.sleep(2)  # Ждем, пока откроется редактор. (потом заменить на ожидание статусов)
-        # Пропишу когда займусь коробкой
+        my_files_editor_page.waiting_status_after("open")
+        my_files_editor_page.click_file_and_click("Опубликовать")
+        
+        kwargs = {}
+        if publishing_from:
+            kwargs["logins_groups"] = publishing_from
+        if publishing_where:
+            kwargs["directory"] = publishing_where
+        my_files_editor_page.publish_to(**kwargs)
     
     return file_name, my_files_page, xpath
 
@@ -435,6 +476,7 @@ def setup_create_delete_drive(request, error_handler, logger, admin_driver):
     custom_drive_name = params.get("drive_name")
     if custom_drive_name:
         drive_name = custom_drive_name
+    by_side_menu = params.get("by_side_menu", False)
     unique_check = params.get("unique_check", False)
 
     def cleanup():
@@ -468,10 +510,16 @@ def setup_create_delete_drive(request, error_handler, logger, admin_driver):
     logger.info(f"Создание диска '{drive_name}' из теста '{test_name}'")
 
     my_files_page.click_header_logo_button()
+    my_files_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Общие диски")
 
     # Создание общего диска
-    my_files_page.create_drive(drive_name)
+    kwargs = {}
+    if drive_name:
+        kwargs["drive_name"] = drive_name
+    if by_side_menu:
+        kwargs["side_menu"] = by_side_menu
+    my_files_page.create_drive(**kwargs)
 
     if not my_files_page.find_file_by_name(drive_name):
         raise AssertionError(f"Диск '{drive_name}' не был создан или найден.")

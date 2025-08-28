@@ -75,14 +75,56 @@ class MyFilesPage(BasePage):
         textarea.send_keys(Keys.ENTER)
         self.logger.info(f"Имя файла '{file_name}' введено и подтверждено Enter")
 
-    def create_drive(self, drive_name):
-        """Создает новый общий диск с указанным именем."""
+    def create_folder_in_templates(self, file_name):
+        """Создает новую папку в разделе 'Шаблоны' с заданным названием.
+        """
         xpath = XPathFinder(self.driver)
-        xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
+        xpath.find_clickable(MyFilesLocators.CREATE_TEMPLATES_FOLDER_BUTTON, timeout=5).click()
         self.logger.info("Кнопка 'Создать' нажата")
         textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
         self.logger.info("xpath textarea найден")
-        textarea.send_keys(drive_name)
-        self.logger.info(f"Имя общего диска введено")
+        textarea.send_keys(file_name)
+        self.logger.info("название папки введено")
         textarea.send_keys(Keys.ENTER)
-        self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")
+        self.logger.info(f"Имя папки '{file_name}' введено и подтверждено Enter")
+
+    def create_docz_from_dotx_section(self, file_name, directory=None, section_name=None):
+        '''Метод создаёт анкету из раздела шаблоны и сохраняет её в указанную секцию (опионально) или директорию (опционально), с новым названием (Опционально)
+        По умолчанию - Корень Мои файлы, название шаблона'''
+        # Ожидаем появления инпута
+        input_element = self.xpath.find_clickable(MyFilesLocators.QUESTIONNAIRE_NAME_INPUT, timeout=3, few=False)
+        input_element.clear()
+        input_element.send_keys(file_name)
+        # Кликаем по кнопке "Сохранить здесь"
+        self.xpath.find_clickable(MyFilesLocators.QUESTIONNAIRE_CONFIRM_BUTTON, timeout=3, few=False).click()
+        self.logger.info(f"Создана анкета с именем '{file_name}'.")
+
+    def create_drive(self, drive_name, side_menu=False):
+        """Создает новый общий диск с указанным именем."""
+        xpath = XPathFinder(self.driver)
+        actions = ActionChains(self.driver)
+        if side_menu:
+            # Если нужно создать общий диск из бокового меню
+            # Наводим крусор на кнопку "Общие диски" в боковом меню
+            share_drive_xpath = f'{BaseLocators.SIDE_MENU_BUTTONS}//span[text()="Общие диски"]/ancestor::a'
+            share_drive_element = xpath.find_visible(share_drive_xpath, timeout=5)
+            actions.move_to_element(share_drive_element).perform()
+            self.logger.info("Наведение курсора на кнопку 'Общие диски' в боковом меню выполнено")
+            # Создаем общий диск
+            xpath.find_clickable(MyFilesLocators.SIDE_MENU_ADD_SHARE_DRIVE, timeout=5).click()
+            self.logger.info("Кнопка 'Создать общий диск' нажата")
+            textarea = xpath.find_visible(MyFilesLocators.SIDE_MENU_TEXTAREA_SHARE_DRIVE, timeout=5)
+            self.logger.info("xpath textarea найден")
+            textarea.send_keys(drive_name)
+            self.logger.info(f"Имя общего диска '{drive_name}' введено")
+            textarea.send_keys(Keys.ENTER)
+            self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")
+        else:
+            xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
+            self.logger.info("Кнопка 'Создать' нажата")
+            textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
+            self.logger.info("xpath textarea найден")
+            textarea.send_keys(drive_name)
+            self.logger.info(f"Имя общего диска введено")
+            textarea.send_keys(Keys.ENTER)
+            self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")
