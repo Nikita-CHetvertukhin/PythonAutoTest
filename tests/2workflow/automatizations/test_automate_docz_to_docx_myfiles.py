@@ -28,7 +28,7 @@ folder_name = f"{get_uuid()}_FOLDER_DOCZ_DOCX_{get_timestamp()}"
             "type_auto": "finish",
             "type_section": "Мои файлы",
             "name_catalog": folder_name,
-            "publishing": True
+            "publishing_to": [ADMIN_LOGIN]
         },
     )],
     indirect=True)

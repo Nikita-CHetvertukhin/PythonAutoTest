@@ -19,7 +19,7 @@ process_name = f"{get_uuid()}_test_automate_publish_dotx_{get_timestamp()}"
         {
             "process_name": process_name,
             "upload_file_name": "AQA_Automatizations_Publish.dzwf",
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {

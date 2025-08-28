@@ -46,19 +46,29 @@ class MyFilesEditorPage(BasePage):
                 raise Exception("Таймаут ожидания статуса после открытия")
 
         elif action == 'save':
-            if self.xpath.find_located(save_process_xpath, timeout=1):
+            try:
+                # Иногда сохранение происходит очень быстро и статус "Сохранение" не появляется
+                process_save_status = self.xpath.find_located(save_process_xpath, timeout=1)
+                if process_save_status:
+                    if self.xpath.find_located(ok_status_after_save_xpath, timeout=5):
+                        self.logger.info("Документ успешно сохранён.")
+                        return True
+                    elif self.xpath.find_located(error_status_xpath, timeout=1):
+                        self.logger.error("Обнаружена ошибка при сохранении документа.")
+                        raise Exception("Обнаружена ошибка при сохранении документа")
+                    else:
+                        self.logger.error("Таймаут ожидания статуса после сохранения.")
+                        raise Exception("Таймаут ожидания статуса после сохранения")
+            except Exception:
                 if self.xpath.find_located(ok_status_after_save_xpath, timeout=5):
-                    self.logger.info("Документ успешно сохранён.")
-                    return True
+                        self.logger.info("Документ успешно сохранён.")
+                        return True
                 elif self.xpath.find_located(error_status_xpath, timeout=1):
                     self.logger.error("Обнаружена ошибка при сохранении документа.")
                     raise Exception("Обнаружена ошибка при сохранении документа")
                 else:
                     self.logger.error("Таймаут ожидания статуса после сохранения.")
                     raise Exception("Таймаут ожидания статуса после сохранения")
-            else:
-                self.logger.error(f"Нет актуального статуса сохранения документа: {save_process_xpath}")
-                raise Exception(f"Нет актуального статуса сохранения документа {save_process_xpath}")
         else:
             self.logger.error(f"Недопустимое значение параметра action: {action}")
             raise ValueError("Недопустимое значение параметра action: ожидается 'open' или 'save'")

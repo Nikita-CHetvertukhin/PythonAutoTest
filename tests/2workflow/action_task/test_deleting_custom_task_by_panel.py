@@ -16,7 +16,7 @@ process_name = f"{get_uuid()}_deleting_custom_task_by_panel_{get_timestamp()}"
         {
             "process_name": process_name,
             "upload_file_name": "AQA_Usual_Process.dzwf",
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {

@@ -45,8 +45,8 @@ class WorkflowEditorPage(BasePage):
         self.logger.info(f"Клик по кнопке {action_name}")
         action_xpath = xpath.find_located(f'{WorkflowEditorLocators.WFEDITOR_FILE_DROPDOWN}/div/label[text()="{action_name}"]/parent::div', timeout=3, few=False)
         action_xpath.click()
-        if action_name in {"Опубликовать", "Снять с публикации"}:
-            self.close_all_windows()
+        # if action_name in {"Опубликовать", "Снять с публикации"}:
+        #     self.close_all_windows()
 
     def add_shape(self, shape_name):
         """Добавляет фигуру в редактор рабочего процесса, проверяет её наличие и возвращает уникальный model_id."""

@@ -128,13 +128,18 @@ http://host.docker.internal:9080/
 ```bash
 - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
 ```
+- При необходимости изменить название образа и тег:
+```bash
+image: dz_autotest:dev
+```
 </details>  
 
 <details>  
-<summary>🚀 Выполнить билд контейнера</summary> 
+<summary>🚀 Выполнить билд контейнера, где:
+docker build -t название_образа:тег(например: dev,master или demo) .)</summary> 
 
 ```bash  
-docker build -t dz_autotest .
+docker build -t dz_autotest:dev .
 ```
 </details> 
 

@@ -82,4 +82,3 @@ window.WebSocket = class {
 
 # Общие диски
 SHARE_DRIVES = 'pro.doczilla.sharing.drives'
-# Тест мержа веток

@@ -219,7 +219,8 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
     # Чтение параметров
     params = request.param if hasattr(request, "param") and isinstance(request.param, dict) else {}
     upload_file_name = params.get("upload_file_name")
-    publishing = params.get("publishing")
+    publishing_to = params.get("publishing_to")
+    publishing_clear = params.get("publishing_clear", True)
     # Специальная логика для выбора каталога в автоматизациях
     shape_name = params.get("shape_name")
     type_auto = params.get("type_auto")
@@ -233,14 +234,18 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
     
     def cleanup():
         # Снятие с публикации (если указано в параметрах) и удаление процесса
-        if publishing:
-            logger.info(f"Снятие с публикации процесса '{process_name}'...")
-            workflows_page.click_header_logo_button()
-            workflows_page.find_click_header_menu("Рабочие процессы")
-            workflows_page.find_click_side_menu("Шаблоны процессов")
-            workflows_page.right_click_and_select_action(process_name, "Открыть")
-            time.sleep(2) # TODO заменить на ожидание реквеста
-            workflow_editor_page.action_from_document("Снять с публикации")
+        if publishing_to:
+            try:
+                logger.info(f"Снятие с публикации процесса '{process_name}'...")
+                workflows_page.click_header_logo_button()
+                workflows_page.find_click_header_menu("Рабочие процессы")
+                workflows_page.find_click_side_menu("Шаблоны процессов")
+                workflows_page.right_click_and_select_action(process_name, "Открыть")
+                time.sleep(2) # TODO заменить на ожидание реквеста
+                workflow_editor_page.action_from_document("Снять с публикации")
+            except Exception as e:
+                logger.error(f"Ошибка при снятии с публикации: {e}.")
+                error_handler.handle_exception(MinorIssue("Снятие с публикации провалилось, но тест пройден"), critical=False)
         try:
             logger.info(f"Удаление процесса '{process_name}'...")
             workflows_page.click_header_logo_button()
@@ -292,7 +297,7 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
         raise AssertionError(f"Процесс '{process_name}' не был создан/загружен или найден.")
 
     # Открытие процесса если переданы параметры натсреок внутри процесса
-    if any([shape_name, publishing]):
+    if any([shape_name, publishing_to]):
         workflows_page.right_click_and_select_action(process_name, "Открыть")
         time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
         workflow_editor_page.name_properties(name=process_name,action="set")
@@ -323,9 +328,15 @@ def setup_create_delete_process(request, error_handler, logger, admin_driver):
         workflow_editor_page.rechange_user_in_auto(**kwargs)
 
     # Публикация процесса, если указано в параметрах
-    if publishing:
+    if publishing_to:
         workflow_editor_page.action_from_document("Опубликовать")
-        time.sleep(2) # Пока не на что опираться в редакторе
+        kwargs = {}
+        if publishing_to:
+            kwargs["logins_groups"] = publishing_to
+        if publishing_clear:
+            kwargs["clear"] = publishing_clear
+        workflow_editor_page.publish_to(**kwargs)
+        time.sleep(1) # Пока не на что опираться в редакторе
 
     return process_name, workflows_page, xpath
 

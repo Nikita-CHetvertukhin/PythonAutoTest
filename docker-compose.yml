@@ -1,12 +1,12 @@
 services:
   dz_autotest:
     # Имя образа из билда  
-    image: dz_autotest
+    image: dz_autotest:dev  # dev, master, demo
     # Имя контейнера, который будет создан
     container_name: test_container
     volumes:
         #  Твой путь до папки сохранения отчета : Константа
-        - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
+        - "D:\\Dev\\PythonAutoTest\\allure_reports:/app/report"
     # Путь до скрипта запуска внутри контейнера
     entrypoint: "/app/entrypoint.sh"
     deploy:
@@ -23,4 +23,4 @@ services:
             memory: 8G
     environment:
         # Ссылка на сборку для теста
-        - TEST_URL=https://clm.doczilla.pro/master
+        - TEST_URL=https://clm.doczilla.pro/dev

@@ -2,7 +2,7 @@ import time
 import pytest
 from utils.exception_handler.decorator_error_handler import exception_handler
 from utils.get_date import get_date
-from settings.variables import USER1_LOGIN, USER2_LOGIN, USER3_LOGIN, USER4_LOGIN, USER5_LOGIN
+from settings.variables import ADMIN_LOGIN, USER1_LOGIN, USER2_LOGIN, USER3_LOGIN, USER4_LOGIN, USER5_LOGIN
 from pages.my_tasks_page import MyTasksPage
 from utils.refresh_and_wait import refresh_and_wait
 from pages.my_files_editor_page import MyFilesEditorPage
@@ -24,7 +24,7 @@ process_name = f"{get_uuid()}_test_automate_share_file_{get_timestamp()}"
             "type_auto": "start",
             "shape_name": "Sharing_test",
             "box_name": "Пользователь (группа)",
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {

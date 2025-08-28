@@ -17,7 +17,7 @@ process_name = f"{get_uuid()}_test_automat_create_subtask_{get_timestamp()}"
         {
             "process_name": process_name,
             "upload_file_name": "AQA_Automatizations_Create_subtask.dzwf",
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {

@@ -443,9 +443,26 @@ class BasePage:
         copy_button.click()
         self.logger.info(f"Объект скопирован с именем '{new_name}'.")
 
-    def publish_to(self, logins_groups, directory=None):
+    def publish_to(self, logins_groups, directory=None, clear=False):
         '''Публикует объект из окна публикации на Логин/логины УЗ/групп, если указана директория выбирает дополнительно директорию'''
         time.sleep(1)
+        if clear:
+            # Навести крусор на имеющуюся публикацию и кликнуть по крестику
+            # Сначала ищем все имеющиеся записи
+            self.logger.info("Очистка существующих публикаций перед новой публикацией")
+            existing_publish = self.xpath.find_visible(BaseLocators.PUBLISH_LIST, timeout=3, few=True)
+            self.logger.info(f"existing_publish = {existing_publish}")
+            # Теперь цикл for по всем записям с индексом итерации
+            for i in range(len(existing_publish)):
+                # Наводим курсор на запись
+                self.logger.info(f"Удаление публикации i = {i}")
+                self.logger.info(f"Удаление публикации = {existing_publish[i]}")
+                ActionChains(self.driver).move_to_element(existing_publish[i]).perform()
+                time.sleep(0.5)
+                # Увеличиваем индекс на 1, т.к. в xpath индексация с 1
+                target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]//div[contains(@class,"remove")]'
+                self.logger.info(f"Путь до закрытия = {target_xpath}")
+                self.xpath.find_clickable(target_xpath, timeout=3).click()
         if directory:
             input_directory_element = self.xpath.find_clickable(BaseLocators.PUBLISH_DIRECTORY_INPUT, timeout=3, few=False)
             input_directory_element.send_keys(directory)

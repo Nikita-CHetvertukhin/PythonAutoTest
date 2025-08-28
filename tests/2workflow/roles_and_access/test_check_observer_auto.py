@@ -21,7 +21,7 @@ executors = [("Observer",USER1_LOGIN),("Исполнитель",ADMIN_LOGIN)]
         {
             "process_name": process_name,
             "upload_file_name": "AQA_Observer_Reader_Auto.dzwf",
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {

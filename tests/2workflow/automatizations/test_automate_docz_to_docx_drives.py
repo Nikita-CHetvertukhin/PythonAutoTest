@@ -31,7 +31,7 @@ process_name = f"{get_uuid()}_transform_docx_drives_process_{get_timestamp()}"
             "type_auto": "finish",
             "type_section": "Общие диски",
             "name_catalog": drive_name,
-            "publishing": True,
+            "publishing_to": [ADMIN_LOGIN],
             "unique_check": True
         },
         {
