@@ -26,6 +26,5 @@ def test_description_change(error_handler, logger, admin_driver, setup_create_de
 
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
-    time.sleep(1)  # TODO: заменить на ожидание состояния страницы
     my_tasks_page.right_click_and_select_action(task_name, "Открыть")
     assert my_tasks_page.task_description_properties(description="test_new_description", action="check"), "Описание не совпадает."

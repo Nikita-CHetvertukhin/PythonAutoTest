@@ -1,4 +1,6 @@
-class WorkflowsLocators:
+from locators.base_locators import BaseLocators
+
+class WorkflowsLocators(BaseLocators):
     # Заголовок активного раздела в "Рабочие процессы"
     WORKFLOWS_TITLE = '//div[contains(@class, "finder") and not(contains(@class, "none"))]/div[@class="body"]/div[not(contains(@class, "inactive"))]//a[contains(@class, "folder") and contains(@class, "btn")]'
     # Столбцы body

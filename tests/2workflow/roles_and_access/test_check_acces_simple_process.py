@@ -50,7 +50,6 @@ def test_check_acces_simple_process(error_handler, logger, admin_driver, user1_d
     my_tasks_page.find_click_header_menu("Документы")
     my_tasks_page.find_click_side_menu("Мои файлы")
     my_files_page.right_click_and_select_action(file_name, "Открыть")
-    time.sleep(1) # TODO Заменить на динамическое ожидание
     xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access2))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."
 

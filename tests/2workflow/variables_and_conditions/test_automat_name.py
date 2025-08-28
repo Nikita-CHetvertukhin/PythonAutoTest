@@ -22,8 +22,10 @@ def test_automat_name(error_handler, logger, admin_driver, setup_create_delete_f
 
     logger.info("Начало проверки автоматической подстановки значения переменной в название задачи")
     my_files_page.right_click_and_select_action(file_name, "Открыть")
+    my_files_editor_page.waiting_status_after("open")
     my_files_editor_page.find_and_send_variable_in_questionnaire("Текст", "AQA_ID1", file_name)
     xpath.find_clickable(MyFilesEditorLocators.SAVE_BUTTON).click()
+    my_files_editor_page.waiting_status_after("save")
     my_tasks_page.create_task(task_name="${ID1}", task_type="Простая задача", from_file=True)
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")

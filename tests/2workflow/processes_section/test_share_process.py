@@ -19,12 +19,10 @@ def test_share_process(error_handler, logger, admin_driver, user1_driver, setup_
     logger.info("Начало проверки шеринга процесса")
     workflows_page.right_click_and_select_action(process_name,"Настроить доступ")
     workflows_page.share_access(f"{USER1_LOGIN}", "Редактор")
-
     # Ожидаем появления пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления
     workflows_user1.find_click_header_menu("Рабочие процессы")
     workflows_user1.find_click_side_menu("Шаблоны процессов")
-    time.sleep(0.5)
     share_process = workflows_user1.find_file_by_name(process_name)
     if not share_process:
         logger.error(f"Процесс '{process_name}' не найден у '{USER1_LOGIN}'")

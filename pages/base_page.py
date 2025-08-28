@@ -443,6 +443,53 @@ class BasePage:
         copy_button.click()
         self.logger.info(f"Объект скопирован с именем '{new_name}'.")
 
+    def publish_to(self, logins_groups, directory=None):
+        '''Публикует объект из окна публикации на Логин/логины УЗ/групп, если указана директория выбирает дополнительно директорию'''
+        time.sleep(1)
+        if directory:
+            input_directory_element = self.xpath.find_clickable(BaseLocators.PUBLISH_DIRECTORY_INPUT, timeout=3, few=False)
+            input_directory_element.send_keys(directory)
+            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DIRECTORY_DROPDOWN}[contains(@title,"{directory}")]').click()
+            self.logger.info(f"Каталог публикации '{directory}' установлен")
+        # logins_groups получаем массив, который может состоять из одного или несколкьих элементов
+        for login in logins_groups:
+            input_logins_element = self.xpath.find_clickable(BaseLocators.PUBLISH_INPUT, timeout=3, few=False)
+            input_logins_element.send_keys(login)
+            self.logger.info(f"Попытка поиска {login}")
+            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DROPDOWN}[contains(@title,"{login}")]').click()
+            # Проверка, что появилась запись на публикацию
+            try:
+                self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//span[contains(@title,"{login}")]')
+            except Exception as e:
+                self.logger.error(f"Ошибка при добавлении логина/группы '{login}': {e}")
+                raise RuntimeError(f"Публикация прервана: логин/группа '{login}' не появился(а) в списке") from e
+        self.xpath.find_clickable(BaseLocators.PUBLISH_FINISH, timeout=3).click()
+        self.logger.info("Публикация завершена")
+
+    def move_to(self, folder_name=None, section_name=None, new_name=None):
+        """Метод перемещает выбранный файл (уже из окна перемещения) в выбранную секцию/папку с новым названием (опицонально)"""
+        target_folder_xpath = f'{BaseLocators.COPY_WINDOW_LIST}/td[contains(@class,"first")]//span[contains(@title,"{folder_name}")]'
+        # Если задана секция ("Мои файлы" по умолчанию)
+        if section_name:
+            """Дописать"""
+        # Если задано новое имя (опционально)
+        if new_name:
+            input_element = self.xpath.find_clickable(BaseLocators.COPY_WINDOW_INPUT, timeout=3, few=False)
+            input_element.clear()
+            input_element.send_keys(new_name)
+            self.logger.info(f'При перемещении задано новое имя {new_name}')
+        # Если перемещаем в определенную папку (тоже опционально, т.к. можем просто переместить из общих дисков в корень "Мои файлы", например)
+        if folder_name:
+            self.xpath.find_clickable(target_folder_xpath, timeout=3).click()
+            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
+            time.sleep(1)  # Пауза для стабильности
+            self.logger.info(f'Двойной клик по каталогу {folder_name}')
+
+        # Кликаем по кнопке "Переместить"
+        moved_button = self.xpath.find_clickable(BaseLocators.COPY_WINDOW_COPYBTN, timeout=3, few=False)
+        moved_button.click()
+        self.logger.info(f"Объект перемещен в секцию {section_name} в папку {folder_name}.")
+
     def send_rename(self, current_name, new_name):
         """Переименовывает объект с новым именем.
         :param new_name: Новое имя для переименовываемого объекта.

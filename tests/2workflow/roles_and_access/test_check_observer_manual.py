@@ -50,7 +50,6 @@ def test_check_observer_manual(request, error_handler, logger, admin_driver, use
     my_tasks_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Мои файлы")
     my_files_page.right_click_and_select_action(file_name, "Открыть")
-    time.sleep(2)  # TODO заменить на динамическое ожидание при октрытии файла
     xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
     logins_and_access = [(USER1_LOGIN, "Просмотр")]
     assert (result := my_files_page.share_access(action="check", logins_and_access=logins_and_access)) is True, f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access}."

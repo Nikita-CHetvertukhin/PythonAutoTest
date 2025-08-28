@@ -48,7 +48,7 @@ def test_automate_transform_docx_myfiles(error_handler, logger, admin_driver,set
     my_files_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Мои файлы")
     my_files_page.right_click_and_select_action(docz_name, "Открыть")
-    time.sleep(2)  # TODO заменить на данимаческое ожидание
+    my_files_editor_page.waiting_status_after("open")
     my_tasks_page.create_task(task_name=f"task_{process_name}", task_type=process_name, executor=ADMIN_LOGIN, from_file=True)
     
     # Выполняем задачу
