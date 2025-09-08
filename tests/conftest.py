@@ -356,6 +356,9 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
     upload_file_name = params.get("upload_file_name")
     publishing_from = params.get("publishing_from")
     publishing_where = params.get("publishing_where")
+    share_from = params.get("share_from")
+    share_acces = params.get("share_acces")
+    share_to_group = params.get("share_to_group", False)
     file_type = params.get("file_type")
     custom_file_name = params.get("file_name")
     if custom_file_name:
@@ -450,6 +453,16 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
         my_files_page.find_click_side_menu("Мои файлы")
         my_files_page.create_file(file_name, file_type)
 
+    if share_from:
+        # Шеринг файла, если указано в параметрах
+        my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
+        kwargs = {}
+        if share_to_group:
+            kwargs["is_group"] = share_to_group
+        if share_acces:
+            kwargs["access_level"] = share_acces
+        my_files_page.share_access(f"{share_from}", **kwargs)
+    
     # Проверка
     if open_file:
         my_files_page.right_click_and_select_action(file_name, "Открыть")

@@ -13,7 +13,7 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def test_questionnaire(error_handler, logger, admin_driver, setup_create_delete_file):
+def test_side_questionnaire(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет появление вкладки Анкета при привязке переменной"""
     file_name, my_files_page, xpath = setup_create_delete_file
     my_files_editor_page = MyFilesEditorPage(admin_driver, logger)
@@ -23,7 +23,7 @@ def test_questionnaire(error_handler, logger, admin_driver, setup_create_delete_
     logger.info("Начало проверки создания простого docx")
     # Ввод текста
     my_files_editor_page.send_text_in_doc(text)
-    # Создание первое переменной в схеме и привязка к тексту
+    # Создание первой переменной в схеме и привязка к тексту
     my_files_editor_page.open_side_panel_in_doc("Схема")
     my_files_editor_page.create_first_variable(test)
     my_files_editor_page.tie_to_schema(text, test)

@@ -22,7 +22,7 @@ class BaseLocators:
     # Кнопка "Помощь"
     HEADER_HELP_BUTTON = '//div[@class = "header"]/div[contains(@class, "content")]/a[contains(@class, "help")]'
     # Кнопка личного кабинета
-    HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/button[contains(@class,"account")]/label[not(contains(@class,"display-none"))]'
+    HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/button[contains(@class,"account")and not(contains(@class,"display-none"))]'
 
     '''ACCOUNT'''
 

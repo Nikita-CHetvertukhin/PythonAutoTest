@@ -60,6 +60,145 @@ class MyFilesPage(BasePage):
         self.logger.error(f"Не удалось выполнить действие '{action_name}' для '{object_name}' после {max_retries} попыток.")
         return False
 
+    def get_action_availability(self, file_type, access_level, collaboration_enabled=True):
+        '''Метод формирует доступные и недоступные действия по ПКМ в зависимости от типа файла, уровня доступа и лицензии'''
+
+        is_editor = access_level == "Полный доступ"
+        is_docx_or_dotx = file_type in ["docx", "dotx"]
+        is_docz = file_type == "docz"
+        is_folder = file_type == "folder"
+
+        # Допустимые действия по типу файла
+        allowed_actions_by_type = {
+            "docx": [
+                "Открыть", "Настроить доступ", "Скопировать ссылку", "Скачать",
+                "Скачать PDF", "Скачать PDF/A", "Загрузить версию", "Сравнить",
+                "Копировать", "Переименовать", "Удалить"
+            ],
+            "dotx": [
+                "Открыть", "Настроить доступ", "Скопировать ссылку", "Скачать",
+                "Скачать PDF", "Скачать PDF/A", "Загрузить версию", "Сравнить",
+                "Копировать", "Переименовать", "Удалить"
+            ],
+            "docz": [
+                "Открыть", "Настроить доступ", "Скопировать ссылку", "Скачать",
+                "Скачать PDF", "Скачать PDF/A", "Сравнить",
+                "Копировать", "Переименовать", "Удалить"
+            ],
+            "folder": [
+                "Открыть", "Настроить доступ", "Скопировать ссылку",
+                "Копировать", "Переименовать", "Удалить"
+            ]
+        }
+
+        # Получаем допустимые действия
+        allowed_actions = allowed_actions_by_type.get(file_type, [])
+
+        availability = {}
+
+        for action in allowed_actions:
+            if action == "Открыть":
+                availability[action] = True
+            elif action == "Настроить доступ":
+                availability[action] = is_editor
+            elif action == "Скопировать ссылку":
+                availability[action] = True
+            elif action == "Скачать":
+                availability[action] = True
+            elif action in ["Скачать PDF", "Скачать PDF/A"]:
+                availability[action] = True
+            elif action == "Загрузить версию":
+                availability[action] = is_editor and is_docx_or_dotx and collaboration_enabled
+            elif action == "Сравнить":
+                availability[action] = True
+            elif action == "Копировать":
+                availability[action] = not is_folder
+            elif action == "Переименовать":
+                availability[action] = is_editor
+            elif action == "Удалить":
+                availability[action] = True
+
+        self.logger.info(
+            f"Доступные действия для файла типа '{file_type}' с уровнем доступа '{access_level}' (лицензия COLLABORATION {'включена' if collaboration_enabled else 'выключена'}): {availability}")
+        return availability
+    
+    def right_click_and_check_acces(self, file_name, result):
+        '''Метод ищет файл по имени в текущем разделе, кликает ПКМ и проверяет доступность действий в соответсвии с уровнем доступа'''
+        xpath = XPathFinder(self.driver)
+
+        # xpath до самого файла, по которому будем кликать ПКМ
+        target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[@title="{file_name}"]'
+
+        try:
+            # Перепроверяем список элементов и ищем процесс
+            file_element = xpath.find_located(target_xpath, timeout=10, few=False)
+            # Путь до действия по завершению проверки
+            in_end = "Открыть"
+            end_action_xpath = f'{MyFilesLocators.MY_FILES_DROPDOWN}/td[@title="{in_end}"]'
+
+            if file_element:
+                self.logger.info(f"Файл '{file_name}' найден.")
+
+                # Ожидание полной загрузки элемента перед взаимодействием
+                WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
+                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(file_element))
+
+                time.sleep(0.5)  # Небольшая пауза для стабильности
+
+                # Кликаем ПКМ по элементу
+                actions = ActionChains(self.driver)
+                actions.move_to_element(file_element).perform()
+                actions.context_click(file_element).perform()
+                self.logger.info(f"ПКМ по '{file_name}' выполнен.")
+
+                # Проверка доступности действий
+                errors = []
+
+                for action_name, expected_status in result.items():
+                    action_xpath = f'{MyFilesLocators.MY_FILES_DROPDOWN}/td[@title="{action_name}"]/ancestor::tr'
+
+                    try:
+                        action_element = self.xpath.find_located(action_xpath, timeout=3, few=False)
+                        if not action_element:
+                            errors.append(f"'{action_name}' не найден.")
+                            continue
+
+                        class_attr = action_element.get_attribute("class")
+                        has_disabled = "disabled" in class_attr.split()
+
+                        if expected_status:
+                            if has_disabled:
+                                errors.append(f"'{action_name}' должно быть доступно, но содержит класс 'disabled'.")
+                            else:
+                                self.logger.info(f"'{action_name}' доступно и кликабельно, класс 'disabled' отсутствует.")
+                        else:
+                            if has_disabled:
+                                self.logger.info(f"'{action_name}' содержит класс 'disabled'.")
+                            else:
+                                errors.append(f"'{action_name}' должно быть недоступно, но класс 'disabled' отсутствует.")
+                    except Exception as e:
+                        errors.append(f"Ошибка при проверке '{action_name}': {str(e)}")
+
+                # После цикла — выбрасываем все ошибки
+                if errors:
+                    for err in errors:
+                        self.logger.error(err)
+                    raise AssertionError("Обнаружены ошибки в доступности действий:\n" + "\n".join(errors))
+                else:
+                    self.logger.info(f"Все действия для '{file_name}' соответствуют ожиданиям.")
+                    # Ожидаем появления контекстного меню
+                    action_element = WebDriverWait(self.driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, end_action_xpath))
+                    )
+                    # Кликаем по нужному пункту меню
+                    action_element.click()
+                    self.logger.info(f"Действие '{in_end}' выполнено для '{file_name}'.")
+                    return True
+
+        except Exception:
+            self.logger.error(f"Не удалось кликнуть ПКМ для '{file_name}'.")
+            raise
+
     def create_file(self, file_name, file_type):
         """Создает новый файл в разделе 'Мои файлы' с указанным именем и типом.
         Поддерживаемые типы: "Новый документ","Интерактивный шаблон","Новую папку"

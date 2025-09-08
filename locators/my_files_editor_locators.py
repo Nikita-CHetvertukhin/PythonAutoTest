@@ -11,8 +11,16 @@ class MyFilesEditorLocators(BaseLocators):
     
     '''ТУЛБАР'''
     
+    # Заголовки секци тулбара
+    TOOLBAR_SECTION_TITLE = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"tags")]/button'
+    # Кнопки внутри активной секции тулбара
+    TOOLBAR_SECTION_BUTTONS = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"body")]/div[contains(@class,"container")and not(contains(@class,"display-none"))][position() > 1]//button'
+    # Ещё кнопки внутри активной секции тулбара
+    TOOLBAR_SECTION_DIVS = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"body")]/div[contains(@class,"container")and not(contains(@class,"display-none"))][position() > 1]//div[contains(@class,"x-control")]'
     # Кнопка "Сохранить" в тулбаре
     SAVE_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"body")]//button[contains(@title,"Сохранить")]'
+    # Кнопка "Отмена" в тулбаре
+    CANCEL_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"body")]//button[contains(@title,"Отменить")]'
     # Кнопка "Доступ" в тулбаре
     ACCESS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label[contains(text(), "Доступ")]/ancestor::button'
     # Кнопка "Отправить на согласование"
@@ -22,7 +30,7 @@ class MyFilesEditorLocators(BaseLocators):
     # Tr выпадающего списка "Действия" в тулбаре WF (текст последнего label содержит название действия)
     WF_ACTIONS_LIST_ITEM = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label/following-sibling::div[contains(@class,"container")and not(contains(@class,"display-none"))]//label'
 
-    '''БОКОВЫЕ ПАНЕЛИ'''
+    '''БОКОВЫЕ ПАНЕЛИ (СЛЕВА)'''
 
     # Кнопка раздела боковой панели по названию атрибут title в конце равен названию кнопки
     DOC_SIDE_PANEL = '//div[contains(@class,"editor")]/div[contains(@class,"menubar")and contains(@class,"left")]/div[contains(@class,"header")]//button'
@@ -31,6 +39,13 @@ class MyFilesEditorLocators(BaseLocators):
     # Активный textarea в панели
     ACTIVE_TEXTAREA_PANEL = f'{ACTIVE_SIDE_PANEL}//div[contains(@class,"textarea")and not(contains(@class,"display-none"))]//textarea'
 
+    '''БОКОВЫЕ ПАНЕЛИ ФОРМАТИРОВАНИЯ (СПРАВА)'''
+
+     # Кнопка раздела боковой панели по названию атрибут title в конце равен названию кнопки
+    DOC_SIDE_PANEL_FORMAT = '//div[contains(@class,"editor")]/div[contains(@class,"menubar")and contains(@class,"right")]/div[contains(@class,"header")]//button'
+    # Путь до всех доступных действий в панели форматирования (класс x-box) предварительная ориентация только по порядковому номеру (не за что цепляться)
+    DOC_SIDE_FORMAT_XBOX = '//div[contains(@class,"editor")]/div[contains(@class,"menubar")and contains(@class,"right")]/div[contains(@class,"body")]/div[contains(@class,"panel")and not(contains(@class,"display-none"))]/div[contains(@class,"body")]/div[contains(@class,"x-box")and not(contains(@class,"display-none"))]'
+    
     '''СХЕМА'''
 
     # Кнопка создать переменную в пустой схеме

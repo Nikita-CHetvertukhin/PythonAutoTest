@@ -334,7 +334,7 @@ class BasePage:
         process_name = f"{function_name}_{timestamp}"  # Формируем имя процесса
         return process_name
 
-    def share_access(self, login_or_group=None, access_level=None, action="set", logins_and_access=None):
+    def share_access(self, login_or_group=None, access_level=None, action="set", logins_and_access=None, is_group=False):
         """
         Настраивает или проверяет доступ для пользователя/группы.
 
@@ -379,9 +379,14 @@ class BasePage:
         # Если установка доступа
         current_setting = None
         try:
-            current_setting = WebDriverWait(self.driver, 1).until(
-                EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
-            )
+            if not is_group:
+                current_setting = WebDriverWait(self.driver, 1).until(
+                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
+                )
+            else:
+                current_setting = WebDriverWait(self.driver, 1).until(
+                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group} (группа)"]/ancestor::tr'))
+                )
         except TimeoutException:
             self.logger.info("Проверка доступа не найдена. Устанавливаем новый доступ.")
 
@@ -396,14 +401,25 @@ class BasePage:
             )
 
             for element in dropdown_elements:
-                if element.get_attribute("title") == login_or_group:
-                    self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
-                    element.click()
-                    break
+                if not is_group:
+                    if element.get_attribute("title") == login_or_group:
+                        self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
+                        element.click()
+                        break
+                else:
+                    if element.get_attribute("title") == f"{login_or_group} (группа)":
+                        self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
+                        element.click()
+                        break
 
-            current_setting = WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
-            )
+            if not is_group:
+                current_setting = WebDriverWait(self.driver, 1).until(
+                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
+                )
+            else:
+                current_setting = WebDriverWait(self.driver, 1).until(
+                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group} (группа)"]/ancestor::tr'))
+                )
 
         access_trigger = current_setting.find_element(By.XPATH, './td[contains(@class,"int")]')
         access_trigger.click()

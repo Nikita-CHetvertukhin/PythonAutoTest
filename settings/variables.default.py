@@ -82,3 +82,7 @@ window.WebSocket = class {
 
 # Общие диски
 SHARE_DRIVES = 'pro.doczilla.sharing.drives'
+# Внутренний шеринг
+SHARING_INNER = 'pro.doczilla.sharing.inner'
+# Рецензирование
+COLLABORATION = 'pro.doczilla.collaboration'
