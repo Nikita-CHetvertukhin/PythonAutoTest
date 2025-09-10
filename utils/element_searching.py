@@ -42,12 +42,14 @@ class XPathFinder:
         """Проверяет, что элемент(ы) кликабелен."""
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
-
+        # Ищем и скроллим до элемента
+        element = self.driver.find_element(By.XPATH, path)
+        if scroll:
+            self.driver.execute_script("arguments[0].scrollIntoView();", element)
+        # Проверяем кликабельность
         element = WebDriverWait(self.driver, wait_time).until(
             EC.element_to_be_clickable((By.XPATH, path))
         )
-        if scroll:
-            self.driver.execute_script("arguments[0].scrollIntoView();", element)
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
 
     def find_invisible(self, path, timeout=None, few=None):

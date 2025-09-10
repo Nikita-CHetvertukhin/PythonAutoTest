@@ -14,7 +14,6 @@ import allure
 @pytest.mark.base_smoke
 @pytest.mark.base
 @pytest.mark.combo
-@pytest.mark.test
 @pytest.mark.skipif(
     not is_licence_enabled(SHARING_INNER) or not is_licence_enabled(COLLABORATION),
     reason=f"Лицензии '{SHARING_INNER}' или '{COLLABORATION}' отключены — тест пропущен"

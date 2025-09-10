@@ -65,6 +65,8 @@ class MyFilesEditorLocators(BaseLocators):
     '''РЕДАКТОР'''
     # Технический xpath до листа редактора
     EDITOR_LIST = '//div[contains(@class,"container")]//div[contains(@class,"container")]/div[contains(@class,"editor")]/div[contains(@class,"editor")]/div[contains(@class,"container")]/div[contains(@class,"container")]'
+    # Технический xpath до строки (в конце можно добавлять номер строки [x])
+    EDITOR_LINE = f'{EDITOR_LIST}//div[contains(@class,"main")]/div[contains(@class,"x-line")]'
     # Универсальный инпут, принимает текст туда где активен курсор в докмуенте
     DOC_INPUT = f'{EDITOR_LIST}/input'
     # Кнопка привязки к схеме, появляющая после выделения текста

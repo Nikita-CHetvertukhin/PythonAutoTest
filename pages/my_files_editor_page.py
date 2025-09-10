@@ -102,6 +102,21 @@ class MyFilesEditorPage(BasePage):
         self.actions.double_click(target).perform()
         self.logger.info(f"Выполнена привязка к переменной {variable_name}")
 
+    def check_content_in_doc(self, content, string_sumber=None):
+        '''Метод ищет span в тексте с точным совпадением с заданным'''
+        try:
+            if string_sumber is not None:
+                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[text()='{content}']", timeout=1)
+                self.logger.info(f"Текст '{content}' найден в документе на строке '{string_sumber}'")
+                return True
+            else:
+                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LIST}//span[text()='{content}']", timeout=1)
+                self.logger.info(f"Текст '{content}' найден в документе")
+                return True
+        except Exception:
+            self.logger.error(f"Текст '{content}' НЕ найден в документе '{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[text()='{content}']'")
+            return False
+
     def open_side_panel_in_doc(self, panel_name):
         '''Открывает боковую панель по названию'''
         target_path = f'{MyFilesEditorLocators.DOC_SIDE_PANEL}[contains(@title,"{panel_name}")]'
@@ -129,14 +144,62 @@ class MyFilesEditorPage(BasePage):
             self.logger.error(f"Не удалось создать переменную")
             return False
 
-    def find_and_send_variable_in_questionnaire(self, variable_type, variable_name, content):
+    def find_and_send_variable_in_questionnaire(self, variable_type, variable_name, content=None, in_replicator=False, replica_name=None, variable_in_replica_type=None, variable_in_replica_name=None, replica_action=None):
         '''Метод ищет переменную в анкете по названию и заполняет её textarea'''
         target_box_path = f'{MyFilesEditorLocators.QUESTIONNAIRE_ITEM_NAME}[text()="{variable_name}"]/ancestor::span'
         # Пока просто добавил textarea, но в зависимости от типа переменной может быть input и тд
         textarea_box_path = f'{target_box_path}//textarea'
+        input_box_path = f'{target_box_path}//input'
+        flag_box_path = f'{target_box_path}/parent::*/i'
         if variable_type == "Текст":
-            textarea = self.xpath.find_clickable(textarea_box_path, timeout=3)
-            textarea.send_keys(content)
+            self.logger.info(f"Поиск и заполнение переменной '{variable_name}' типа '{variable_type}' в анкете")
+            target_textarea = self.xpath.find_clickable(textarea_box_path, timeout=3, scroll=True)
+            target_textarea.send_keys(content)
+            self.logger.info(f"Переменная '{variable_name}' типа '{variable_type}' заполнена в анкете значением '{content}'")
+        if variable_type in ("Дата", "Число"):
+            self.logger.info(f"Поиск и заполнение переменной '{variable_name}' типа '{variable_type}' в анкете")
+            target_input = self.xpath.find_clickable(input_box_path, timeout=3, scroll=True)
+            target_input.send_keys(content)
+            self.logger.info(f"Переменная '{variable_name}' типа '{variable_type}' заполнена в анкете значением '{content}'")
+        if variable_type == "Условие":
+            self.logger.info(f"Поиск и заполнение переменной '{variable_name}' типа '{variable_type}' в анкете")
+            target_flag = self.xpath.find_clickable(flag_box_path, timeout=3, scroll=True)
+            target_flag.click()
+            self.logger.info(f"По переменной '{variable_name}' типа '{variable_type}' выполнен клик")
+        if variable_type == "Мультипликатор":
+            '''Действия с репликой, требуют аргументов: 
+            variable_type (Мультипликтатор), variable_name (Имя мульта), replica_name (Название реплики), replica_action (Добавить или удалить)'''
+            if replica_action == "Добавить":
+                self.logger.info(f"Добавление новой реплики от реплики '{replica_name}' в мультипликатор '{variable_name}'")
+                add_replica_button_xpath = f'{target_box_path}//span[(@class=" text")and contains(@title,"{replica_name}")]//a[contains(@title,"Добавить")]'
+                self.xpath.find_clickable(add_replica_button_xpath, timeout=3, scroll=True).click()
+            if replica_action == "Удалить":
+                self.logger.info(f"Удаление реплики от реплики '{replica_name}' в мультипликатор '{variable_name}'")
+                delete_replica_button_xpath = f'{target_box_path}//span[(@class=" text")and contains(@title,"{replica_name}")]//a[contains(@title,"Удалить")]'
+                self.xpath.find_clickable(delete_replica_button_xpath, timeout=3, scroll=True).click()
+            '''Действие с переменной внутри мультипликатора, требует аргументов:
+            variable_type (Мультипликтатор), variable_name (Имя мульта), content (если нужно ввести контент), in_replicator (True),
+            replica_name (Название реплики), variable_in_replica_type (тип переменной), variable_in_replica_name (название переменной)'''
+            if in_replicator:
+                target_box_path = f'{MyFilesEditorLocators.QUESTIONNAIRE_ITEM_NAME}[text()="{variable_name}"]/ancestor::span//span[(@class=" text")and contains(@title,"{replica_name}")]//span[@title="{variable_in_replica_name}"]'
+                textarea_box_path = f'{target_box_path}//textarea'
+                input_box_path = f'{target_box_path}//input'
+                flag_box_path = f'{target_box_path}/parent::*/i'
+                if variable_in_replica_type == "Текст":
+                    self.logger.info(f"Поиск и заполнение переменной '{variable_in_replica_name}' типа '{variable_in_replica_type}' в реплике '{replica_name}' мультипликатора '{variable_name}'")
+                    target_textarea = self.xpath.find_clickable(textarea_box_path, timeout=3, scroll=True)
+                    target_textarea.send_keys(content)
+                    self.logger.info(f"Переменная '{variable_in_replica_name}' типа '{variable_in_replica_type}' заполнена в реплике '{replica_name}' мультипликатора '{variable_name}' значением '{content}'")
+                if variable_in_replica_type in ("Дата", "Число"):
+                    self.logger.info(f"Поиск и заполнение переменной '{variable_in_replica_name}' типа '{variable_in_replica_type}' в реплике '{replica_name}' мультипликатора '{variable_name}'")
+                    target_input = self.xpath.find_clickable(input_box_path, timeout=3, scroll=True)
+                    target_input.send_keys(content)
+                    self.logger.info(f"Переменная '{variable_in_replica_name}' типа '{variable_in_replica_type}' заполнена в реплике '{replica_name}' мультипликатора '{variable_name}' значением '{content}'")
+                if variable_in_replica_type == "Условие":
+                    self.logger.info(f"Поиск и заполнение переменной '{variable_in_replica_name}' типа '{variable_in_replica_type}' в реплике '{replica_name}' мультипликатора '{variable_name}'")
+                    target_flag = self.xpath.find_clickable(flag_box_path, timeout=3, scroll=True)
+                    target_flag.click()
+                    self.logger.info(f"По переменной '{variable_in_replica_name}' типа '{variable_in_replica_type}' в реплике '{replica_name}' мультипликатора '{variable_name}' выполнен клик")
 
     def finish_questionnaire(self, action_name):
         '''После заполнения анкеты нажимает "Далее" и выполняет указанное действие'''
