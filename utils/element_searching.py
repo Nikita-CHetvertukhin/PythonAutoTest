@@ -43,8 +43,8 @@ class XPathFinder:
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
         # Ищем и скроллим до элемента
-        element = self.driver.find_element(By.XPATH, path)
         if scroll:
+            element = self.driver.find_element(By.XPATH, path)
             self.driver.execute_script("arguments[0].scrollIntoView();", element)
         # Проверяем кликабельность
         element = WebDriverWait(self.driver, wait_time).until(
