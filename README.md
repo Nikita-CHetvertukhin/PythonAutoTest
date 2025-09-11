@@ -120,10 +120,6 @@ pytest -m prepare --browser chrome
 <details>  
 <summary>⚙️ Настроить файл `docker-compose.yml`:</summary>
 
-- Если тестируем локально развернутое приложение, заменить URL в TEST_URL с http://localhost:9080/ на:
-```bash
-http://host.docker.internal:9080/
-```
 - Установить путь копирования отчета из контейнера на хост машину, например:
 ```bash
 - "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
@@ -131,6 +127,14 @@ http://host.docker.internal:9080/
 - При необходимости изменить название образа и тег:
 ```bash
 image: dz_autotest:dev
+```
+- Если тестируем локально развернутое приложение, заменить URL в TEST_URL с http://localhost:9080/ на:
+```bash
+http://host.docker.internal:9080/
+```
+- Поменять Workspace на актуальный для сборки, например:
+```bash
+pro.doczilla.gpt.workspace.table.Workspace
 ```
 </details>  
 

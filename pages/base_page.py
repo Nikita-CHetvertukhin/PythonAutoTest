@@ -97,7 +97,7 @@ class BasePage:
                     ActionChains(self.driver).move_to_element(target_item).perform()
                     self.logger.info(f"Наведение на элемент '{button_name}' внутри 'Doczilla Pro'.")
                     try:
-                        nested_dropdown = self.xpath.find_inside(dropdown, BaseLocators.HEADER_DROPDOWN_LIST, few=True)
+                        nested_dropdown = self.xpath.find_inside(target_item, BaseLocators.HEADER_DROPDOWN_LIST, few=True)
                     except TimeoutException:
                         self.logger.error(f"Dropdown для '{nested_button_name}' не появился вовремя.")
                         return False
@@ -107,7 +107,7 @@ class BasePage:
                     
                     nested_items = [
                         item for dropdown in nested_dropdown
-                        for item in self.xpath.find_inside(dropdown, f".//label[text()='{nested_button_name}']/parent::div", few=True)
+                        for item in self.xpath.find_inside(target_item, f".//label[text()='{nested_button_name}']/parent::div", few=True)
                     ]
                     if nested_items:
                         nested_items[0].click()
