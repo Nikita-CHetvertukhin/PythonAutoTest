@@ -5,3 +5,4 @@
 /log
 /settings/variables.py
 /allure_results
+/docker-compose.yml

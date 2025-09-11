@@ -15,8 +15,8 @@ import allure
 @pytest.mark.base
 @pytest.mark.combo
 @pytest.mark.skipif(
-    not is_licence_enabled(SHARING_INNER) or not is_licence_enabled(COLLABORATION),
-    reason=f"Лицензии '{SHARING_INNER}' или '{COLLABORATION}' отключены — тест пропущен"
+    not is_licence_enabled(SHARING_INNER),
+    reason=f"Лицензии '{SHARING_INNER}' отключена — тест пропущен"
 )
 @pytest.mark.parametrize("setup_create_delete_file", [{
     "upload_file_name": "AQA_Test_Acces_docx.docx",
@@ -38,7 +38,7 @@ def test_check_full_acces_docx(error_handler, logger, admin_driver, expert_drive
     my_files_expert.find_click_header_menu("Документы")
     my_files_expert.find_click_side_menu("Доступные мне")
     # Проверка действий из ПКМ
-    result = my_files_expert.get_action_availability("docx", "Полный доступ",coloboration_box)
+    result = my_files_expert.get_action_availability("docx", "Полный доступ", coloboration_box)
     my_files_expert.right_click_and_check_acces(file_name, result)
     # Проверка внесений изменений в текст + боковых панелей для абзаца/таблицы/картинки
     my_files_editor_expert.check_acces_in_editor(acces_level="Полный доступ", setting_type="Настройки абзаца", text="justParagraph")

@@ -3,8 +3,7 @@ import time
 from utils.exception_handler.decorator_error_handler import exception_handler
 from pages.my_files_editor_page import MyFilesEditorPage
 from locators.my_files_editor_locators import MyFilesEditorLocators
-from utils.download_manager import DownloadManager
-from utils.get_date import get_date
+from utils.get_date import get_date, get_timezone_info
 import allure
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
@@ -20,6 +19,7 @@ def test_date_formuls(error_handler, logger, admin_driver, setup_create_delete_f
     file_name, my_files_page, xpath = setup_create_delete_file
     my_files_editor_page = MyFilesEditorPage(admin_driver, logger)
     today = get_date("today")
+    gmt_format = get_timezone_info()
 
     logger.info("Начало проверки работы формул с датой")
     my_files_editor_page.open_side_panel_in_doc("Анкета")
@@ -45,12 +45,12 @@ def test_date_formuls(error_handler, logger, admin_driver, setup_create_delete_f
     assert my_files_editor_page.check_content_in_doc("true", "17")
     assert my_files_editor_page.check_content_in_doc("0", "18")
     assert my_files_editor_page.check_content_in_doc("2", "19")
-    assert my_files_editor_page.check_content_in_doc("Mon Apr 01 2024 00:00:00 GMT+0200 (Центральная Европа, летнее время)", "20") # Продумать защиту от разных часовых поясов
-    assert my_files_editor_page.check_content_in_doc("Tue Apr 30 2024 00:00:00 GMT+0200 (Центральная Европа, летнее время)", "21") # Продумать защиту от разных часовых поясов
-    assert my_files_editor_page.check_content_in_doc("Mon Apr 01 2024 00:00:00 GMT+0200 (Центральная Европа, летнее время)", "22") # Продумать защиту от разных часовых поясов
-    assert my_files_editor_page.check_content_in_doc("Mon Jan 01 2024 00:00:00 GMT+0100 (Центральная Европа, стандартное время)", "23") # Продумать защиту от разных часовых поясов
+    assert my_files_editor_page.check_content_in_doc(f"Mon Apr 01 2024 00:00:00 GMT{gmt_format}", "20", partial_match=True)
+    assert my_files_editor_page.check_content_in_doc(f"Tue Apr 30 2024 00:00:00 GMT{gmt_format}", "21", partial_match=True)
+    assert my_files_editor_page.check_content_in_doc(f"Mon Apr 01 2024 00:00:00 GMT{gmt_format}", "22", partial_match=True)
+    assert my_files_editor_page.check_content_in_doc(f"Mon Jan 01 2024 00:00:00", "23", partial_match=True)
     assert my_files_editor_page.check_content_in_doc("30", "24")
-    assert my_files_editor_page.check_content_in_doc("2024-04-02T00:00:00+02:00", "25") # Продумать защиту от разных часовых поясов
+    assert my_files_editor_page.check_content_in_doc(f"2024-04-02T00:00:00", "25", partial_match=True)
     assert my_files_editor_page.check_content_in_doc("01.04.2024", "26")
     assert my_files_editor_page.check_content_in_doc("01.01.2024", "27")
     assert my_files_editor_page.check_content_in_doc("2 024", "28")

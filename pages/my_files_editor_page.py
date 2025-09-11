@@ -102,19 +102,21 @@ class MyFilesEditorPage(BasePage):
         self.actions.double_click(target).perform()
         self.logger.info(f"Выполнена привязка к переменной {variable_name}")
 
-    def check_content_in_doc(self, content, string_sumber=None):
+    def check_content_in_doc(self, content, string_sumber=None, partial_match=False):
         '''Метод ищет span в тексте с точным совпадением с заданным'''
         try:
+            match_expr = f"contains(text(), '{content}')" if partial_match else f"text()='{content}'"
+
             if string_sumber is not None:
-                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[text()='{content}']", timeout=1)
+                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[{match_expr}]", timeout=1)
                 self.logger.info(f"Текст '{content}' найден в документе на строке '{string_sumber}'")
                 return True
             else:
-                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LIST}//span[text()='{content}']", timeout=1)
+                self.xpath.find_visible(f"{MyFilesEditorLocators.EDITOR_LIST}//span[{match_expr}]", timeout=1)
                 self.logger.info(f"Текст '{content}' найден в документе")
                 return True
         except Exception:
-            self.logger.error(f"Текст '{content}' НЕ найден в документе '{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[text()='{content}']'")
+            self.logger.error(f"Текст '{content}' НЕ найден в документе '{MyFilesEditorLocators.EDITOR_LINE}[{string_sumber}]//span[{match_expr}]'")
             return False
 
     def open_side_panel_in_doc(self, panel_name):
@@ -240,11 +242,11 @@ class MyFilesEditorPage(BasePage):
             input_field.send_keys(f"{test_content}")
             if acces_level in ["Рецензирование","Полный доступ"]:
                 self.logger.info(f"Уровень доступа '{acces_level}' позволяет редактировать текст.")
-                self.xpath.find_visible(f"//span[text()='{test_content}']", timeout=1)
+                self.xpath.find_visible(f"//span[contains(text(), '{test_content}')]", timeout=1)
             else:
                 self.logger.info(f"Уровень доступа '{acces_level}' НЕ позволяет редактировать текст.")
                 try:
-                    self.xpath.find_visible(f"//span[text()='{test_content}']", timeout=1)
+                    self.xpath.find_visible(f"//span[contains(text(), '{test_content}')]", timeout=1)
                     raise Exception(f"Ошибка: Уровень доступа '{acces_level}' позволяет редактировать текст, хотя не должен.")
                 except Exception:
                     self.logger.info(f"Редактирование текста не произошло, что соответствует уровню доступа '{acces_level}'.")

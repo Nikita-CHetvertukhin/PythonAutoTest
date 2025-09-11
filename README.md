@@ -118,11 +118,16 @@ pytest -m prepare --browser chrome
 </details>  
 
 <details>  
-<summary>⚙️ Настроить файл `docker-compose.yml`:</summary>
+<summary>⚙️ Настроить файл `docker-compose.default.yml`:</summary>
+
+- Переименовать, убрав ".default", например:
+```bash
+- docker-compose.yml
+```
 
 - Установить путь копирования отчета из контейнера на хост машину, например:
 ```bash
-- "D:\\Dev\\Auto_Test_DZ\\allure_reports:/app/report"
+- "D:\\Dev\\PythonAutoTest\\allure_reports:/app/report"
 ```
 - При необходимости изменить название образа и тег:
 ```bash

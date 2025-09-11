@@ -108,7 +108,7 @@ class MyFilesPage(BasePage):
             elif action in ["Скачать PDF", "Скачать PDF/A"]:
                 availability[action] = True
             elif action == "Загрузить версию":
-                availability[action] = is_editor and is_docx_or_dotx and collaboration_enabled
+                availability[action] = is_editor and is_docx_or_dotx
             elif action == "Сравнить":
                 availability[action] = True
             elif action == "Копировать":

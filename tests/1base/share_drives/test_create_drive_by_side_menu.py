@@ -26,10 +26,10 @@ def test_create_drive_by_side_menu(error_handler, logger, admin_driver, setup_cr
     # Открытие созданной папки
     my_files_page.right_click_and_select_action(drive_name, "Открыть")
     time.sleep(1) # ToDo пока не знаю, что смотерть когда октрываю пустую папку
+    my_files_page.click_header_logo_button()
+    my_files_page.find_click_header_menu("Документы")
     # Обновление страницы
     refresh_and_wait(admin_driver, logger)
     # Финальная проверка присутствия файла в системе и корректного формата
-    my_files_page.click_header_logo_button()
-    my_files_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Общие диски")
     my_files_page.find_file_by_name(drive_name, "folder")

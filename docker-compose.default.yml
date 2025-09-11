@@ -23,8 +23,6 @@ services:
             memory: 8G
     environment:
         # Ссылка на сборку для теста
-        - TEST_URL=https://clm.doczilla.pro/dev/
+        - TEST_URL=https://test.doczilla.pro/
         # Рабочий компонент "Документы" на сборке
-            # Workflow: pro.doczilla.workflow.workspace.table.Workspace
-            # Base: pro.doczilla.gpt.workspace.table.Workspace
-        - WORKSPACE=pro.doczilla.workflow.workspace.table.Workspace
+        - WORKSPACE=pro.doczilla.testWorkspace.workspace.table.Workspace
