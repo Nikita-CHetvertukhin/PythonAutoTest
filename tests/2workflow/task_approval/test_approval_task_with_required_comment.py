@@ -20,6 +20,7 @@ def test_approval_task_with_required_comment(error_handler, logger, admin_driver
 
     logger.info("Проверка наличия обязательного комментария")
     # Проверяем отмену обязательного комментария
+    my_tasks_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, ADMIN_LOGIN, "Отправить на доработку")]
     my_tasks_page.complete_task(task_name, subtasks, waiting=False)
     xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_REQUIRED_COMMENT_CANCEL_BUTTON, timeout=3).click()

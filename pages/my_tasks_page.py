@@ -702,3 +702,16 @@ class MyTasksPage(BasePage):
             self.logger.info(f"Закрыто {len(close_buttons)} всплывающих окон.")
         except Exception as e:
             self.logger.error(f"Ошибка при поиске всплывающих окон: {e}")
+
+    def click_if_fa_caret_right(self, name_task):
+        '''Метод кликает по кнопке раскрытия подзадач основной задачи, если список свернут по умолчанию (кастом некоторых сборок)'''
+        xpath = XPathFinder(self.driver)
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{name_task}"]/parent::div/span[contains(@class,"collapser")]/div[contains(@class,"fa-caret-right")]'
+        try:
+            self.logger.info(f"Проверяем, свернут ли список подзадач для задачи '{name_task}'")
+            target_element = xpath.find_clickable(target_span_xpath, timeout=2)
+            if target_element:
+                target_element.click()
+                self.logger.info(f"Список подзадач для задачи '{name_task}' был свернут. Выполнен клик по кнопке раскрытия.")
+        except Exception:
+            self.logger.info(f"Список подзадач для задачи '{name_task}' уже раскрыт. Клик по кнопке раскрытия не требуется.")

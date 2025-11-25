@@ -55,7 +55,7 @@ class BasePage:
         
         # Поиск кнопок меню
         try:
-            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=5, few=True)
+            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=10, few=True)
         except TimeoutException:
             btns_headerMenu = []
         if not btns_headerMenu:
@@ -129,8 +129,8 @@ class BasePage:
         :param button_name: Название кнопки меню
         :return: True, если элемент найден и обработан успешно, иначе False.
         """
-        # Поиск кнопок меню
-        btns_sideMenu = self.xpath.find_visible(BaseLocators.SIDE_MENU_BUTTONS, timeout=1, few=True)
+        # Поиск кнопок меню (Увеличенный таймаут из-за сборок с LDAP)
+        btns_sideMenu = self.xpath.find_visible(BaseLocators.SIDE_MENU_BUTTONS, timeout=10, few=True)
         if not btns_sideMenu:
             self.logger.error("Кнопки бокового меню не найдены.")
             return False
@@ -192,10 +192,11 @@ class BasePage:
         self.logger.error(f"Кнопка '{button_name}' не найдена в боковом меню.")
         return False         
     
-    def find_file_by_name(self, name, format_file=None):
+    def find_file_by_name(self, name, format_file=None, time=2):
         """Ищет файл по имени и скроллит до него, если он не виден.
         Аргумент format позволяет указать формат файла, если необходимо.
         Возможные значения fromats: 'docz', 'docx', 'dotx', 'folder'.
+        time - таймаут (по умолчанию - 2 секунды)
         """
         xpath = XPathFinder(self.driver)
         # Проверяем допустимые форматы файлов если указаны
@@ -208,8 +209,8 @@ class BasePage:
             # Формируем xpath до интересуещего процесса
             target_xpath = f'{BaseLocators.BODY_NAMES}/span[@title="{name}"]'
 
-            # Ищем сам элемент внутри списка
-            file_element = xpath.find_located(target_xpath, timeout=1, few=False)
+            # Ищем сам элемент внутри списка (Увеличенный таймаут из-за нестабильных рефрешей на сборках с LDAP)
+            file_element = xpath.find_located(target_xpath, timeout=time, few=False)
 
             if file_element:
                 self.logger.info(f"Файл '{name}' найден в DOM.")

@@ -39,26 +39,28 @@ def test_check_acces_simple_process(error_handler, logger, admin_driver, user1_d
     
     logger.info("Проверка изменения доступов к документу в зависимости от смены исполнителя, завершении задачи для 'Простая задача'")
     # Проверяем права исполнителя после создания задачи
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
+    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access1))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."
     
     # Смена исполнителя задачи и проверка доступов для нового/старого исполнителя
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     my_tasks_page.open_subtask(task_name, subtask_massive=[(1, "Задача")])
     my_tasks_page.task_executor_properties(executor_login=USER1_LOGIN, action="set")
     my_tasks_page.find_click_header_menu("Документы")
     my_tasks_page.find_click_side_menu("Мои файлы")
     my_files_page.right_click_and_select_action(file_name, "Открыть")
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
+    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access2))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."
 
     # Завершаем задачу под новым исполнителем
     user1_my_task_page.find_click_header_menu("Мои задачи")
     user1_my_task_page.find_click_side_menu("Мои задачи")
+    user1_my_task_page.click_if_fa_caret_right(task_name)
     user1_my_task_page.complete_task(task_name=task_name, subtask_massive=[(1, "Задача", "Выполнить")])
 
     # Финально проверяем доступы после завершения задачи
     refresh_and_wait(admin_driver, logger)
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
+    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access3))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."

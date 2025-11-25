@@ -44,7 +44,7 @@ def test_check_observer_auto(request, error_handler, logger, admin_driver, user1
     user1_my_tasks_page = MyTasksPage(user1_driver, logger)
     logger.info("Начало проверки автоматического назначения наблюдателя и его уровней доступа")
     # # Проверяем доступ к документу для наблюдателя
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
+    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
     logins_and_access = [(USER1_LOGIN, "Просмотр")]
     assert (result := my_files_page.share_access(action="check", logins_and_access=logins_and_access)) is True, f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access}."
     
@@ -54,5 +54,6 @@ def test_check_observer_auto(request, error_handler, logger, admin_driver, user1
     user1_my_tasks_page.find_click_side_menu("Мои задачи")
     user1_my_tasks_page.find_click_side_menu("Отслеживаемые")
     time.sleep(3) # TODO Разобраться что блокирует открытие подзадачи без ожидания. Мне кажется даже при выключенных уведомлениях появляется какой-то фрейм на всю страницу не видимый для юзера, который сбивает селениум
+    user1_my_tasks_page.click_if_fa_caret_right(task_name)
     user1_my_tasks_page.open_subtask(task_name, subtask_massive=[(1, "Задача")])
     assert user1_my_tasks_page.check_access_to_task_fields(fields_massive=[]), "Ошибка в доступе к полям задачи для наблюдателя."

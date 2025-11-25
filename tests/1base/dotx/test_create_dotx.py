@@ -27,4 +27,4 @@ def test_create_dotx(error_handler, logger, admin_driver, setup_create_delete_fi
     # Обновление страницы
     refresh_and_wait(admin_driver, logger)
     # Финальная проверка присутствия файла в системе и корректного формата
-    assert my_files_page.find_file_by_name(file_name, "dotx") is not None, f"Файл '{file_name}.dotx' не найден"
+    assert my_files_page.find_file_by_name(file_name, "dotx", time=10) is not None, f"Файл '{file_name}.dotx' не найден"

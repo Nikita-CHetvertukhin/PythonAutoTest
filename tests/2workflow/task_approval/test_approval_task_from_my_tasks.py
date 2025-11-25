@@ -19,6 +19,7 @@ def test_approval_task_from_my_tasks(error_handler, logger, admin_driver, setup_
     task_name, my_tasks_page, xpath = setup_create_delete_task
 
     logger.info("Проверка выполнения задачи из меню 'Мои задачи'")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, "Задача", "Выполнить")]
     my_tasks_page.complete_task(task_name, subtasks)
 

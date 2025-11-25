@@ -54,6 +54,7 @@ def test_automate_transform_docx_myfiles(error_handler, logger, admin_driver,set
     # Выполняем задачу
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(f"task_{process_name}")
     my_tasks_page.complete_task(f"task_{process_name}", subtask_massive=[(1, "Задача", "Выход")])
 
     # Проверяем создание папки и преобразование анкеты в docx

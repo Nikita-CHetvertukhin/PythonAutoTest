@@ -14,4 +14,5 @@ def test_adding_subtask(error_handler, logger, admin_driver, setup_create_delete
     my_tasks_page.right_click_and_select_action(task_name, "Открыть")
     assert my_tasks_page.task_name_properties(task_name, action="check"), f"Ошибка: Название задачи '{task_name}' не совпадает с найденным."
     my_tasks_page.create_subtask(subtask_name=f"{task_name}_subtask")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     assert my_tasks_page.find_file_by_name(f"{task_name}_subtask") is not None, f"Ошибка: Подзадача '{task_name}_subtask' не найдена после создания."

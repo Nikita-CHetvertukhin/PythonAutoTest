@@ -35,6 +35,8 @@ def test_automat_create_subtask(error_handler, logger, admin_driver, setup_creat
 
     logger.info("Начало проверки автоматизации по созданию подзадачи")
     subtasks = [(2, "Созданная подзадача", "Выполнить"),(1, "Основная задача", "Выход")]
+    my_tasks_page.click_if_fa_caret_right(task_name)
+    my_tasks_page.click_if_fa_caret_right("Основная задача")
     my_tasks_page.complete_task(task_name, subtasks)
 
     my_tasks_page.find_click_header_menu("Мои задачи")

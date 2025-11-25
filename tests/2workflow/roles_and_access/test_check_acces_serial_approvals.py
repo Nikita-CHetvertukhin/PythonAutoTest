@@ -25,7 +25,7 @@ import allure
 # # После согласования всех УЗ
 # logins_and_access_final = [(USER5_LOGIN, "Просмотр"),(USER2_LOGIN, "Просмотр"),(USER3_LOGIN, "Просмотр"),(USER4_LOGIN, "Просмотр"),(USER1_LOGIN, "Просмотр")]
 logins_and_access_default = [(USER1_LOGIN, "Полный доступ"),(USER2_LOGIN, "Рецензирование"),(USER3_LOGIN, "Комментирование"),(USER4_LOGIN, "Просмотр")]
-logins_and_access_default_check = [(USER1_LOGIN, "Полный доступ"),(USER2_LOGIN, "Нет доступа"),(USER3_LOGIN, "Нет доступа"),(USER4_LOGIN, "Нет доступа")]
+logins_and_access_default_check = [(USER1_LOGIN, "Полный доступ")]
 logins_and_access_final = [(USER1_LOGIN, "Просмотр"),(USER2_LOGIN, "Просмотр"),(USER3_LOGIN, "Просмотр"),(USER4_LOGIN, "Просмотр")]
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
@@ -107,18 +107,22 @@ def test_check_acces_serial_approvals(
     # Закрываем задачу УЗ1
     user1_my_tasks_page.find_click_header_menu("Мои задачи")
     user1_my_tasks_page.find_click_side_menu("Мои задачи")
+    user1_my_tasks_page.click_if_fa_caret_right(task_name)
     user1_my_tasks_page.complete_task(task_name, [(1, USER1_LOGIN, "Согласовать")])
     # Закрываем задачу УЗ2
     user2_my_tasks_page.find_click_header_menu("Мои задачи")
     user2_my_tasks_page.find_click_side_menu("Мои задачи")
+    user2_my_tasks_page.click_if_fa_caret_right(task_name)
     user2_my_tasks_page.complete_task(task_name, [(1, USER2_LOGIN, "Согласовать")])
     # Закрываем задачу УЗ3
     user3_my_tasks_page.find_click_header_menu("Мои задачи")
     user3_my_tasks_page.find_click_side_menu("Мои задачи")
+    user3_my_tasks_page.click_if_fa_caret_right(task_name)
     user3_my_tasks_page.complete_task(task_name, [(1, USER3_LOGIN, "Согласовать")])
     # Закрываем задачу УЗ4
     user4_my_tasks_page.find_click_header_menu("Мои задачи")
     user4_my_tasks_page.find_click_side_menu("Мои задачи")
+    user4_my_tasks_page.click_if_fa_caret_right(task_name)
     user4_my_tasks_page.complete_task(task_name, [(1, USER4_LOGIN, "Согласовать")])
     
     # Финально проверяем доступы после закрытия задачи

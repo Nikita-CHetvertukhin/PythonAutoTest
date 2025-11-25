@@ -56,13 +56,14 @@ def test_check_observer_system_approvals(error_handler, logger, admin_driver, us
     my_files_page.share_access(action="check", logins_and_access=logins_massive)
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     my_tasks_page.open_subtask(task_name, subtask_massive=[(1, USER2_LOGIN)])
     my_tasks_page.task_oberver_properties(USER1_LOGIN)
     # Проверяем доступ к докмуенту для наблюдателя
     my_tasks_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Мои файлы")
     my_files_page.right_click_and_select_action(file_name, "Открыть")
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=3).click()
+    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
     logins_and_access = [(USER2_LOGIN, "Полный доступ"),(USER1_LOGIN, "Просмотр")]
     assert (result := my_files_page.share_access(action="check", logins_and_access=logins_and_access)) is True, f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access}."
 
@@ -71,12 +72,14 @@ def test_check_observer_system_approvals(error_handler, logger, admin_driver, us
     user1_my_tasks_page.find_click_side_menu("Мои задачи")
     user1_my_tasks_page.find_click_side_menu("Отслеживаемые")
     time.sleep(3) # TODO Разобраться что блокирует открытие подзадачи без ожидания. Мне кажется даже при выключенных уведомлениях появляется какой-то фрейм на всю страницу не видимый для юзера, который сбивает селениум
+    user1_my_tasks_page.click_if_fa_caret_right(task_name)
     user1_my_tasks_page.open_subtask(task_name, subtask_massive=[(1, USER2_LOGIN)])
     assert user1_my_tasks_page.check_access_to_task_fields(fields_massive=[]), "Ошибка в доступе к полям задачи для наблюдателя."
 
     # Выполняем задачу поди исполнителем и проверяем отсутствие задачи в разделе "Отслеживаемые" у Наблюдателя
     user2_my_tasks_page.find_click_header_menu("Мои задачи")
     user2_my_tasks_page.find_click_side_menu("Мои задачи")
+    user2_my_tasks_page.click_if_fa_caret_right(task_name)
     user2_my_tasks_page.complete_task(task_name, [(1, USER2_LOGIN, "Согласовать")])
     user1_my_tasks_page.click_header_logo_button()
     user1_my_tasks_page.find_click_header_menu("Мои задачи")

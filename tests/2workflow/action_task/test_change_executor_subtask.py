@@ -16,6 +16,7 @@ def test_change_executor_subtask(error_handler, logger, admin_driver, setup_crea
     logger.info("Начало проверки создания подзадачи")
     my_tasks_page.right_click_and_select_action(task_name, "Открыть")
     my_tasks_page.create_subtask(subtask_name=f"{task_name}_subtask")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     assert my_tasks_page.find_file_by_name(f"{task_name}_subtask") is not None, f"Ошибка: Подзадача '{task_name}_subtask' не найдена после создания."
     my_tasks_page.right_click_and_select_action(f"{task_name}_subtask", "Открыть")
     my_tasks_page.task_executor_properties(executor_login=USER1_LOGIN, action="set")
@@ -25,5 +26,6 @@ def test_change_executor_subtask(error_handler, logger, admin_driver, setup_crea
 
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     my_tasks_page.right_click_and_select_action(f"{task_name}_subtask", "Открыть")
     assert my_tasks_page.task_executor_properties(executor_login=USER1_LOGIN, action="check"), "Исполнитель подзадачи не совпадает."

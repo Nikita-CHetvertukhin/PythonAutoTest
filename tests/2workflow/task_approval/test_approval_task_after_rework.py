@@ -27,6 +27,7 @@ def test_approval_task_after_rework(error_handler, logger, admin_driver, user1_d
     # Отправляем на доработку под УЗ исполнителя
     user1_my_task_page.find_click_header_menu("Мои задачи")
     user1_my_task_page.find_click_side_menu("Мои задачи")
+    user1_my_task_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, USER1_LOGIN, "Отправить на доработку")]
     user1_my_task_page.complete_task(task_name, subtasks, waiting=False)
     user1_my_task_page.add_required_comment(text_comment=f"{USER1_LOGIN}_test_required_comment")
@@ -35,6 +36,7 @@ def test_approval_task_after_rework(error_handler, logger, admin_driver, user1_d
     refresh_and_wait(admin_driver, logger) # Так как отключены вебсокеты , обновляем страницу
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     subtasks = [(2, "Доработка", "Согласовать")]
     my_tasks_page.complete_task(task_name, subtasks)
 
@@ -42,6 +44,8 @@ def test_approval_task_after_rework(error_handler, logger, admin_driver, user1_d
     refresh_and_wait(user1_driver, logger) # Так как отключены вебсокеты , обновляем страницу
     user1_my_task_page.find_click_header_menu("Мои задачи")
     user1_my_task_page.find_click_side_menu("Мои задачи")
+    time.sleep(1)
+    user1_my_task_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, USER1_LOGIN, "Согласовать")]
     user1_my_task_page.complete_task(task_name, subtasks)
 

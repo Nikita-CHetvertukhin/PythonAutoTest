@@ -50,6 +50,7 @@ def test_automate_publish_dotx(error_handler, logger, admin_driver, setup_create
     # Выполнение задачи
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
+    my_tasks_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, "Задача", "Выход")]
     my_tasks_page.complete_task(task_name, subtasks)
 

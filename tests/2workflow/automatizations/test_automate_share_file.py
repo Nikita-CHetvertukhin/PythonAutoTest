@@ -59,6 +59,7 @@ def test_automate_share_file(error_handler, logger, admin_driver, user1_driver, 
     # Закрываем задачу под исполнителем
     user1_my_task_page.find_click_header_menu("Мои задачи")
     user1_my_task_page.find_click_side_menu("Мои задачи")
+    user1_my_task_page.click_if_fa_caret_right(task_name)
     subtasks = [(1, "Sharing_test", "Выход")]
     user1_my_task_page.complete_task(task_name, subtasks)
 

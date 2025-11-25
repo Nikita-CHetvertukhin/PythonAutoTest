@@ -27,7 +27,8 @@ def test_authorization(error_handler, logger, driver, test_suite):
 
     if expect_error:
         # Проверяем наличие ошибки при авторизации с неверными кредами + отсутствие элемента личного кабинета
-        assert login_page.check_error(expect_error, LoginLocators.AUTH_ERROR), "Отсутствие ошибки при попытке входа с неверным логином/паролем"
+        # Увеличенный таймаут ожидания ошибки из-за сборок с LDAP
+        assert login_page.check_error(should_find_error=expect_error, path = LoginLocators.AUTH_ERROR, timeout=10), "Отсутствие ошибки при попытке входа с неверным логином/паролем"
         assert not login_page.check_account_button(), "Элемент личного кабинета найден. Авторизация выполнена."
         logger.info(f"Тест '{suite_name}' завершён")
     else:
