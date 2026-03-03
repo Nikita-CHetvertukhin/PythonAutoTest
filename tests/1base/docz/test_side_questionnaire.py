@@ -26,6 +26,7 @@ def test_side_questionnaire(error_handler, logger, admin_driver, setup_create_de
     # Создание первой переменной в схеме и привязка к тексту
     my_files_editor_page.open_side_panel_in_doc("Схема")
     my_files_editor_page.create_first_variable(test)
+    time.sleep(1)
     my_files_editor_page.tie_to_schema(text, test)
     # Проверка, что появилась вкладка "Анкета"
     assert my_files_editor_page.open_side_panel_in_doc("Анкета")

@@ -26,7 +26,7 @@ def test_base_share_file_to_user(error_handler, logger, admin_driver, user1_driv
 
     logger.info("Начало проверки базовой возможности шеринга файла на УЗ")
     my_files_page.right_click_and_select_action(file_name,"Настроить доступ")
-    my_files_page.share_access(f"{USER1_LOGIN}", "Редактор")
+    my_files_page.share_access(action="set",logins_and_access=[(USER1_LOGIN, "Полный доступ")], is_close=False)
     # Ожидаем появления пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления
     my_files_user1.find_click_header_menu("Документы")
@@ -39,8 +39,7 @@ def test_base_share_file_to_user(error_handler, logger, admin_driver, user1_driv
         logger.info(f"Файл '{file_name}' успешно пошерен и найден у '{USER1_LOGIN}'.")
 
     logger.info("Начало проверки уровня 'Нет доступа'")
-    my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
-    my_files_page.share_access(f"{USER1_LOGIN}", "Нет доступа")
+    my_files_page.share_access(action="edit", logins_and_access=[(USER1_LOGIN, "Нет доступа")])
 
     # Ожидаем отсутствия пошеренного документа на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления

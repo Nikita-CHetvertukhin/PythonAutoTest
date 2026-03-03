@@ -20,8 +20,7 @@ import allure
 )
 @pytest.mark.parametrize("setup_create_delete_file", [{
     "upload_file_name": "AQA_Test_Acces_docx.docx",
-    "share_from": EXPERT_LOGIN,
-    "share_acces": "Полный доступ"
+    "logins_and_access": [(EXPERT_LOGIN, "Полный доступ")]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_check_full_acces_docx(error_handler, logger, admin_driver, expert_driver, setup_create_delete_file):
@@ -33,7 +32,7 @@ def test_check_full_acces_docx(error_handler, logger, admin_driver, expert_drive
     my_files_editor_expert = MyFilesEditorPage(expert_driver, logger)
     coloboration_box = is_licence_enabled(COLLABORATION)
 
-    logger.info("Начало проверки уровня доступа 'Рецензирование'")
+    logger.info("Начало проверки уровня доступа 'Полный доступ'")
     my_files_expert.click_header_logo_button()
     my_files_expert.find_click_header_menu("Документы")
     my_files_expert.find_click_side_menu("Доступные мне")
@@ -51,6 +50,8 @@ def test_check_full_acces_docx(error_handler, logger, admin_driver, expert_drive
     xpath_expert.find_clickable(MyFilesEditorLocators.CANCEL_BUTTON, timeout=3).click()
     time.sleep(0.5) # Для стабильности
     xpath_expert.find_clickable(MyFilesEditorLocators.CANCEL_BUTTON, timeout=3).click()
+    # Клик в область рецензирования для появления тулбара и проверки его элементов
+    my_files_editor_expert.find_click_span_in_text("justReview")
     # Проверка действий на вкладках тулбара
     my_files_editor_expert.check_acces_in_header_section(acces_level="Полный доступ", section_name="Конструктор", file_type="docx")
     my_files_editor_expert.check_acces_in_header_section(acces_level="Полный доступ", section_name="Главная")

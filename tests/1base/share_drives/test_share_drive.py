@@ -25,7 +25,7 @@ def test_share_drive(error_handler, logger, admin_driver, user1_driver, setup_cr
     logger.info("Начало проверки базового шеринга общего диска")
     # Настройки доступа
     my_files_page.right_click_and_select_action(drive_name, "Настроить доступ")
-    my_files_page.share_access(f"{USER1_LOGIN}", "Полный доступ")
+    my_files_page.share_access(action="set",logins_and_access=[(USER1_LOGIN, "Полный доступ")])
     # Ожидаем появления пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления
     user1_my_files_page.find_click_header_menu("Документы")

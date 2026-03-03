@@ -8,11 +8,11 @@ class BaseLocators:
     '''HEADER'''
 
     # Кнопка Лого DZ
-    HEADER_LOGO_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/button[1]'
+    HEADER_LOGO_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/div[1]'
     # Кнопка выпадашки Doczilla Pro
-    HEADER_DOCZILLA_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/button[2]'
+    HEADER_DOCZILLA_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"logo")]/div[2]'
     # Кнопки меню в Header
-    HEADER_MENU_BUTTONS = '//div[contains(@class, "entry-buttons")]/button'
+    HEADER_MENU_BUTTONS = '//div[contains(@class, "entry-buttons")]/div[contains(@class,"button")]'
     # Выпадающий список при нажатии на кнопку из меню в Header или выпадашку Doczilla Pro
     HEADER_DROPDOWN_LIST = '//div[not(contains(@class,"display-none"))and contains(@class,"x-popup")]/div[contains(@class,"menu")]'
     # Название отвкрытого процесса или документа вместо строки поиска
@@ -22,7 +22,7 @@ class BaseLocators:
     # Кнопка "Помощь"
     HEADER_HELP_BUTTON = '//div[@class = "header"]/div[contains(@class, "content")]/a[contains(@class, "help")]'
     # Кнопка личного кабинета
-    HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/button[contains(@class,"account")and not(contains(@class,"display-none"))]'
+    HEADER_ACCOUNT_BUTTON = '//div[contains(@class,"header")]/div[contains(@class,"commands")]/div[contains(@class,"account")and not(contains(@class,"display-none"))]'
 
     '''ACCOUNT'''
 
@@ -64,36 +64,40 @@ class BaseLocators:
     '''SHARE WINDOW'''
 
     # Инпут ввода имени пользователя или группы
-    SHARE_INPUT = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Введите")]'
+    SHARE_INPUT = '//div[contains(@class,"share-dialog")]//input[contains(@placeholder,"Имя")]'
     # Элементы выпадашки с пользователями или группами
-    SHARE_DROPDOWN = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"last")]/div/span'
+    SHARE_DROPDOWN = '//div[contains(@class,"share-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"headline")]'
     # Список строк пользователей или групп с доступом
-    SHARE_LIST = '//div[contains(@class,"share-window")]/div[contains(@class,"body")]/div[contains(@class,"flex-1")]//div[contains(@class,"items")]/table/tbody/tr'
-    # Развернуть список уровней доступа (искать от строки выше + перед действием нужен клик по td с доступами...)
-    SHARE_TRIGGER = '//div[contains(@class,"acces")]/div[contains(@class,"box")]/a[contains(@class,"btn-trigger")]'
-    # Список уровней доступа
-    SHARE_LEVEL = '//td[contains(@class,"column int")]/div[contains(@class,"focus") and contains(@class,"open")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
-    # Кнопка "Сохранить"
-    SHARE_SAVE = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
-    # Кнопка "Отменить"
-    SHARE_CANCEL = '//div[contains(@class,"share-window")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span[contains(text(),"Отменить")]'
+    SHARE_LIST = '//div[contains(@class,"share-dialog")]//div[contains(@class,"share-list") and not(contains(@class,"link"))]/div[(@class="x-box x-item") or (@class="x-box x-item x-hover") or (@class="x-box x-item group") or (@class="x-box x-item group x-hover")]'
+    #Развернуть список уровней доступа (применяется только inside элемента строки в share-list)
+    SHARE_TRIGGER_INSIDE = '/div[contains(@class,"x-combo")]'
+    # Развернуть список уровней доступа в инпуте
+    SHARE_TRIGGER_INPUT = '//div[contains(@class,"share-dialog")]//div[contains(@class,"x-edit")][2]/div[contains(@class,"x-trigger")]'
+    # Элементы списка уровней доступа
+    SHARE_LEVEL = '//div[contains(@class,"share-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"x-item") and not(contains(@class,"display-none"))]/div[contains(@class,"headline")]'
+    # Кнопка "Пригласить"
+    SHARE_INVITE = '//div[contains(@class,"share-dialog")]//div[contains(@class,"invite")]'
+    # Кнопка "Закрыть"
+    SHARE_CLOSE = '//div[contains(@class,"share-dialog")]//div[contains(@class,"close-button")]'
 
     '''PUBLISH WINDOW'''
 
     # Инпут ввода директории публикации
-    PUBLISH_DIRECTORY_INPUT = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Шаблоны")]'
+    #PUBLISH_DIRECTORY_INPUT = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Шаблоны")]'
+    # Кнопка выбора директории
+    PUBLISH_DIRECTORY_TRIGGER = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"select")]'
     # Путь до выпадающего списка со строками директорий
-    PUBLISH_DIRECTORY_DROPDOWN = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"first")]/div/span'
+    PUBLISH_DIRECTORY_DROPDOWN = '//div[contains(@class,"x-popup") and not(contains(@class,"display-none"))]//div[contains(@class,"publish-dialog")]//div[contains(@class,"x-popup") and not(contains(@class,"display-none"))]/div/div[contains(@class,"x-menu")]//div[contains(@class,"x-headline")]'
     # Путь до инпута имени пользователя или группы
-    PUBLISH_INPUT = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//input[contains(@placeholder,"Введите")]'
+    PUBLISH_INPUT = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[contains(@class,"x-input") and not(contains(@class,"display-none"))]'
     # Элементы выпадашки с пользователями или группами
-    PUBLISH_DROPDOWN = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]//div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td[contains(@class,"last")]/div/span'
+    PUBLISH_DROPDOWN = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[contains(@class,"x-input") and not(contains(@class,"display-none"))]/div[contains(@class,"x-popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"x-headline")]'
     # Список УЗ или групп на публикацию
-    PUBLISH_LIST = '//div[contains(@class,"publish-window")]/div[contains(@class,"body")]/div[contains(@class,"flex-1")]//div[contains(@class,"items")]/table/tbody/tr'
+    PUBLISH_LIST = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[(@class="x-box x-item") or (@class="x-box x-item x-hover")]'
     # Кнопка "Готово"
-    PUBLISH_FINISH = '//div[contains(@class,"publish-window")]/div[contains(@class,"footer")]/a[contains(@class,"primary")]/span'
+    PUBLISH_FINISH = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-footer")]/div[contains(@class,"primary")]'
     # Кнопка "Отменить"
-    PUBLISH_CANCEL = '//div[contains(@class,"publish-window")]/div[contains(@class,"footer")]/a[contains(@class,"default")]/span[contains(text(),"Отменить")]'
+    PUBLISH_CANCEL = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-footer")]/div[1]'
 
     '''COPY WINDOW'''
 
@@ -113,6 +117,10 @@ class BaseLocators:
     POPUP_CONFIRM = '//div[contains(@class, "popup")]/div[contains(@class, "footer")]/a[contains(@class, "primary")]/span'
     # Кнопка отмены действия в всплывающем информативном окне
     POPUP_CANCEL = '//div[contains(@class, "popup")]/div[contains(@class, "footer")]/a[contains(@class, "default")]/span'
+    # Кнопка подтверждения в всплывающем окне удаления общего диска
+    POPUP_DRIVE_CONFIRM = '//div[contains(@class, "popup") and not(contains(@class,"display-none"))]//div[contains(@class, "footer")]/div[contains(@class,"primary")]'
+    # Кнопка отмены в всплывающем окне удаления общего диска
+    POPUP_DRIVE_CANCEL = '//div[contains(@class, "popup") and not(contains(@class,"display-none"))]//div[contains(@class, "footer")]/div[contains(@class,"hover")]'
 
     '''ERRORS'''
 

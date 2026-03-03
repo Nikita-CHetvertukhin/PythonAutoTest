@@ -12,7 +12,8 @@ import allure
 @pytest.mark.combo
 @pytest.mark.parametrize("setup_create_delete_file", [{
     "upload_file_name": "AQA_Test_Formuls_Replicator.dotx",
-    "publishing_from": [f"{AQA_GROUP}"]
+    "publishing_from": [f"{AQA_GROUP}"],
+    "publishing_is_group": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_publish_to_group(error_handler, logger, admin_driver, user1_driver, setup_create_delete_file):

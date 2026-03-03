@@ -13,8 +13,6 @@ def test_header_buttons(error_handler, logger, admin_driver):
     my_files_page = MyFilesPage(admin_driver, logger)
 
     logger.info("Начало проверки вкладок в разделе 'Настройки'")
-    my_files_page.find_click_header_menu("Настройки", "Справочники")
-    my_files_page.check_error(should_find_error=False)
     my_files_page.find_click_header_menu("Настройки", "Параметры")
     my_files_page.check_error(should_find_error=False)
     my_files_page.find_click_header_menu("Настройки", "Хранилище паролей")

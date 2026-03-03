@@ -62,7 +62,7 @@ class BasePage:
             self.logger.warning("Кнопки Header меню не найдены. Пробуем через Doczilla Pro.")
         else:
             for btn in btns_headerMenu:
-                label = self.xpath.find_inside(btn, f'.//label[text()="{button_name}"]/parent::button', few=True)
+                label = self.xpath.find_inside(btn, f'.//div[(contains(@class,"label") or contains(@class,"headline")) and(text()="{button_name}")]/parent::div', few=True)
                 if label and label[0].is_displayed():
                     btn.click()
                     self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
@@ -71,7 +71,7 @@ class BasePage:
                         dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
                         nested_items = [
                             item for dropdown in dropdown_elements
-                            for item in self.xpath.find_inside(dropdown, f".//label[text()='{nested_button_name}']/parent::div", few=True)
+                            for item in self.xpath.find_inside(dropdown, f".//div[(contains(@class,'label') or contains(@class,'headline')) and(text()='{nested_button_name}')]/parent::div", few=True)
                         ]
                         if nested_items:
                             nested_items[0].click()
@@ -89,7 +89,7 @@ class BasePage:
         dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
         
         for dropdown in dropdown_elements:
-            potential_items = self.xpath.find_inside(dropdown, f"./div/label[text()='{button_name}']/parent::div", few=True)
+            potential_items = self.xpath.find_inside(dropdown, f"./div/div[(contains(@class,'label') or contains(@class,'headline')) and(text()='{button_name}')]/parent::div", few=True)
             if potential_items:
                 target_item = potential_items[0]
 
@@ -107,7 +107,7 @@ class BasePage:
                     
                     nested_items = [
                         item for dropdown in nested_dropdown
-                        for item in self.xpath.find_inside(target_item, f".//label[text()='{nested_button_name}']/parent::div", few=True)
+                        for item in self.xpath.find_inside(target_item, f".//div[(contains(@class,'label') or contains(@class,'headline')) and(text()='{nested_button_name}')]/parent::div", few=True)
                     ]
                     if nested_items:
                         nested_items[0].click()
@@ -335,41 +335,42 @@ class BasePage:
         process_name = f"{function_name}_{timestamp}"  # Формируем имя процесса
         return process_name
 
-    def share_access(self, login_or_group=None, access_level=None, action="set", logins_and_access=None, is_group=False):
+    def share_access(self, action="set", logins_and_access=None, is_close=True):
         """
-        Настраивает или проверяет доступ для пользователя/группы.
+        Устанавливает, изменяет или проверяет доступ для пользователя/группы.
+        :param action: Режим работы метода:
+            - 'set'   — установить доступ для указанных пользователей/групп
+            - 'check' — проверить соответствие текущих уровней доступа ожидаемым
+            - 'edit'  — изменить уже установленный уровень доступа
 
-        :param login_or_group: Логин или группа (используется при action='set')
-        :param access_level: Уровень доступа (используется при action='set')
-        :param action: 'set' — установить доступ, 'check' — проверить соответствие
-        :param logins_and_access: Список пар (логин, уровень доступа) для проверки (используется при action='check')
+        :param logins_and_access: Список пар (логин, уровень доступа).
+        :param is_close: Закрывать ли окно после выполнения действия (по умолчанию - True).
         """
         xpath = XPathFinder(self.driver)
 
         if action == "check":
             mismatches = []
 
-            for login, expected_level in logins_and_access:
+            for login, level in logins_and_access:
                 try:
-                    row_xpath = f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login}"]/ancestor::tr'
+                    row_xpath = f'{BaseLocators.SHARE_LIST}/div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]'
                     row_element = WebDriverWait(self.driver, 2).until(
                         EC.presence_of_element_located((By.XPATH, row_xpath))
                     )
-                    access_cell = row_element.find_element(By.XPATH, './td[contains(@class,"int")]')
+                    access_cell = row_element.find_element(By.XPATH, './div[contains(@class,"x-edit")]/div[contains(@class,"editor")]')
                     actual_level = access_cell.text.strip()
 
-                    if actual_level != expected_level:
-                        mismatches.append((login, actual_level, expected_level))
-                        self.logger.warning(f"Несоответствие: '{login}' — текущий уровень '{actual_level}', ожидаемый '{expected_level}'")
+                    if actual_level != level:
+                        mismatches.append((login, actual_level, level))
+                        self.logger.warning(f"Несоответствие: '{login}' — текущий уровень '{actual_level}', ожидаемый '{level}'")
                     else:
                         self.logger.info(f"Проверка пройдена: '{login}' имеет уровень доступа '{actual_level}'")
 
                 except TimeoutException:
-                    mismatches.append((login, None, expected_level))
+                    mismatches.append((login, None, level))
                     self.logger.warning(f"Пользователь '{login}' не найден в списке доступа")
 
-            # Закрываем окно доступа
-            xpath.find_clickable(BaseLocators.SHARE_CANCEL, timeout=3).click()
+            # РЕзультат проверки
             if mismatches:
                 self.logger.error(f"Обнаружены несоответствия: {mismatches}")
                 return False, mismatches
@@ -378,73 +379,77 @@ class BasePage:
                 return True
 
         # Если установка доступа
-        current_setting = None
-        try:
-            if not is_group:
-                current_setting = WebDriverWait(self.driver, 1).until(
-                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
+        if action == "set":
+            for login, level in logins_and_access:
+                input_element = WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INPUT))
                 )
-            else:
-                current_setting = WebDriverWait(self.driver, 1).until(
-                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group} (группа)"]/ancestor::tr'))
+                input_element.send_keys(login)
+
+                dropdown_elements = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_DROPDOWN))
                 )
-        except TimeoutException:
-            self.logger.info("Проверка доступа не найдена. Устанавливаем новый доступ.")
 
-        if not current_setting:
-            input_element = WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INPUT))
-            )
-            input_element.send_keys(login_or_group)
-
-            dropdown_elements = WebDriverWait(self.driver, 5).until(
-                EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_DROPDOWN))
-            )
-
-            for element in dropdown_elements:
-                if not is_group:
-                    if element.get_attribute("title") == login_or_group:
-                        self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
-                        element.click()
-                        break
-                else:
-                    if element.get_attribute("title") == f"{login_or_group} (группа)":
+                for element in dropdown_elements:
+                    if element.text == login:
                         self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
                         element.click()
                         break
 
-            if not is_group:
-                current_setting = WebDriverWait(self.driver, 1).until(
-                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group}"]/ancestor::tr'))
+                # Открыть выпадашку и устанвоить доступ
+                self.xpath.find_clickable(BaseLocators.SHARE_TRIGGER_INPUT, timeout=5).click()
+                level_elements = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
                 )
-            else:
-                current_setting = WebDriverWait(self.driver, 1).until(
-                    EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/td[contains(@class,"first")]/div/span[@title="{login_or_group} (группа)"]/ancestor::tr'))
+                for level_element in level_elements:
+                    if level_element.text.strip() == level:  # сравниваем текст
+                        ancestor_div = level_element.find_element(By.XPATH, "./ancestor::div[1]")
+                        self.driver.execute_script(
+                            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                            ancestor_div
+                        )
+                        ancestor_div.click()
+                        break
+
+                # Пригласить
+                invite_button = WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INVITE))
+                )
+                invite_button.click()
+
+                self.logger.info(f"Доступ для '{login}' успешно установлен на уровень '{level}'.")
+
+        if action == "edit":
+            for login, level in logins_and_access:
+                current_setting = None
+                try:
+                    current_setting = WebDriverWait(self.driver, 1).until(
+                        EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]'))
+                    )
+                except TimeoutException:
+                    raise TimeoutException(f"Установленный доступ не найден: логин - {login},уровень - {level}")
+                current_setting.click()
+                access_trigger = current_setting.find_element(By.XPATH,  f'.{BaseLocators.SHARE_TRIGGER_INSIDE}')
+                access_trigger.click()
+
+                level_elements = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
                 )
 
-        access_trigger = current_setting.find_element(By.XPATH, './td[contains(@class,"int")]')
-        access_trigger.click()
-        time.sleep(0.5)
-        access_trigger.click()
+                for level_element in level_elements:
+                    if level_element.text.strip() == level:  # сравниваем текст
+                        ancestor_div = level_element.find_element(By.XPATH, "./ancestor::div[1]")
+                        self.driver.execute_script(
+                            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                            ancestor_div
+                        )
+                        ancestor_div.click()
+                        break
 
-        share_trigger = current_setting.find_element(By.XPATH, BaseLocators.SHARE_TRIGGER)
-        share_trigger.click()
+                self.logger.info(f"Доступ для '{login}' успешно изменен на уровень '{level}'.")
 
-        level_elements = WebDriverWait(self.driver, 5).until(
-            EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
-        )
-
-        for level in level_elements:
-            if level.get_attribute("title") == access_level:
-                level.click()
-                break
-
-        save_button = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_SAVE))
-        )
-        save_button.click()
-
-        self.logger.info(f"Доступ для '{login_or_group}' успешно установлен на уровень '{access_level}'.")
+        if is_close:
+            xpath.find_clickable(BaseLocators.SHARE_CLOSE, timeout=3).click()
 
     def copy_to(self, new_name):
         """Копирует объект с новым именем.
@@ -460,7 +465,7 @@ class BasePage:
         copy_button.click()
         self.logger.info(f"Объект скопирован с именем '{new_name}'.")
 
-    def publish_to(self, logins_groups, directory=None, clear=False):
+    def publish_to(self, logins_groups, directory=None, clear=True, is_group=False):
         '''Публикует объект из окна публикации на Логин/логины УЗ/групп, если указана директория выбирает дополнительно директорию'''
         time.sleep(1)
         if clear:
@@ -477,23 +482,26 @@ class BasePage:
                 ActionChains(self.driver).move_to_element(existing_publish[i]).perform()
                 time.sleep(0.5)
                 # Увеличиваем индекс на 1, т.к. в xpath индексация с 1
-                target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]//div[contains(@class,"remove")]'
+                target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]/div[contains(@class,"x-cross")]'
                 self.logger.info(f"Путь до закрытия = {target_xpath}")
                 self.xpath.find_clickable(target_xpath, timeout=3).click()
         if directory:
-            input_directory_element = self.xpath.find_clickable(BaseLocators.PUBLISH_DIRECTORY_INPUT, timeout=3, few=False)
-            input_directory_element.send_keys(directory)
-            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DIRECTORY_DROPDOWN}[contains(@title,"{directory}")]').click()
+            trigger_directory_element = self.xpath.find_clickable(BaseLocators.PUBLISH_DIRECTORY_TRIGGER, timeout=3, few=False)
+            trigger_directory_element.click()
+            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DIRECTORY_DROPDOWN}[text()="{directory}"]/ancestor::div[1]').click()
             self.logger.info(f"Каталог публикации '{directory}' установлен")
         # logins_groups получаем массив, который может состоять из одного или несколкьих элементов
         for login in logins_groups:
             input_logins_element = self.xpath.find_clickable(BaseLocators.PUBLISH_INPUT, timeout=3, few=False)
             input_logins_element.send_keys(login)
             self.logger.info(f"Попытка поиска {login}")
-            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DROPDOWN}[contains(@title,"{login}")]').click()
+            self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DROPDOWN}[text()="{login}"]/ancestor::div[1]').click()
             # Проверка, что появилась запись на публикацию
             try:
-                self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//span[contains(@title,"{login}")]')
+                if not is_group:
+                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}/div[contains(@class,"headline") and (text()="{login}")]')
+                else:
+                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}/div[contains(@class,"headline") and (text()="{login} (Группа)")]')
             except Exception as e:
                 self.logger.error(f"Ошибка при добавлении логина/группы '{login}': {e}")
                 raise RuntimeError(f"Публикация прервана: логин/группа '{login}' не появился(а) в списке") from e
@@ -647,6 +655,21 @@ class BasePage:
         else:
             # Кнопка отмены действия в всплывающем окне
             cancel_button = xpath.find_clickable(BaseLocators.POPUP_CANCEL, timeout=3, few=False)
+            cancel_button.click()
+            self.logger.info(
+                "Кнопка отмены действия в всплывающем окне нажата.")
+
+    def popup_drive_action(self, action=True):
+        """Метод для обработки действий в всплывающем окне при работе с общими дисками."""
+        xpath = XPathFinder(self.driver)
+        if action:
+            # Кнопка подтверждения действия в всплывающем окне
+            confirm_button = xpath.find_clickable(BaseLocators.POPUP_DRIVE_CONFIRM, timeout=3, few=False)
+            confirm_button.click()
+            self.logger.info("Кнопка подтверждения действия в всплывающем окне нажата.")
+        else:
+            # Кнопка отмены действия в всплывающем окне
+            cancel_button = xpath.find_clickable(BaseLocators.POPUP_DRIVE_CANCEL, timeout=3, few=False)
             cancel_button.click()
             self.logger.info(
                 "Кнопка отмены действия в всплывающем окне нажата.")

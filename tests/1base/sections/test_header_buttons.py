@@ -13,8 +13,6 @@ def test_header_buttons(error_handler, logger, admin_driver):
     my_files_page = MyFilesPage(admin_driver, logger)
 
     logger.info("Начало проверки базовых разделов хедера")
-    my_files_page.find_click_header_menu("Документы")
-    my_files_page.check_error(should_find_error=False)
     my_files_page.find_click_header_menu("Статистика", "Статистика по файлам")
     my_files_page.check_error(should_find_error=False)
     my_files_page.find_click_header_menu("Статистика", "Статистика по пользователям")
@@ -23,6 +21,6 @@ def test_header_buttons(error_handler, logger, admin_driver):
     my_files_page.check_error(should_find_error=False)
     my_files_page.find_click_header_menu("Справочники")
     my_files_page.check_error(should_find_error=False)
-    my_files_page.find_click_header_menu("Формулировки")
+    my_files_page.find_click_header_menu("Документы")
     my_files_page.check_error(should_find_error=False)
     logger.info("Базовые разделы хедера открыты успешно")

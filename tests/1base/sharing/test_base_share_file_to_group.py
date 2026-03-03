@@ -27,7 +27,7 @@ def test_base_share_file_to_group(error_handler, logger, admin_driver, user1_dri
 
     logger.info("Начало проверки базовой возможности шеринга файла на Группу")
     my_files_page.right_click_and_select_action(file_name,"Настроить доступ")
-    my_files_page.share_access(login_or_group=f"{AQA_GROUP}", access_level="Редактор", is_group=True)
+    my_files_page.share_access(action="set",logins_and_access=[(AQA_GROUP, "Просмотр")], is_close=False)
     # Ожидаем появления пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления
     my_files_user1.find_click_header_menu("Документы")
@@ -40,8 +40,7 @@ def test_base_share_file_to_group(error_handler, logger, admin_driver, user1_dri
         logger.info(f"Файл '{file_name}' успешно пошерен и найден у '{AQA_GROUP}'.")
 
     logger.info("Начало проверки уровня 'Нет доступа'")
-    my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
-    my_files_page.share_access(login_or_group=f"{AQA_GROUP}", access_level="Нет доступа", is_group=True)
+    my_files_page.share_access(action="edit", logins_and_access=[(AQA_GROUP, "Нет доступа")])
 
     # Ожидаем отсутствия пошеренного процесса на УЗ
     # Обновление страницы

@@ -38,4 +38,4 @@ def test_create_drive_by_folder(error_handler, logger, admin_driver, setup_creat
     my_files_page.find_click_side_menu("Общие диски")
     my_files_page.find_file_by_name(file_name, "folder")
     my_files_page.right_click_and_select_action(file_name, "Переместить в Корзину")
-    my_files_page.popup_action(True)
+    my_files_page.popup_drive_action(True)

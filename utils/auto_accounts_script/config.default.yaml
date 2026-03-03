@@ -1,0 +1,67 @@
+users:
+  - login: AQA_admin
+    password: "11111111"
+    type: admin
+  - login: AQA_expert
+    password: "11111111"
+    type: expert
+  - login: AQA_user1
+    password: "11111111"
+    type: user
+  - login: AQA_user2
+    password: "11111111"
+    type: user
+  - login: AQA_user3
+    password: "11111111"
+    type: user
+  - login: AQA_user4
+    password: "11111111"
+    type: user
+  - login: AQA_user5
+    password: "11111111"
+    type: user
+
+role_sets:
+  admin:
+    - User
+    - Пользователи
+    - Expert
+    - Эксперт
+    - Administrator
+    - Администратор
+  expert:
+    - User
+    - Пользователи
+    - Expert
+    - Эксперт
+  user:
+    - User
+    - Пользователи
+
+entry_sets:
+  admin:
+    - Статистика
+    - Справочники
+    - Формулировки
+    - Рабочие процессы
+    - Мои задачи
+    - Workflow
+    - Администрирование
+    - Настройки
+  expert:
+    - Статистика
+    - Справочники
+    - Формулировки
+    - Рабочие процессы
+    - Мои задачи
+    - Workflow
+  user:
+    - Статистика
+    - Справочники
+    - Формулировки
+    - Рабочие процессы
+    - Мои задачи
+    - Workflow
+
+group:
+  name: AQA_GROUP

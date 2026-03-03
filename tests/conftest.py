@@ -356,8 +356,8 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
     upload_file_name = params.get("upload_file_name")
     publishing_from = params.get("publishing_from")
     publishing_where = params.get("publishing_where")
-    share_from = params.get("share_from")
-    share_acces = params.get("share_acces")
+    publishing_is_group = params.get("publishing_is_group", False)
+    logins_and_access = params.get("logins_and_access")
     share_to_group = params.get("share_to_group", False)
     file_type = params.get("file_type")
     custom_file_name = params.get("file_name")
@@ -453,16 +453,14 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
         my_files_page.find_click_side_menu("Мои файлы")
         my_files_page.create_file(file_name, file_type)
 
-    if share_from:
+    if logins_and_access:
         # Шеринг файла, если указано в параметрах
         my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
         kwargs = {}
-        if share_to_group:
-            kwargs["is_group"] = share_to_group
-        if share_acces:
-            kwargs["access_level"] = share_acces
-        my_files_page.share_access(f"{share_from}", **kwargs)
-    
+        if logins_and_access:
+            kwargs["logins_and_access"] = logins_and_access
+        my_files_page.share_access(**kwargs)
+
     # Проверка
     if open_file:
         my_files_page.right_click_and_select_action(file_name, "Открыть")
@@ -482,6 +480,8 @@ def setup_create_delete_file(request, error_handler, logger, admin_driver):
             kwargs["logins_groups"] = publishing_from
         if publishing_where:
             kwargs["directory"] = publishing_where
+        if publishing_is_group:
+            kwargs["is_group"] = publishing_is_group
         my_files_editor_page.publish_to(**kwargs)
     
     return file_name, my_files_page, xpath
@@ -510,7 +510,7 @@ def setup_create_delete_drive(request, error_handler, logger, admin_driver):
             my_files_page.find_click_side_menu("Общие диски")
             if my_files_page.find_file_by_name(drive_name):
                 my_files_page.right_click_and_select_action(drive_name, "Переместить в Корзину")
-                my_files_page.popup_action(True)
+                my_files_page.popup_drive_action(True)
                 logger.info(f"Диск '{drive_name}' удален.")
             else:
                 logger.warning(f"Диск '{drive_name}' не найдена при удалении.")

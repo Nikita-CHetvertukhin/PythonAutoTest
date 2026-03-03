@@ -11,9 +11,9 @@ def test_generateDatabaseSchema(request, error_handler, logger, admin_driver):
     """Тест на генерацию схемы базы данных."""
     generation_page = GenerationPage(admin_driver, logger)
 
-    logger.info("Поиск кнопок по пути 'Администрирование' - 'Генерация схемы данных'")
-    generation_page.find_click_header_menu("Администрирование", "Генерация схемы данных")
+    logger.info("Поиск кнопок по пути 'Администрирование' - 'Обновление схемы данных'")
+    generation_page.find_click_header_menu("Администрирование", "Обновление схемы данных")
 
-    assert generation_page.wait_for_100_percent(timeout=120), "Генерация схемы не выполнена"
-    assert generation_page.check_error(False, GenerationLocators.GENERATION_ERROR, False), "Присутствуют ошибки при генерации схемы"
-    logger.info("Генерация схемы данных завершена успешно")
+    assert generation_page.wait_for_100_percent(timeout=900), "Обновление схемы данных не выполнено"
+    assert generation_page.check_error(False, GenerationLocators.GENERATION_ERROR, False), "Присутствуют ошибки при Обновлении схемы данных"
+    logger.info("Обновление схемы данных завершено успешно")

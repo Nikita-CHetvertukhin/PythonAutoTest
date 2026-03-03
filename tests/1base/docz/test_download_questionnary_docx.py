@@ -22,8 +22,10 @@ def test_download_questionnary_docx(error_handler, logger, admin_driver, setup_c
 
     logger.info("Начало проверки скачивания Анкеты в docx формате")
     # Открытие созданного файла
+    my_files_editor_page.open_side_panel_in_doc("Анкета")
     my_files_editor_page.find_and_send_variable_in_questionnaire("Текст", "AQA_ID1", file_name)
     xpath.find_clickable(MyFilesEditorLocators.SAVE_BUTTON).click()
+    my_files_editor_page.waiting_status_after("save")
     my_files_editor_page.finish_questionnaire("Скачать DOCX")
     assert download_manager.verify_downloaded_file(f"{file_name}.docx"), f"Ошибка: файл '{file_name}.docx' не был загружен!"
     logger.info(f"{file_name}.docx успешно скачен")

@@ -20,8 +20,7 @@ import allure
 )
 @pytest.mark.parametrize("setup_create_delete_file", [{
     "upload_file_name": "AQA_Test_Acces_docx.docx",
-    "share_from": EXPERT_LOGIN,
-    "share_acces": "Рецензирование"
+    "logins_and_access": [(EXPERT_LOGIN, "Рецензирование")]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_check_reviewing_acces_docx(error_handler, logger, admin_driver, expert_driver, setup_create_delete_file):
@@ -51,6 +50,8 @@ def test_check_reviewing_acces_docx(error_handler, logger, admin_driver, expert_
     xpath_expert.find_clickable(MyFilesEditorLocators.CANCEL_BUTTON, timeout=3).click()
     time.sleep(0.5) # Для стабильности
     xpath_expert.find_clickable(MyFilesEditorLocators.CANCEL_BUTTON, timeout=3).click()
+    # Клик в область рецензирования для появления тулбара и проверки его элементов
+    my_files_editor_expert.find_click_span_in_text("justReview")
     # Проверка действий на вкладках тулбара
     my_files_editor_expert.check_acces_in_header_section(acces_level="Рецензирование", section_name="Конструктор", file_type="docx")
     my_files_editor_expert.check_acces_in_header_section(acces_level="Рецензирование", section_name="Главная")

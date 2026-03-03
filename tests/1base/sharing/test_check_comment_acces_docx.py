@@ -18,8 +18,7 @@ import allure
 )
 @pytest.mark.parametrize("setup_create_delete_file", [{
     "upload_file_name": "AQA_Test_Acces_docx.docx",
-    "share_from": EXPERT_LOGIN,
-    "share_acces": "Комментирование"
+    "logins_and_access": [(EXPERT_LOGIN, "Комментирование")]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_check_comment_acces_docx(error_handler, logger, admin_driver, expert_driver, setup_create_delete_file):
@@ -45,6 +44,8 @@ def test_check_comment_acces_docx(error_handler, logger, admin_driver, expert_dr
     # Проверка невозможности создания первой переменной на вкладке "схема"
     my_files_editor_expert.open_side_panel_in_doc("Схема")
     assert not my_files_editor_expert.create_first_variable("test"), "Первая переменная успешно добавлена в docx, несмотря на то, что уровень доступа - Комментирование"
+    # Клик в область рецензирования для появления тулбара и проверки его элементов
+    my_files_editor_expert.find_click_span_in_text("justReview")
     # Проверка действий на вкладках тулбара
     my_files_editor_expert.check_acces_in_header_section(acces_level="Комментирование", section_name="Конструктор")
     my_files_editor_expert.check_acces_in_header_section(acces_level="Комментирование", section_name="Главная")
