@@ -24,13 +24,13 @@ class MyFilesEditorLocators(BaseLocators):
     # Кнопка "Отмена" в тулбаре
     CANCEL_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"body")]//div[contains(@class,"button") and contains(@title,"Отменить")]'
     # Кнопка "Доступ" в тулбаре
-    ACCESS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label[contains(text(), "Доступ")]/ancestor::button'
+    ACCESS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]//div[contains(@class,"label") and contains(text(), "Доступ")]/ancestor::div[1]'
     # Кнопка "Отправить на согласование"
-    SEND_FOR_APPROVAL_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label[contains(text(), "согласование")]/ancestor::button'
-    # Кнопка "Действия" в тулбаре WF
-    WF_ACTIONS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label/following-sibling::div[contains(@class,"trigger")]'
+    SEND_FOR_APPROVAL_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]//div[contains(@class,"label") and contains(text(), "на согласование")]/ancestor::div[1]'
+    # Кнопка "Действия" в тулбаре Документа
+    WF_ACTIONS_BUTTON = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/div[contains(@class,"wf-status")]'
     # Tr выпадающего списка "Действия" в тулбаре WF (текст последнего label содержит название действия)
-    WF_ACTIONS_LIST_ITEM = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/button/label/following-sibling::div[contains(@class,"container")and not(contains(@class,"display-none"))]//label'
+    WF_ACTIONS_LIST_ITEM = '//div[contains(@class,"body")]/div[contains(@class,"toolbar")]/div[contains(@class,"header")]/div[contains(@class,"commands")]/div[contains(@class,"wf-status")]//div[contains(@class,"x-menu") and not(contains(@class,"display-none"))]//div[contains(@class,"x-headline")]'
 
     '''БОКОВЫЕ ПАНЕЛИ (СЛЕВА)'''
 

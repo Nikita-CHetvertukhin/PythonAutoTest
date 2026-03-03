@@ -582,6 +582,29 @@ def login_user(request, driver, logger, username, password):
 
         yield driver
 
+# Хук для пропуска тестов на основе переменной окружения SKIP_TESTS
+def pytest_runtest_setup(item):
+    skip_tests_env = os.getenv("SKIP_TESTS", "")
+    print(f"[DEBUG] SKIP_TESTS raw env:\n{skip_tests_env}")
+
+    skip_map = {}
+    for line in skip_tests_env.splitlines():
+        if ":" in line:
+            name, reason = line.split(":", 1)
+            skip_map[name.strip()] = reason.strip()
+
+    # Проверяем оригинальное имя функции
+    if getattr(item, "originalname", None) in skip_map:
+        pytest.skip(skip_map[item.originalname])
+
+    # Проверяем nodeid (полный путь + имя)
+    if item.nodeid in skip_map:
+        pytest.skip(skip_map[item.nodeid])
+
+    # Проверяем name (с параметрами)
+    if item.name in skip_map:
+        pytest.skip(skip_map[item.name])
+
 # Хук для настройки окружения перед запуском тестов
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):

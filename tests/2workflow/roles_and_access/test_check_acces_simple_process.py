@@ -50,8 +50,7 @@ def test_check_acces_simple_process(error_handler, logger, admin_driver, user1_d
     my_tasks_page.task_executor_properties(executor_login=USER1_LOGIN, action="set")
     my_tasks_page.find_click_header_menu("Документы")
     my_tasks_page.find_click_side_menu("Мои файлы")
-    my_files_page.right_click_and_select_action(file_name, "Открыть")
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
+    my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access2))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."
 
     # Завершаем задачу под новым исполнителем
@@ -62,5 +61,7 @@ def test_check_acces_simple_process(error_handler, logger, admin_driver, user1_d
 
     # Финально проверяем доступы после завершения задачи
     refresh_and_wait(admin_driver, logger)
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
+    my_tasks_page.find_click_header_menu("Документы")
+    my_tasks_page.find_click_side_menu("Мои файлы")
+    my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access3))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access1}."

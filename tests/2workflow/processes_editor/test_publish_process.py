@@ -23,7 +23,6 @@ def test_publish_process(error_handler, logger, admin_driver, setup_create_delet
     time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться
 
     workflow_editor_page.action_from_document("Опубликовать")
-    # Тут нужен новый метод публикации
     workflow_editor_page.publish_to(logins_groups=[ADMIN_LOGIN], clear=True)
     time.sleep(1) # Пока не на что опираться в редакторе
     workflows_page.find_click_header_menu("Мои задачи")

@@ -13,7 +13,7 @@ def test_copy_link(error_handler, logger, admin_driver, setup_create_delete_proc
     workflow_editor_page = WorkflowEditorPage(admin_driver, logger)
 
     logger.info("Начало проверки открытия процесса")
-    workflows_page.right_click_and_select_action(process_name, "Скопировать ссылку")
+    workflows_page.right_click_and_select_action(process_name, "Копировать ссылку")
     time.sleep(1)  # Даём браузеру записать ссылку в буфер
     workflows_page.right_click_and_select_action(process_name, "Открыть")
     time.sleep(2)  # Ждем, пока откроется страница процесса. Использовано явное ожидание т.к. не на что ориентироваться

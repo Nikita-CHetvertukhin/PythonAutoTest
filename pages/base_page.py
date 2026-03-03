@@ -55,7 +55,7 @@ class BasePage:
         
         # Поиск кнопок меню
         try:
-            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=10, few=True)
+            btns_headerMenu = self.xpath.find_visible(BaseLocators.HEADER_MENU_BUTTONS, timeout=3, few=True)
         except TimeoutException:
             btns_headerMenu = []
         if not btns_headerMenu:
@@ -370,6 +370,8 @@ class BasePage:
                     mismatches.append((login, None, level))
                     self.logger.warning(f"Пользователь '{login}' не найден в списке доступа")
 
+            if is_close:
+                xpath.find_clickable(BaseLocators.SHARE_CLOSE, timeout=3).click()
             # РЕзультат проверки
             if mismatches:
                 self.logger.error(f"Обнаружены несоответствия: {mismatches}")
@@ -427,7 +429,7 @@ class BasePage:
                         EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]'))
                     )
                 except TimeoutException:
-                    raise TimeoutException(f"Установленный доступ не найден: логин - {login},уровень - {level}")
+                    raise TimeoutException(f"Установленный доступ не найден: логин - {login}")
                 current_setting.click()
                 access_trigger = current_setting.find_element(By.XPATH,  f'.{BaseLocators.SHARE_TRIGGER_INSIDE}')
                 access_trigger.click()
@@ -609,9 +611,9 @@ class BasePage:
     def close_all_windows(self):
         """Метод ищет все всплывающие окна и закрывает их, если найдены."""
         xpath = XPathFinder(self.driver)
-        xpath.find_visible(BaseLocators.POPUP, timeout=5)
+        xpath.find_visible(BaseLocators.POPUP, timeout=3)
         try:
-            close_buttons = self.driver.find_elements(By.XPATH, BaseLocators.POPUP_CLOSE)
+            close_buttons = xpath.find_clickable(path=BaseLocators.POPUP_CLOSE, few=True, timeout=1)
             if not close_buttons:
                 self.logger.info("Нет всплывающих окон для закрытия.")
                 return False
@@ -623,8 +625,8 @@ class BasePage:
                     self.logger.warning(f"Не удалось закрыть окно: {e}")
 
             # Ждём, пока попапы исчезнут из DOM
-            WebDriverWait(self.driver, 5).until(
-                lambda d: not d.find_elements(By.XPATH, BaseLocators.POPUP)
+            WebDriverWait(self.driver, 1).until(
+                lambda d: not d.find_elements(By.XPATH, BaseLocators.POPUP_CLOSE)
             )
             self.logger.info(f"Закрыто {len(close_buttons)} всплывающих окон.")
             return True

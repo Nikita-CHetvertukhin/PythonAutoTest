@@ -39,10 +39,12 @@ class MyTasksLocators(BaseLocators):
     MY_TASKS_TASK_ROLE = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"row")]//span'
     # Для можества согласующих - путь до строк таблиц согалсующих
     MY_TASKS_TASK_ACTORS_TRS = '//div[contains(@class,"task-selector")]//div[contains(@class,"body")]//div[contains(@class,"actors")]/div[contains(@class,"items")]/table/tbody/tr'
+    # Инпут ввода уровня доступа к задаче для конкретного пользователя в строке согласующего
+    MY_TASKS_TASK_ACCESS_LEVEL_INPUT = '//div[contains(@class,"combobox")]/div[contains(@class,"box")]/input'
     # Тригер выпадашки уровня доступа к задаче
-    MY_TASKS_TASK_ACCESS_TRIGGER = '//div[contains(@class,"acces")]/div[contains(@class,"box")]/a[contains(@class,"btn-trigger")]'
+    #MY_TASKS_TASK_ACCESS_TRIGGER = '//div[contains(@class,"combobox")]/div[contains(@class,"box")]/a[contains(@class,"btn-trigger")]'
     # Список уровней доступа к задаче
-    MY_TASKS_TASK_ACCESS_LEVELS = '//td[contains(@class,"column int")]/div[contains(@class,"acces")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
+    MY_TASKS_TASK_ACCESS_LEVELS = '//td[contains(@class,"column int")]/div[contains(@class,"combobox")]/div[contains(@class,"dropdown")and not(contains(@class,"none"))]/div[contains(@class,"items")]/table/tbody/tr/td'
 
     # Кнопка "Отменить"
     MY_TASKS_CANCEL_BUTTON = '//div[contains(@class,"task-selector")]//div[contains(@class,"footer")]/a/span[text()="Отменить"]'

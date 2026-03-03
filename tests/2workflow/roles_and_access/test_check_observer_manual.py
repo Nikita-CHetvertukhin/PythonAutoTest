@@ -50,8 +50,7 @@ def test_check_observer_manual(request, error_handler, logger, admin_driver, use
     # Проверяем доступ к докмуенту для наблюдателя
     my_tasks_page.find_click_header_menu("Документы")
     my_files_page.find_click_side_menu("Мои файлы")
-    my_files_page.right_click_and_select_action(file_name, "Открыть")
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
+    my_files_page.right_click_and_select_action(file_name, "Настроить доступ")
     logins_and_access = [(USER1_LOGIN, "Просмотр")]
     assert (result := my_files_page.share_access(action="check", logins_and_access=logins_and_access)) is True, f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access}."
     

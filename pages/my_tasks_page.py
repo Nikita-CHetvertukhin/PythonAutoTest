@@ -163,13 +163,12 @@ class MyTasksPage(BasePage):
                 access_trigger = current_tr.find_element(By.XPATH, './td[contains(@class,"int")and not(contains(@class,"first"))]')
                 self.logger.info(f"Найдена текущая строка доступа исполнителя")
                 access_trigger.click()
-                self.logger.info(f"Клик по триггеру доступа исполнителя")
-                time.sleep(0.5) # Ждем, для стабильности
-                access_trigger.click()
-                self.logger.info(f"Клик по триггеру доступа исполнителя (второй раз, чтобы открыть список уровней доступа)")
-
-                share_trigger = current_tr.find_element(By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_TRIGGER)
-                share_trigger.click()
+                share_input = current_tr.find_element(By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVEL_INPUT)
+                self.logger.info(f"Найден инпут уровня доступа")
+                self.driver.switch_to.active_element.send_keys(Keys.CONTROL + "a")
+                self.driver.switch_to.active_element.send_keys(Keys.DELETE)
+                self.driver.switch_to.active_element.send_keys(" ")
+                self.logger.info(f"Появился выпадающйи списко урвоней доступа")
 
                 level_elements = WebDriverWait(self.driver, 3).until(
                     EC.presence_of_all_elements_located((By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVELS))

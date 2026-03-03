@@ -5,7 +5,7 @@ class WorkflowEditorLocators(BaseLocators):
    '''Тулбар'''
 
     # Кнопка "Файл"
-   WFEDITOR_FILE_BUTTON = '//body//div[contains(@class,"wfeditor")]/div[contains(@class,"toolbar")]/button[contains(@class,"file")]'
+   WFEDITOR_FILE_BUTTON = '//body//div[contains(@class,"wfeditor")]/div[contains(@class,"toolbar")]/div[contains(@class,"file")]'
    # Выпадающий список с кнопками из "Файл"
    WFEDITOR_FILE_DROPDOWN = '//div[not(contains(@class,"display-none"))and contains(@class,"x-popup")]/div[contains(@class,"menu")]'
    # Путь до элементов фигур в тулбаре wfeditor сами - элементы /a внутри

@@ -26,7 +26,7 @@ class WorkflowsPage(BasePage):
         textarea.send_keys(Keys.ENTER)
         self.logger.info(f"Имя процесса '{name}' введено и подтверждено Enter")
 
-    def right_click_and_select_action(self, object_name, action_name, max_retries=5):
+    def right_click_and_select_action(self, object_name, action_name, max_retries=3):
         """Находит процесс по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
         обеспечивая устойчивость к изменениям DOM."""
         xpath = XPathFinder(self.driver)
@@ -37,17 +37,17 @@ class WorkflowsPage(BasePage):
         for attempt in range(max_retries):
             try:
                 # Перепроверяем список элементов и ищем процесс
-                if xpath.find_located(target_xpath, timeout=10, few=False):
+                if xpath.find_located(target_xpath, timeout=3, few=False):
                     self.logger.info(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
 
                     # Скроллим до элемента
                     # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
 
                     # Ожидание полной загрузки элемента перед взаимодействием
-                    WebDriverWait(self.driver, 5).until(
+                    WebDriverWait(self.driver, 3).until(
                         EC.visibility_of_element_located((By.XPATH, target_xpath))
                     )
-                    WebDriverWait(self.driver, 5).until(
+                    WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, target_xpath))
                     )
                     time.sleep(0.5)  # Небольшая пауза для стабильности
@@ -60,7 +60,7 @@ class WorkflowsPage(BasePage):
                     self.logger.info(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
-                    action_element = WebDriverWait(self.driver, 5).until(
+                    action_element = WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, action_xpath))
                     )
 

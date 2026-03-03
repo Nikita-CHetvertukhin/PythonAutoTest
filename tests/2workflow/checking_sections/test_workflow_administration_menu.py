@@ -7,12 +7,12 @@ import allure
 DRIVERS = ["admin_driver", "expert_driver", "user1_driver"]
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
-@pytest.mark.skip(reason="Известный баг, временно отключено")
+#@pytest.mark.skip(reason="Известный баг, временно отключено")
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @pytest.mark.parametrize("driver_fixture_name", DRIVERS)
 @exception_handler  # Декоратор, обрабатывающий исключения, чтобы тест не прерывался неожиданно
-def test_workflow_administration(request, error_handler, logger, driver_fixture_name):
+def test_workflow_administration_menu(request, error_handler, logger, driver_fixture_name):
     """Тест проверяет доступность разедла 'Workflows (адм) - Все задачи (отладка)' и фиксирует ошибки, если они есть."""
     
     logger.info("Начало проверки раздела 'Workflows (адм) - Все задачи (отладка)'")

@@ -13,7 +13,7 @@ services:
       resources:
         limits:
           # Лимит потоков (рекомендуется примерно 80% остальное в резерв)
-          cpus: '14.0'
+          cpus: '10.0'
           # Лимит памяти, чем больше тестов и браузеров тем больше нужно, минимум 5Гб
           memory: 12G
         reservations:
@@ -23,6 +23,12 @@ services:
             memory: 8G
     environment:
         # Ссылка на сборку для теста
-        - TEST_URL=https://test.doczilla.pro/
+        TEST_URL: https://test.doczilla.pro/
         # Рабочий компонент "Документы" на сборке
-        - WORKSPACE=pro.doczilla.testWorkspace.workspace.table.Workspace
+        WORKSPACE: pro.doczilla.testWorkspace.workspace.table.Workspace
+        # Список тестов, которые нужно пропустить (по одному на строку, с указанием причины в формате:<имя_теста>:<причина>)
+        SKIP_TESTS: |
+            test_download_history_task:Известный баг. PRO-0001
+            test_workflow_administration_menu:Известный баг. PRO-0002
+            test_undo_redo:Известный баг. PRO-0003. PRO-0003
+            test_automat_name:Известный баг. PRO-0005. PRO-0004

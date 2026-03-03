@@ -65,5 +65,7 @@ def test_automate_share_file(error_handler, logger, admin_driver, user1_driver, 
 
     # Проверяем доступы под админом после завершения задачи
     refresh_and_wait(admin_driver, logger)
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
+    button = xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10)
+    time.sleep(1) # Для стабильности
+    button.click()
     assert (result := my_files_editor_page.share_access(action="check", logins_and_access=logins_and_access2))is True,f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access2}."

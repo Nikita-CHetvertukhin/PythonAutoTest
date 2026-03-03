@@ -110,9 +110,9 @@ class BaseLocators:
 
     '''POPUR WINDOWS'''
     # Любой информативный POPUP
-    POPUP = '//div[contains(@class, "dzmessage")and (contains(@class,"info"))]'
+    POPUP = '//div[contains(@class, "dzmessage")and (contains(@class,"popup"))]'
     # Кнопка закрытия любого попапа
-    POPUP_CLOSE = '//div[contains(@class, "dzmessage")]/button'
+    POPUP_CLOSE = '//div[contains(@class, "dzmessage")]//div[contains(@class,"button")]/div[contains(@class,"cross")]'
     # Кнопка подтверждения действия в всплывающем информативном окне
     POPUP_CONFIRM = '//div[contains(@class, "popup")]/div[contains(@class, "footer")]/a[contains(@class, "primary")]/span'
     # Кнопка отмены действия в всплывающем информативном окне

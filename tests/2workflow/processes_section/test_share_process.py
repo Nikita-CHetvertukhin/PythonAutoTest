@@ -18,7 +18,7 @@ def test_share_process(error_handler, logger, admin_driver, user1_driver, setup_
 
     logger.info("Начало проверки шеринга процесса")
     workflows_page.right_click_and_select_action(process_name,"Настроить доступ")
-    workflows_page.share_access(f"{USER1_LOGIN}", "Редактор")
+    workflows_page.share_access(action="set",logins_and_access=[(USER1_LOGIN, "Полный доступ")])
     # Ожидаем появления пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления
     workflows_user1.find_click_header_menu("Рабочие процессы")
@@ -33,7 +33,7 @@ def test_share_process(error_handler, logger, admin_driver, user1_driver, setup_
 
     logger.info("Начало проверки уровня 'Нет доступа'")
     workflows_page.right_click_and_select_action(process_name, "Настроить доступ")
-    workflows_page.share_access(f"{USER1_LOGIN}", "Нет доступа")
+    workflows_page.share_access(action="edit",logins_and_access=[(USER1_LOGIN, "Нет доступа")])
 
     # Ожидаем отсутствия пошеренного процесса на УЗ
     time.sleep(2) # Пока ожидание явное, потом ожидание всплывающего уведомления

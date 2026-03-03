@@ -127,5 +127,7 @@ def test_check_acces_serial_approvals(
     
     # Финально проверяем доступы после закрытия задачи
     refresh_and_wait(admin_driver, logger)
-    xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10).click()
+    button = xpath.find_clickable(MyFilesEditorLocators.ACCESS_BUTTON, timeout=10)
+    time.sleep(1)  # Пауза для стабильности, заменить на динамическое ожидание
+    button.click()
     assert (result := my_files_page.share_access(action="check", logins_and_access=logins_and_access_final)) is True, f"Ошибка: Доступы {result[1]} не совпадают с ожидаемыми {logins_and_access_final}."
