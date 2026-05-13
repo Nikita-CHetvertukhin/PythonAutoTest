@@ -1128,7 +1128,7 @@ class WorkflowEditorPage(BasePage):
         current_url = self.driver.current_url
         self.logger.info(f"Текущий URL вкладки: {current_url}")
 
-        check_description_xpath = f'{input_description_xpath}/p[contains(text(),"{current_url}")]'
+        check_description_xpath = f'{input_description_xpath}//a[contains(text(),"{current_url}")]'
         if xpath.find_located(check_description_xpath, timeout=3):
             self.logger.info(f"Скопированная ссылка процесса соответствует текущему URL: {current_url}")
             return True

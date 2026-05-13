@@ -184,17 +184,17 @@ class MyFilesEditorPage(BasePage):
             variable_type (Мультипликтатор), variable_name (Имя мульта), replica_name (Название реплики), replica_action (Добавить или удалить)'''
             if replica_action == "Добавить":
                 self.logger.info(f"Добавление новой реплики от реплики '{replica_name}' в мультипликатор '{variable_name}'")
-                add_replica_button_xpath = f'{target_box_path}//span[(@class=" text")and contains(@title,"{replica_name}")]//a[contains(@title,"Добавить")]'
+                add_replica_button_xpath = f'{target_box_path}//div[@class="text" and (text()="{replica_name}")]/ancestor::div[1]//a[contains(@title,"Добавить")]'
                 self.xpath.find_clickable(add_replica_button_xpath, timeout=3, scroll=True).click()
             if replica_action == "Удалить":
                 self.logger.info(f"Удаление реплики от реплики '{replica_name}' в мультипликатор '{variable_name}'")
-                delete_replica_button_xpath = f'{target_box_path}//span[(@class=" text")and contains(@title,"{replica_name}")]//a[contains(@title,"Удалить")]'
+                delete_replica_button_xpath = f'{target_box_path}//div[@class="text" and (text()="{replica_name}")]/ancestor::div[1]//a[contains(@title,"Добавить")]'
                 self.xpath.find_clickable(delete_replica_button_xpath, timeout=3, scroll=True).click()
             '''Действие с переменной внутри мультипликатора, требует аргументов:
             variable_type (Мультипликтатор), variable_name (Имя мульта), content (если нужно ввести контент), in_replicator (True),
             replica_name (Название реплики), variable_in_replica_type (тип переменной), variable_in_replica_name (название переменной)'''
             if in_replicator:
-                target_box_path = f'{MyFilesEditorLocators.QUESTIONNAIRE_ITEM_NAME}[text()="{variable_name}"]/ancestor::span//span[(@class=" text")and contains(@title,"{replica_name}")]//span[@title="{variable_in_replica_name}"]'
+                target_box_path = f'{MyFilesEditorLocators.QUESTIONNAIRE_ITEM_NAME}[text()="{variable_name}"]/ancestor::span//div[@class="text" and (text()="{replica_name}")]/ancestor::span[2]/div[contains(@class,"list")]//div[text()="{variable_in_replica_name}"]/ancestor::span[1]'
                 textarea_box_path = f'{target_box_path}//textarea'
                 input_box_path = f'{target_box_path}//input'
                 flag_box_path = f'{target_box_path}/parent::*/i'

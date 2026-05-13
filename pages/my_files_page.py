@@ -20,7 +20,7 @@ class MyFilesPage(BasePage):
         обеспечивая устойчивость к изменениям DOM."""
         xpath = XPathFinder(self.driver)
     
-        target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[@title="{object_name}"]'
+        target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[text()="{object_name}"]'
         action_xpath = f'{MyFilesLocators.MY_FILES_DROPDOWN}/td[@title="{action_name}"]'
 
         for attempt in range(max_retries):
@@ -129,7 +129,7 @@ class MyFilesPage(BasePage):
         xpath = XPathFinder(self.driver)
 
         # xpath до самого файла, по которому будем кликать ПКМ
-        target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[@title="{file_name}"]'
+        target_xpath = f'{MyFilesLocators.MY_FILES_LIST}/span[text()="{file_name}"]'
 
         try:
             # Перепроверяем список элементов и ищем процесс

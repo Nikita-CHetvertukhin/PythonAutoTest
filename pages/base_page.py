@@ -207,7 +207,7 @@ class BasePage:
 
         try:
             # Формируем xpath до интересуещего процесса
-            target_xpath = f'{BaseLocators.BODY_NAMES}/span[@title="{name}"]'
+            target_xpath = f'{BaseLocators.BODY_NAMES}/span[text()="{name}"]'
 
             # Ищем сам элемент внутри списка (Увеличенный таймаут из-за нестабильных рефрешей на сборках с LDAP)
             file_element = xpath.find_located(target_xpath, timeout=time, few=False)
@@ -512,7 +512,7 @@ class BasePage:
 
     def move_to(self, folder_name=None, section_name=None, new_name=None):
         """Метод перемещает выбранный файл (уже из окна перемещения) в выбранную секцию/папку с новым названием (опицонально)"""
-        target_folder_xpath = f'{BaseLocators.COPY_WINDOW_LIST}/td[contains(@class,"first")]//span[contains(@title,"{folder_name}")]'
+        target_folder_xpath = f'{BaseLocators.COPY_WINDOW_LIST}/td[contains(@class,"first")]//span[text()="{folder_name}"]'
         # Если задана секция ("Мои файлы" по умолчанию)
         if section_name:
             """Дописать"""
