@@ -6,6 +6,7 @@ from utils.refresh_and_wait import refresh_and_wait
 import allure
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
+@pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_condition_properties(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет доступность для изменения и сохранение после перезагрузки страницы свойств фигуры 'Условие'"""

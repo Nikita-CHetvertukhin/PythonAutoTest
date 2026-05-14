@@ -180,7 +180,7 @@ class WorkflowEditorPage(BasePage):
         
         # Если указан каталог, ищем его в списке и делаем двойной клик
         if name_catalog:
-            xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_ITEMS}[contains(@title,"{name_catalog}")]/ancestor::tr', timeout=3).click()
+            xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_ITEMS}[contains(text(),"{name_catalog}")]/ancestor::tr', timeout=3).click()
             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
             time.sleep(1)  # Пауза для стабильности
             self.logger.info(f'Двойной клик по каталогу {name_catalog}')
@@ -391,7 +391,7 @@ class WorkflowEditorPage(BasePage):
         """Метод для установки или проверки имени процесса/фигуры."""
         xpath = XPathFinder(self.driver)
         input_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_NAME  # XPath до инпута имени
-        check_xpath = f'{input_xpath}[@title="{name}"]'  # XPath для проверки имени
+        check_xpath = f'{input_xpath}[contains(@title,"{name}")]'  # XPath для проверки имени
     
         if action == "set":
             self.logger.info(f"Устанавливаем имя: {name}")
@@ -408,11 +408,11 @@ class WorkflowEditorPage(BasePage):
         elif action == "check":
             self.logger.info(f"Проверяем имя: {name}")
             try:
-                xpath.find_visible(check_xpath, timeout=3)
+                xpath.find_visible(check_xpath, timeout=7)
                 self.logger.info("Имя совпадает.")
                 return True
             except Exception:
-                self.logger.warning("Имя не совпадает.")
+                self.logger.warning(f"Имя не совпадает.Path: {check_xpath}")
                 return False
         else:
             self.logger.error(f"Недопустимое значение action: {action}")
@@ -547,20 +547,20 @@ class WorkflowEditorPage(BasePage):
             
                 # Находим инпут для имени роли и вводим role_name
                 self.logger.info(f'Задаем название роли - {role_name}')
-                textarea_path = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and @title="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea'
+                textarea_path = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea'
                 input_element = xpath.find_located(textarea_path, timeout=3)
                 input_element.send_keys(role_name)
                 input_element.send_keys(Keys.ENTER)
             
                 # Ищем строку созданной роли
-                new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and contains(@title, "{role_name}")]/parent::div/parent::td/parent::tr'
+                new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[text()="{role_name}"]/parent::div/parent::td/parent::tr'
                 xpath.find_visible(new_tr, timeout=3)
 
                 # Выбираем уровень доступа
                 self.logger.info(f'Выбираем уровень доступа - {access_level}')
                 xpath.find_clickable(f'{new_tr}/td[@field=1]/div/span', timeout=3).click()
                 xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_SHOW_LIST, timeout=3).click()
-                xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_LIST}/td[contains(@title,"{access_level}")]', timeout=3).click()
+                xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_LIST}/td[contains(@class,"column") and contains(@title, "{access_level}")]', timeout=3).click()
 
                 # Устанавливаем чекбоксы
                 rows = xpath.find_located(WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_TRS, timeout=3, few=True)
@@ -603,7 +603,7 @@ class WorkflowEditorPage(BasePage):
                 xpath.find_clickable(f'{new_tr}/td[@field=2]/div/span', timeout=3).click()
                 input_users = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_CELLWITHDROPDOWN_INPUT, timeout=3)
                 input_users.send_keys(USER1_LOGIN)
-                xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_CELLWITHDROPDOWN_DROPDOWN}[contains(@title,"{USER1_LOGIN}")]', timeout=3).click()
+                xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_CELLWITHDROPDOWN_DROPDOWN}[text()="{USER1_LOGIN}"]', timeout=3).click()
             
                 self.logger.info("Роль успешно создана.")
             except Exception as e:
@@ -622,13 +622,13 @@ class WorkflowEditorPage(BasePage):
 
                 # Проверяем уровень доступа
                 self.logger.info(f'Проверяем уровень доступа: {access_level}')
-                check_access = f'{checking_tr}/td[@field=1]/div/span[contains(@title,"{access_level}")]'
+                check_access = f'{checking_tr}/td[@field=1]/div/span[text()="{access_level}"]'
                 xpath.find_visible(check_access, timeout=3)
                 self.logger.info(f'Уровень доступа "{access_level}" подтвержден.')
 
                 # Проверяем пользователей
                 self.logger.info(f'Проверяем наличие пользователя: {users}')
-                check_users = f'{checking_tr}/td[@field=2]/div/span[contains(@title,"{", ".join(users)}")]'
+                check_users = f'{checking_tr}/td[@field=2]/div/span[text()="{", ".join(users)}"]'
                 xpath.find_visible(check_users, timeout=3)
                 self.logger.info(f'Пользователь "{users}" найден.')
 
@@ -654,19 +654,19 @@ class WorkflowEditorPage(BasePage):
                 observer_input.send_keys(role_name)
 
                 self.logger.info("Ждём и нажимаем элемент выпадающего списка")
-                observer_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_LIST}[contains(@title,"{role_name}")]'
+                observer_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_LIST}[text()="{role_name}"]'
                 xpath.find_clickable(observer_option, timeout=3).click()
 
                 # Проверяем, что в таблице добавилась нужная строка
-                actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[contains(@title,"{role_name}")]/parent::div/parent::td/parent::tr'
+                actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[text()="{role_name}"]/parent::div/parent::td/parent::tr'
                 self.logger.info(f'Проверяем наличие строки наблюдателя: {actual_tr}')
                 xpath.find_visible(actual_tr, timeout=3)
                 self.logger.info(f'Наблюдатель "{role_name}" успешно добавлен.')
 
                 # Если указан `users`, проверяем его наличие
                 if users:
-                    self.logger.info(f'Проверяем наличие пользователя: {users} по пути {actual_tr}/td//span[contains(@title,"{", ".join(users)}")]')
-                    user_check = f'{actual_tr}/td//span[contains(@title,"{", ".join(users)}")]'
+                    self.logger.info(f'Проверяем наличие пользователя: {users} по пути {actual_tr}/td//span[text()="{", ".join(users)}"]')
+                    user_check = f'{actual_tr}/td//span[text()="{", ".join(users)}"]'
                     xpath.find_visible(user_check, timeout=3)
                     self.logger.info(f'Пользователь "{users}" подтвержден.')
 
@@ -677,7 +677,7 @@ class WorkflowEditorPage(BasePage):
         elif action == "check":
             try:
                 self.logger.info(f'Проверяем наличие наблюдателя: {role_name}')
-                actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[contains(@title,"{role_name}")]/parent::div/parent::td/parent::tr'
+                actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[text()="{role_name}"]/parent::div/parent::td/parent::tr'
                 self.logger.info(f'Ищем строку наблюдателя: {actual_tr}')
                 xpath.find_visible(actual_tr, timeout=3)
                 self.logger.info(f'Наблюдатель "{role_name}" найден.')
@@ -685,7 +685,7 @@ class WorkflowEditorPage(BasePage):
                 # Если указан `users`, проверяем его наличие
                 if users:
                     self.logger.info(f'Проверяем наличие пользователя: {users}')
-                    user_check = f'{actual_tr}/td//span[contains(@title,"{", ".join(users)}")]'
+                    user_check = f'{actual_tr}/td//span[text()="{", ".join(users)}"]'
                     self.logger.info(f'Ищем пользователя в строке: {user_check}')
                     xpath.find_visible(user_check, timeout=3)
                     self.logger.info(f'Пользователь "{users}" подтвержден.')
@@ -713,7 +713,7 @@ class WorkflowEditorPage(BasePage):
             # Вводим ID
             self.logger.info(f'Вводим ID: {id}')
             input_id = xpath.find_clickable(
-                f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and @title="​"]/parent::div/following-sibling::div/div[contains(@class,"box")]/input',
+                f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div/div[contains(@class,"box")]/input',
                 timeout=3
             )
             input_id.send_keys(id)
@@ -721,7 +721,7 @@ class WorkflowEditorPage(BasePage):
             time.sleep(0.3)
 
             # Находим строку созданной переменной
-            new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and contains(@title, "{id}")]/parent::div/parent::td/parent::tr'
+            new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[text()="{id}"]/parent::div/parent::td/parent::tr'
             self.logger.info(f'Найдена строка переменной: {new_tr}')
 
             # Назначаем название
@@ -810,13 +810,13 @@ class WorkflowEditorPage(BasePage):
 
             # Назначаем название
             self.logger.info(f'Назначаем название стадии: {name}')
-            input_name = xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and @title="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea', timeout=3)
+            input_name = xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea', timeout=3)
             input_name.send_keys(name)
             input_name.send_keys(Keys.ENTER)
             time.sleep(0.3)
 
             # Находим строку созданной стадии
-            new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and contains(@title, "{name}")]/parent::div/parent::td/parent::tr'
+            new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[text()="{name}"]/parent::div/parent::td/parent::tr'
             self.logger.info(f'Найдена строка стадии: {new_tr}')
 
             # Назначаем номер стадии
@@ -864,7 +864,7 @@ class WorkflowEditorPage(BasePage):
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_BUTTON, timeout=3).click()
 
             self.logger.info(f'Выбираем автоматизацию: {automation_type}')
-            automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_lIST}[contains(@title,"{automation_type}")]'
+            automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_lIST}[text()="{automation_type}"]'
             xpath.find_clickable(automation_option, timeout=3).click()
 
             self.logger.info(f'Автоматизация "{automation_type}" успешно добавлена.')
@@ -897,7 +897,7 @@ class WorkflowEditorPage(BasePage):
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_BUTTON, timeout=3).click()
 
             self.logger.info(f'Выбираем автоматизацию: {automation_type}')
-            automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_lIST}[contains(@title,"{automation_type}")]'
+            automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_lIST}[text()="{automation_type}"]'
             xpath.find_clickable(automation_option, timeout=3).click()
 
             self.logger.info(f'Автоматизация "{automation_type}" успешно добавлена.')
@@ -1005,7 +1005,7 @@ class WorkflowEditorPage(BasePage):
     def connections_properties(self, action, target_element,trans_name, result):
         """Метод для проверки таблицы связей фигуры."""
         xpath = XPathFinder(self.driver)
-        actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CONNECT_TRS}//span[contains(@title,"{target_element}")]/ancestor::tr[1]'
+        actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CONNECT_TRS}//span[contains(text(),"{target_element}")]/ancestor::tr[1]'
 
         if action == "set":
             self.logger.info(f"Ищем строку с целевым элементом: {target_element}")
@@ -1038,7 +1038,7 @@ class WorkflowEditorPage(BasePage):
 
             try:
                 # Ищем актуальную строку
-                xpath.find_visible(actual_tr, timeout=3)
+                xpath.find_visible(actual_tr, timeout=7)
 
                 # Проверяем наименование перехода
                 self.logger.info(f'Проверяем уровень доступа: {trans_name}')

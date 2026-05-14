@@ -19,5 +19,7 @@ def refresh_and_wait(driver, logger=None, timeout=10):
     # Отключаем вебсокеты для повышения стабильности тестов в ФС
     driver.execute_script(WEBSOCKET_PATCH)
 
+    time.sleep(3)  # Дополнительная задержка для полной инициализации страницы
+
     if logger:
         logger.info("Страница полностью загружена.")

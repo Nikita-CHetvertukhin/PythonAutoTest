@@ -31,7 +31,7 @@ class WorkflowsPage(BasePage):
         обеспечивая устойчивость к изменениям DOM."""
         xpath = XPathFinder(self.driver)
     
-        target_xpath = f'{WorkflowsLocators.WORKFLOWS_LIST}/span[@title="{object_name}"]'
+        target_xpath = f'{WorkflowsLocators.WORKFLOWS_LIST}/span[text()="{object_name}"]'
         action_xpath = f'{WorkflowsLocators.WORKFLOWS_DROPDOWN}/td[@title="{action_name}"]'
 
         for attempt in range(max_retries):

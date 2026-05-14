@@ -35,8 +35,8 @@ def test_workflow_administration_menu(request, error_handler, logger, driver_fix
         assert result, "Администратору не удалось перейти в раздел 'Все задачи (отладка)'"
 
     # Проверяем Navigator Listbox со списком задач
-    success, details = workflow_administration_page.verify_columns_visibility(WorkflowAdministrationLocators.COLUMN_NAVIGATOR_LISTBOX,WorkflowAdministrationLocators.SCROLLER_NAVIGATION_LISTBOX,
-        "check","Задача","isTemplate","isPublished","removed","System","Hidden","isClosed"
+    success, details = workflow_administration_page.verify_columns_visibility(WorkflowAdministrationLocators.COLUMN_NAVIGATOR_LISTBOX,
+        "check","Задача","isTemplate","hasPublishedVersion","System","Hidden","isClosed"
     )
 
     if success:

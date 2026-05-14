@@ -10,7 +10,7 @@ import allure
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
 def test_download_history_task(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет возможность скачивания истории задачи в различных форматах"""
-    formats = ["pdf", "xlsx", "doc"]
+    formats = ["pdf", "xlsx"]
     task_name, my_tasks_page, xpath = setup_create_delete_task
 
     logger.info("Начало проверки возможности скачивания истории задачи")

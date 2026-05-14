@@ -41,7 +41,7 @@ class MyTasksPage(BasePage):
         input_element.send_keys(process_name)
         self.logger.info(f"Имя процесса '{process_name}' введено в поле типа задачи")
         try:
-            match = xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{process_name}")]', timeout=3)
+            match = xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[text()="{process_name}"]', timeout=3)
         except TimeoutException:
             match = None
         time.sleep(1)  # Ждем, для стабильности
@@ -91,10 +91,10 @@ class MyTasksPage(BasePage):
 
         if task_type:
             if not from_file:
-                succes_path = f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[contains(@title,"{task_type}")]/ancestor::tr'
+                succes_path = f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[text()="{task_type}"]/ancestor::tr'
                 input_type = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_TYPE_INPUT, timeout=5)
             else:
-                succes_path = f'{MyTasksLocators.MY_TASKS_FROM_FILE_TASK_TYPE_TRS}[contains(@title,"{task_type}")]/ancestor::tr'
+                succes_path = f'{MyTasksLocators.MY_TASKS_FROM_FILE_TASK_TYPE_TRS}[text()="{task_type}"]/ancestor::tr'
                 input_type = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_FROM_FILE_TASK_TYPE_INPUT, timeout=5)
             input_type.click()
             input_type.send_keys(Keys.CONTROL + "a")
@@ -124,7 +124,7 @@ class MyTasksPage(BasePage):
             input_executor.send_keys(Keys.DELETE)
             input_executor.send_keys(executor)
             self.logger.info(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
-            succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[contains(@title,"{executor}")]'
+            succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[text()="{executor}"]'
             time.sleep(0.5)  # Ждем, для стабильности
             self.xpath.find_clickable(succes_path, timeout=3).click()
             self.logger.info(f"Пользователь '{executor}' найден в списке исполнителей задач")
@@ -140,7 +140,7 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(login)
                 self.logger.info(f"Логин {login} успешно введен в инпут роли '{role_name}'")
                 time.sleep(0.5)  # Ждем, для стабильности
-                succes_xpath = f'{MyTasksLocators.MY_TASKS_TASK_ROLE}/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[2]//span[contains(@title,"{login}")]'
+                succes_xpath = f'{MyTasksLocators.MY_TASKS_TASK_ROLE}/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[2]//span[text()="{login}"]'
                 self.xpath.find_clickable(succes_xpath, timeout=3).click()
                 self.logger.info(f"Роль '{role_name}' с логином '{login}' успешно введена в поле исполнителя задачи.")
 
@@ -153,12 +153,12 @@ class MyTasksPage(BasePage):
                 input_executor.send_keys(executor)
                 self.logger.info(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
 
-                succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[contains(@title,"{executor}")]'
+                succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[text()="{executor}"]'
                 time.sleep(0.5)  # Ждем, для стабильности
                 self.xpath.find_clickable(succes_path, timeout=3).click()
                 self.logger.info(f"Пользователь '{executor}' найден в списке исполнителей задач")
 
-                current_tr = self.xpath.find_located(f'{MyTasksLocators.MY_TASKS_TASK_ACTORS_TRS}/td[contains(@class,"string")]/div/span[@title="{executor}"]/ancestor::tr')
+                current_tr = self.xpath.find_located(f'{MyTasksLocators.MY_TASKS_TASK_ACTORS_TRS}/td[contains(@class,"string")]/div/span[text()="{executor}"]/ancestor::tr')
                 self.logger.info(f"Найдена текущая строка исполнителя")
                 access_trigger = current_tr.find_element(By.XPATH, './td[contains(@class,"int")and not(contains(@class,"first"))]')
                 self.logger.info(f"Найдена текущая строка доступа исполнителя")
@@ -182,7 +182,7 @@ class MyTasksPage(BasePage):
         if attache_file:
             self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_TAB, timeout=3).click()
             self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_BUTTON, timeout=3).click()
-            search_file_by_name = f'{MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_FILE_TD}[contains(@title,"{attache_file}")]'
+            search_file_by_name = f'{MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_FILE_TD}[text()="{attache_file}"]'
             element = self.xpath.find_visible(search_file_by_name, timeout=3)
             ActionChains(self.driver).move_to_element(element).perform()
             checkbox = f'{search_file_by_name}/ancestor::tr/td[contains(@class,"check")]//i'
@@ -249,7 +249,7 @@ class MyTasksPage(BasePage):
         обеспечивая устойчивость к изменениям DOM."""
         xpath = XPathFinder(self.driver)
     
-        target_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{object_name}"]'
+        target_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[text()="{object_name}"]'
         action_xpath = f'{MyTasksLocators.MY_TASKS_DROPDOWN}/td[@title="{action_name}"]'
 
         for attempt in range(max_retries):
@@ -430,7 +430,7 @@ class MyTasksPage(BasePage):
 
         observe_button_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCH_BUTTON
         input_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCHER_INPUT
-        add_observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_ADD_WATCHER_TRS}[contains(@title,"{observer_login}")]'
+        add_observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_ADD_WATCHER_TRS}[text()="{observer_login}"]'
         observers_target_tr_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_WATCHERS_LIST}[@title="{observer_login}"]'
 
         self.xpath.find_clickable(observe_button_xpath, timeout=3).click()
@@ -600,7 +600,7 @@ class MyTasksPage(BasePage):
         '''Метод октрывает подзадачу внутри основной задачи'''
         # Ищем основной tr по task_name
         xpath = XPathFinder(self.driver)
-        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{task_name}"]'
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[text()="{task_name}"]'
 
         for i, (position, subtask_name) in enumerate(subtask_massive):
             try:
@@ -608,7 +608,7 @@ class MyTasksPage(BasePage):
                 indexed_tr_xpath = f"{target_span_xpath}/ancestor::tr/following-sibling::tr[{position}]"
 
                 # Ищем span внутри этого tr и открываем таск кликом
-                xpath.find_clickable(f'{indexed_tr_xpath}//span[@title="{subtask_name}"]', timeout=3).click()
+                xpath.find_clickable(f'{indexed_tr_xpath}//span[text()="{subtask_name}"]', timeout=3).click()
                 self.logger.info(f"Найдена и октрыта подзадача '{subtask_name}' на позиции {position}")
                 time.sleep(1)  # Ждем, чтобы форма успела загрузиться
             except Exception as e:
@@ -618,7 +618,7 @@ class MyTasksPage(BasePage):
     def complete_task(self, task_name: str, subtask_massive: list, waiting=True):
         # Ищем основной tr по task_name
         xpath = XPathFinder(self.driver)
-        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{task_name}"]'
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[text()="{task_name}"]'
 
         for i, (position, subtask_name, action) in enumerate(subtask_massive):
             try:
@@ -626,7 +626,7 @@ class MyTasksPage(BasePage):
                 indexed_tr_xpath = f"{target_span_xpath}/ancestor::tr/following-sibling::tr[{position}]"
 
                 # Ищем span внутри этого tr и открываем таск кликом
-                xpath.find_clickable(f'{indexed_tr_xpath}//span[@title="{subtask_name}"]', timeout=3).click()
+                xpath.find_clickable(f'{indexed_tr_xpath}//span[text()="{subtask_name}"]', timeout=3).click()
                 self.logger.info(f"Найдена подзадача '{subtask_name}' на позиции {position}")
 
                 # Ждём, чтобы форма открылась и клкиаем по кнопке действий
@@ -652,7 +652,7 @@ class MyTasksPage(BasePage):
     def complete_simple_task(self, task_name: str, action: str):
         # Ищем tr по task_name
         xpath = XPathFinder(self.driver)
-        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{task_name}"]'
+        target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[text()="{task_name}"]'
         xpath.find_clickable(target_span_xpath, timeout=3).click()
 
         # Ждём, чтобы форма открылась и клкиаем по кнопке действий
