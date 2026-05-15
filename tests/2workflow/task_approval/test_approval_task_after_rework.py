@@ -37,8 +37,13 @@ def test_approval_task_after_rework(error_handler, logger, admin_driver, user1_d
     my_tasks_page.find_click_header_menu("Мои задачи")
     my_tasks_page.find_click_side_menu("Мои задачи")
     my_tasks_page.click_if_fa_caret_right(task_name)
-    subtasks = [(2, "Доработка", "Согласовать")]
-    my_tasks_page.complete_task(task_name, subtasks)
+    # Точная позиция этапа "Доработка не определена", поэтому пробуем 2 варианта
+    subtasks1 = [(1, "Доработка", "Согласовать")]
+    subtasks2 = [(2, "Доработка", "Согласовать")]
+    try:
+        my_tasks_page.complete_task(task_name, subtasks1)
+    except:
+        my_tasks_page.complete_task(task_name, subtasks2)
 
     # Возвращаемся на УЗ исполнителя и согласовываем задачу
     refresh_and_wait(user1_driver, logger) # Так как отключены вебсокеты , обновляем страницу
