@@ -8,3 +8,4 @@
 /docker-compose.yml
 /utils/auto_accounts_script/.env
 /utils/auto_accounts_script/config.yaml
+/.vscode
