@@ -28,16 +28,28 @@ done
 echo "[ENTRYPOINT] Браузер: $BROWSER"
 echo "[ENTRYPOINT] Аргументы для тестов: ${ARGS[*]}"
 
+# Чистим allure_results один раз за весь докер-прогон (до prepare), чтобы:
+# - тренд Allure строился по одному прогону, а не по смеси из прошлых запусков;
+# - environment.properties, который пишет prepare, не затирался вторым вызовом pytest
+rm -rf /app/allure_results/*
+mkdir -p /app/allure_results
+
 echo "[ENTRYPOINT] Запускаю prepare..."
 pytest -m prepare --browser "$BROWSER"
 
 echo "[ENTRYPOINT] Запускаю тесты: ${ARGS[*]}"
 pytest "${ARGS[@]}" --browser "$BROWSER"
 
-echo "Тесты завершены. Формирую отчёт Allure..."
+echo "Тесты завершены. Запрашиваю обновление отчёта Allure..."
 
-# Генерация статического отчёта Allure
-allure generate allure_results -o allure_report --clean
+# Результаты уже лежат в общем volume allure_results — просим сервис allure-docker-service
+# пересобрать отчёт сразу, не дожидаясь опроса по таймеру
+curl -s -o /dev/null -w "%{http_code}" "http://allure:5050/allure-docker-service/generate-report?project_id=doczilla-pro" \
+    | { read -r code; if [ "$code" = "200" ]; then
+            echo "Отчёт Allure обновлён: http://localhost:5050/allure-docker-service/projects/doczilla-pro/reports/latest/index.html"
+        else
+            echo "[WARN] Не удалось обновить отчёт Allure (HTTP $code) — проверьте, что контейнер allure запущен"
+        fi; }
 
 filtered_args=()
 for arg in "${ARGS[@]}"; do
@@ -52,10 +64,9 @@ args_str="${args_str// /_}"  # пробелы → _
 timestamp=$(date +%Y%m%d_%H%M%S)
 report_dir="/app/report/${args_str}_${url_clean}_$timestamp"
 
-echo "Копирую отчёт и логи в ${report_dir}..."
+echo "Копирую логи и загрузки в ${report_dir}..."
 mkdir -p "${report_dir}"
-cp -r /app/allure_report "${report_dir}/allure_report"
 cp -r /app/log "${report_dir}/logs"
 cp -r /app/resources/downloads "${report_dir}/downloads"
 
-echo "Отчёты, логи и загрузки скопированы в ${report_dir}."
+echo "Логи и загрузки скопированы в ${report_dir}. Отчёт Allure смотрите на http://localhost:5050"

@@ -623,7 +623,7 @@ def pytest_configure(config):
             os.makedirs("log", exist_ok=True)
             os.makedirs("log/screenshots", exist_ok=True)
             os.makedirs("allure_results", exist_ok=True)
-            os.makedirs("allure_reports", exist_ok=True)
+            os.makedirs("reports", exist_ok=True)
             os.makedirs("resources/downloads", exist_ok=True)
             os.makedirs("resources/uploads", exist_ok=True)
 

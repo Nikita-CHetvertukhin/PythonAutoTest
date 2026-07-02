@@ -1,7 +1,7 @@
 /.idea
 /.vs
 **/__pycache__/
-/allure_reports
+/reports
 /log
 /settings/variables.py
 /allure_results
@@ -9,3 +9,4 @@
 /utils/auto_accounts_script/.env
 /utils/auto_accounts_script/config.yaml
 /.vscode
+/CLAUDE.md

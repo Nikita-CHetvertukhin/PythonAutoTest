@@ -117,9 +117,9 @@ pytest -m prepare --browser chrome
 - docker-compose.yml
 ```
 
-- Установить путь копирования отчета из контейнера на хост машину, например:
+- Установить путь копирования логов и загрузок из контейнера на хост машину (у сервисов `dz_autotest` и `allure`), например:
 ```bash
-- "D:\\Dev\\PythonAutoTest\\allure_reports:/app/report"
+- "D:\\Dev\\PythonAutoTest\\reports:/app/report"
 ```
 - При необходимости изменить название образа и тег:
 ```bash
@@ -165,11 +165,13 @@ docker compose run --rm dz_autotest -m base --browser chrome
 <details>
   <summary>🌍 Просмотреть отчет Allure</summary>
 
-  **На машину хост отчёт Allure и текстовые логи сохраняются по пути указанном в volumes файла docker-compose.yml (установленный Allure для просмотра готового отчета не нужен):**
+  **Отчёт генерирует и отдаёт отдельный сервис `allure` (образ `frankescobar/allure-docker-service`) — Allure CLI на хосте не нужен.** После прогона отчёт доступен по адресу:
 
-  ```bash
-  python -m http.server 8080
   ```
+  http://localhost:5050/allure-docker-service/projects/doczilla-pro/reports/latest/index.html
+  ```
+
+  Текстовые логи и загрузки сохраняются по пути, указанному в volumes файла `docker-compose.yml`.
 </details>
 
 <details>
@@ -181,4 +183,3 @@ docker compose run --rm dz_autotest -m base --browser chrome
   docker compose run --rm dz_autotest -m workflow --browser firefox
   ```
 </details>
-

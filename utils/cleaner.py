@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 # Предопределённые директории для очистки
 directories_to_clean = ["allure_results", "log/screenshots", "resources/downloads"]
-exclude_paths = ["log/licence_properties.json", "allure_reports/docker_reports.gitkeep"]
+exclude_paths = ["log/licence_properties.json", "reports/docker_reports.gitkeep"]
 
 def clean_old_files(retention):
     """

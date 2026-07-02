@@ -1,14 +1,18 @@
 services:
   dz_autotest:
-    # Имя образа из билда  
+    # Имя образа из билда
     image: dz_autotest:dev  # dev, master, demo
     # Имя контейнера, который будет создан
     container_name: test_container
     volumes:
-        #  Твой путь до папки сохранения отчета : Константа
-        - "D:\\Dev\\PythonAutoTest\\allure_reports:/app/report"
+        #  Сырые результаты Allure отдаются сервису allure-docker-service : Константа
+        - allure_results:/app/allure_results
+        #  Твой путь до папки сохранения логов и загрузок : Константа
+        - "D:\\Dev\\PythonAutoTest\\reports:/app/report"
     # Путь до скрипта запуска внутри контейнера
     entrypoint: "/app/entrypoint.sh"
+    depends_on:
+      - allure
     deploy:
       resources:
         limits:
@@ -32,3 +36,27 @@ services:
             test_workflow_administration_menu:Известный баг. PRO-0002
             test_undo_redo:Известный баг. PRO-0003. PRO-0003
             test_automat_name:Известный баг. PRO-0005. PRO-0004
+
+  allure:
+    image: frankescobar/allure-docker-service
+    container_name: allure_report_service
+    # Образ по умолчанию работает от uid=1000, а том allure_results создаётся
+    # контейнером dz_autotest от root — без этого KEEP_HISTORY падает с Permission denied
+    user: "0:0"
+    environment:
+        # Отключаем автогенерацию по таймеру — dz_autotest дёргает generate-report сам после прогона
+        CHECK_RESULTS_EVERY_SECONDS: "NONE"
+        KEEP_HISTORY: "1"
+        # Не даём тренду расти бесконечно — храним только последние 30 прогонов
+        KEEP_HISTORY_LATEST: "30"
+    ports:
+        - "5050:5050"
+    volumes:
+        #  Монтируем сразу в директорию проекта "doczilla-pro" (не "default"),
+        #  чтобы в заголовке отчёта было осмысленное имя, а не DEFAULT
+        - allure_results:/app/allure-docker-api/static/projects/doczilla-pro/results
+        - allure_reports_data:/app/allure-docker-api/static/projects/doczilla-pro/reports
+
+volumes:
+  allure_results:
+  allure_reports_data:
