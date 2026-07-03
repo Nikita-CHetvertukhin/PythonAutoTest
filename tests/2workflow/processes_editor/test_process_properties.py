@@ -10,6 +10,9 @@ import allure
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Редактор процесса')
+@allure.title('Свойства рабочего процесса')
 def test_process_properties(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет доступность для изменения и сохранение после перезагрузки страницы свойств процесса"""
     process_name, workflows_page, xpath = setup_create_delete_process

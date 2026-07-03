@@ -12,6 +12,9 @@ import allure
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Редактор процесса')
+@allure.title('Публикация/Снятие с публикации процесса.')
 def test_publish_process(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет публикацию и снятие с публикации процесса."""
     process_name, workflows_page, xpath = setup_create_delete_process

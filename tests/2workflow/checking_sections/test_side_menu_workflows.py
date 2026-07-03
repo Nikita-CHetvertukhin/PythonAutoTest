@@ -12,6 +12,9 @@ DRIVERS = ["admin_driver", "expert_driver", "user1_driver"]
 @pytest.mark.workflow
 @pytest.mark.parametrize("driver_fixture_name", DRIVERS)
 @exception_handler  # Декоратор, обрабатывающий исключения, чтобы тест не прерывался неожиданно
+@allure.epic('Workflow')
+@allure.feature('Разделы')
+@allure.title("Доступность вкладок/колонок раздела 'Рабочие процессы' для роли {driver_fixture_name}")
 def test_side_menu_workflows(request, error_handler, logger, driver_fixture_name):
     """Тест проверяет доступность вкладок в разделе 'Рабочие процессы' и фиксирует ошибки, если они есть."""
 

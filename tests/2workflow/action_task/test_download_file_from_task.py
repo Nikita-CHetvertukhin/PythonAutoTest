@@ -29,14 +29,17 @@ file_name = f"{get_uuid()}_test_download_file_from_task_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Скачивание документа из задачи')
 def test_download_file_from_task(error_handler, logger, admin_driver, setup_create_delete_file, setup_create_delete_task):
-    """Тест проверяет функционал прикрепления документа к задаче"""
+    """Тест проверяет функционал скачивания документа из задачи"""
     file_name, my_files_page, xpath = setup_create_delete_file
     task_name, my_tasks_page, xpath = setup_create_delete_task
     my_tasks_page = MyTasksPage(admin_driver, logger)
     download_manager = DownloadManager()
 
-    logger.info("Начало проверки функционала прикрепления докмуента к задаче")
+    logger.info("Начало проверки функционала скачивания документа из задачи")
     goal_task = my_tasks_page.find_file_by_name(task_name)
     goal_task.click()
     time.sleep(1)  # Заменить на динамическое ожидание появления задачи

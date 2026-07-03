@@ -1,3 +1,4 @@
+import allure
 from pages.base_page import BasePage  # Импорт базового класса, содержащего общие методы для работы со страницами
 from locators.login_locators import LoginLocators  # Импорт локаторов, относящихся к странице входа (например, поля ввода, кнопки)
 from locators.base_locators import BaseLocators  # Общие локаторы, которые могут использоваться на разных страницах
@@ -5,44 +6,47 @@ from locators.base_locators import BaseLocators  # Общие локаторы, 
 class LoginPage(BasePage):
     """Класс, представляющий страницу авторизации."""
 
+    @allure.step("Ввод логина {username}")
     def enter_username(self, username, log_enabled=False):
         """Метод для ввода логина."""
         try:
             element = self.xpath.find_visible(LoginLocators.USERNAME_INPUT)
             element.clear()
             if log_enabled:
-                self.logger.info("Поле логина очищено успешно.")
+                self.logger.debug("Поле логина очищено успешно.")
 
             element.send_keys(username)
             if log_enabled:
-                self.logger.info(f"Логин '{username}' успешно введён.")
+                self.logger.debug(f"Логин '{username}' успешно введён.")
 
         except Exception as e:
             if log_enabled:
                 self.logger.error(f"Ошибка при работе с полем логина: {e}")
 
+    @allure.step("Ввод пароля")
     def enter_password(self, password, log_enabled=False):
         """Метод для ввода пароля."""
         try:
             element = self.xpath.find_visible(LoginLocators.PASSWORD_INPUT)
             element.clear()
             if log_enabled:
-                self.logger.info("Поле пароля очищено успешно.")
+                self.logger.debug("Поле пароля очищено успешно.")
 
             element.send_keys(password)
             if log_enabled:
-                self.logger.info(f"Пароль '{password}' успешно введён.")
+                self.logger.debug("Пароль успешно введён.")
 
         except Exception as e:
             if log_enabled:
                 self.logger.error(f"Ошибка при работе с полем пароля: {e}")
 
+    @allure.step("Клик по кнопке 'Войти'")
     def click_login(self, log_enabled=False):
         """Метод для нажатия кнопки входа."""
         try:
             self.xpath.find_clickable(LoginLocators.LOGIN_BUTTON).click()
             if log_enabled:
-                self.logger.info("Кнопка 'Войти' нажата успешно.")
+                self.logger.debug("Кнопка 'Войти' нажата успешно.")
 
         except Exception as e:
             if log_enabled:

@@ -7,6 +7,9 @@ import allure
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Быстрое скрытие/раскрытие окна задачи')
 def test_collapse_expand(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет сворачивание/разворачивание taskform несколкьо раз"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

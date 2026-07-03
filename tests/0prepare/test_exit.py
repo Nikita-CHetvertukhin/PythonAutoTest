@@ -8,6 +8,9 @@ import allure
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.prepare
+@allure.epic('Доступность сборки')
+@allure.feature('Доступность сборки')
+@allure.title('Выход из УЗ')
 def test_exit(error_handler, logger, admin_driver):
     """Тест проверяет корректность выхода из УЗ."""
     base_page = BasePage(admin_driver, logger)

@@ -15,6 +15,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Dotx (Шаблоны)')
+@allure.title('Скачивание простого Dotx')
 def test_download_simple_dotx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет скачивание простого Dotx"""
     file_name, my_files_page, xpath = setup_create_delete_file

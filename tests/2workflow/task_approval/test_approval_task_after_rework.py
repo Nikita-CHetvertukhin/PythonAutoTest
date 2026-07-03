@@ -18,6 +18,9 @@ import allure
     "skip_cleanup": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Согласование задачи')
+@allure.title('Выполнение задачи после доработки')
 def test_approval_task_after_rework(error_handler, logger, admin_driver, user1_driver, setup_create_delete_task):
     """Тест проверяет возможность выполнения задачи после отправки на доработку (на 2 исполнителях)"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

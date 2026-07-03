@@ -1,5 +1,9 @@
-import requests
+import logging
+import allure
 from settings.variables import API_URL, WORKSPACE, MY_FILES_SECTION
+from api.base_client import post_and_log
+
+logger = logging.getLogger(__name__)
 
 
 class RenameClient:
@@ -7,6 +11,7 @@ class RenameClient:
         self.session_id = session_id
         self.url = API_URL
 
+    @allure.step("Переименование файла с recordid = {record_id}; в {new_name} через API")
     def rename_by_recordid(self, record_id, new_name):
         payload = {
             "request": WORKSPACE,
@@ -20,7 +25,7 @@ class RenameClient:
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
-        response = requests.post(self.url, data=payload, headers=headers)
+        response = post_and_log(logger, self.url, data=payload, headers=headers)
         response.raise_for_status()
         result = response.json()
         assert result.get(

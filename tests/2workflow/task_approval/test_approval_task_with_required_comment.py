@@ -14,6 +14,9 @@ import allure
     "task_executor": ADMIN_LOGIN
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Согласование задачи')
+@allure.title('Выполнение задачи с обязательным комментарием')
 def test_approval_task_with_required_comment(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет наличие обязательного комменатрия"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

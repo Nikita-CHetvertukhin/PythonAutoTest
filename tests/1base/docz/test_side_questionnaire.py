@@ -13,6 +13,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Docz (Анкеты)')
+@allure.title("Появление вкладки 'Анкета' при привязке переменной")
 def test_side_questionnaire(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет появление вкладки Анкета при привязке переменной"""
     file_name, my_files_page, xpath = setup_create_delete_file

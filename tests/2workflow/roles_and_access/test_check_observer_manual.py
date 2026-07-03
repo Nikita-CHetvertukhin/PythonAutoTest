@@ -34,6 +34,9 @@ process_name = f"{get_uuid()}_test_check_observer_manual_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Роли и доступы')
+@allure.title('Ручное назначение наблюдателя и проверка доступных для него действий над задачей')
 def test_check_observer_manual(request, error_handler, logger, admin_driver, user1_driver, setup_create_delete_process, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет назначение наблюдателя и его уровни доступа"""
     process_name, workflows_page, xpath = setup_create_delete_process

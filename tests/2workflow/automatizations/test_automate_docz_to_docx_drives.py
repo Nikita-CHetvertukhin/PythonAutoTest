@@ -46,6 +46,9 @@ process_name = f"{get_uuid()}_transform_docx_drives_process_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title("Автоматизация по конвертации анкеты в docx в папку в разделе 'Общие диски'")
 def test_automate_transform_docx_drives(request, error_handler, logger, admin_driver, setup_create_delete_drive, setup_create_delete_process, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет работу автоматизации по конвертации анкеты в docx в папку в разделе 'Общие диски'"""
     drive_name, my_files_page, xpath = setup_create_delete_drive

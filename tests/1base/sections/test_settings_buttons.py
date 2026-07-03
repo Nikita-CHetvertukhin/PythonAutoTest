@@ -8,6 +8,9 @@ import allure
 @pytest.mark.base_smoke
 @pytest.mark.base
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Разделы')
+@allure.title("Проверка вкладок в разделе 'Настройки'")
 def test_header_buttons(error_handler, logger, admin_driver):
     """Тест проверяет открытие вкладок в разделе 'Настройки'"""
     my_files_page = MyFilesPage(admin_driver, logger)

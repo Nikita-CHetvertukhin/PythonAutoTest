@@ -21,6 +21,9 @@ import allure
     "logins_and_access": [(EXPERT_LOGIN, "Комментирование")]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Доступы')
+@allure.title("Проверка уровня доступа 'Комментирование' для docx")
 def test_check_comment_acces_docx(error_handler, logger, admin_driver, expert_driver, setup_create_delete_file):
     """Тест проверяет уровень доступа 'Комментирование' для docx."""
     file_name, my_files_page, xpath = setup_create_delete_file

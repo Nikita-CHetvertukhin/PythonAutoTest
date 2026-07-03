@@ -7,6 +7,9 @@ import allure
 @allure.severity(allure.severity_level.TRIVIAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature("Раздел 'Рабочие процессы'")
+@allure.title("Действие 'Скопировать ссылку'.")
 def test_copy_link(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет возможность действия 'Скопировать ссылку'."""
     process_name, workflows_page, xpath = setup_create_delete_process

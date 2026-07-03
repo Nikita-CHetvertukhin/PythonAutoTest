@@ -46,6 +46,9 @@ logins_and_access_final = [(USER1_LOGIN, "Просмотр"),(USER2_LOGIN, "Пр
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Роли и доступы')
+@allure.title('Проверка доступов при последовательном согласовании')
 def test_check_acces_serial_approvals(
     error_handler, logger, admin_driver, user1_driver, user2_driver, user3_driver, user4_driver, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет доступы при последовательном согласовании"""

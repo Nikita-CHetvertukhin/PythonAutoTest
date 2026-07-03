@@ -14,6 +14,9 @@ import allure
     "task_executor": ADMIN_LOGIN
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Отправка на согласование')
+@allure.title("Создание задачи из раздела 'Мои задачи'")
 def test_create_task_by_my_tasks(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет создание задачи через 'Мои задачи'"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

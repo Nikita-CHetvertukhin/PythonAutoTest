@@ -8,6 +8,9 @@ import allure
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Скачивание истории задачи')
 def test_download_history_task(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет возможность скачивания истории задачи в различных форматах"""
     formats = ["pdf", "xlsx"]

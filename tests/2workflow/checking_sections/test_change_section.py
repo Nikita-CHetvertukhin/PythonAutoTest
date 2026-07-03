@@ -8,6 +8,9 @@ from utils.exception_handler.decorator_error_handler import exception_handler, M
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler
+@allure.epic('Workflow')
+@allure.feature('Разделы')
+@allure.title("Проверка доступности вкладок/колонок раздела 'Мои файлы'.")
 def test_change_section(request, error_handler, logger, admin_driver):
     """Проверка доступности вкладок и корректности отображения колонок в разделе 'Мои файлы'."""
     logger.info(f"Начало проверки")

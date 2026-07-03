@@ -14,11 +14,14 @@ import allure
     indirect=True
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Изменение описания задачи')
 def test_description_change(error_handler, logger, admin_driver, setup_create_delete_task):
-    """Тест проверяет изменение дедлайна для задачи"""
+    """Тест проверяет изменение описания для задачи"""
     task_name, my_tasks_page, xpath = setup_create_delete_task
 
-    logger.info("Начало проверки изменения дедлайна")
+    logger.info("Начало проверки изменения описания")
     my_tasks_page.right_click_and_select_action(task_name, "Открыть")
     my_tasks_page.task_description_properties(description="test_new_description", action="set")
     xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_CLOSE_BUTTON, timeout=3).click()

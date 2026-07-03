@@ -7,6 +7,9 @@ import allure
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature("Раздел 'Рабочие процессы'")
+@allure.title('Переименование процесса')
 def test_rename_process(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет возможность действия Переименовать процесс."""
     process_name, workflows_page, xpath = setup_create_delete_process

@@ -1,13 +1,18 @@
-import requests
+import logging
+import allure
 from pathlib import Path
 from settings.variables import API_URL, WORKSPACE, UPLOADS_PATH, MY_FILES_SECTION
+from api.base_client import post_and_log
+
+logger = logging.getLogger(__name__)
 
 class FileUploadClient:
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.url = API_URL
         self.UPLOADS_PATH = UPLOADS_PATH
-    
+
+    @allure.step("Загрузка файла {file_name} через API")
     def upload_file(self, file_name: str):
         file_path = Path(UPLOADS_PATH) / file_name
         if not Path(file_path).is_file():
@@ -24,7 +29,7 @@ class FileUploadClient:
 
         with open(file_path, "rb") as f:
             files = {"file": f}
-            response = requests.post(self.url, data=payload, files=files)
+            response = post_and_log(logger, self.url, data=payload, files=files)
 
         response.raise_for_status()
         result = response.json()

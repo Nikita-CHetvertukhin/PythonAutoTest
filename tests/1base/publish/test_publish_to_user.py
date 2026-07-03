@@ -15,6 +15,9 @@ import allure
     "publishing_from": [f"{USER1_LOGIN}"]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Публикация')
+@allure.title('Публикация простого Dotx на УЗ')
 def test_publish_to_user(error_handler, logger, admin_driver, user1_driver, setup_create_delete_file):
     """Тест проверяет публикацию простого Dotx на УЗ"""
     file_name, my_files_page, xpath = setup_create_delete_file

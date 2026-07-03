@@ -9,11 +9,14 @@ import allure
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Изменение исполнителя в подзадаче')
 def test_change_executor_subtask(error_handler, logger, admin_driver, setup_create_delete_task):
-    """Тест проверяет создание подзадачи"""
+    """Тест проверяет смену исполнителя в подзадаче"""
     task_name, my_tasks_page, xpath = setup_create_delete_task
 
-    logger.info("Начало проверки создания подзадачи")
+    logger.info("Начало проверки изменения исполнителя в подзадаче")
     my_tasks_page.right_click_and_select_action(task_name, "Открыть")
     my_tasks_page.create_subtask(subtask_name=f"{task_name}_subtask")
     my_tasks_page.click_if_fa_caret_right(task_name)

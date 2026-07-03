@@ -14,6 +14,9 @@ import allure
     ("Некорректные логин и пароль", ADMIN_LOGIN + "123", ADMIN_PASSWORD + "123", True),  # Ожидаем ошибку из-за неверного пароля
     ("Успешная авторизация ADMIN", ADMIN_LOGIN, ADMIN_PASSWORD, False)  # Ожидаем успешную авторизацию без ошибок
 ])
+@allure.epic('Доступность сборки')
+@allure.feature('Доступность сборки')
+@allure.title('Проверка авторизации: {test_suite[0]}')
 def test_authorization(error_handler, logger, driver, test_suite):
     """Тест авторизации в системе с различными комбинациями логина и пароля."""
     suite_name, login, password, expect_error = test_suite # Распаковываем параметры теста

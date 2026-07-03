@@ -11,6 +11,9 @@ import allure
 @pytest.mark.workflow
 @pytest.mark.combo
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature("Раздел 'Рабочие процессы'")
+@allure.title('Шеринг процесса')
 def test_share_process(error_handler, logger, admin_driver, user1_driver, setup_create_delete_process):
     """Тест проверяет возможность шеринга процесса."""
     process_name, workflows_page, xpath = setup_create_delete_process

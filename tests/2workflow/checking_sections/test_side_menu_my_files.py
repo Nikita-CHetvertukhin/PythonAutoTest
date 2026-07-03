@@ -13,6 +13,9 @@ from utils.exception_handler.decorator_error_handler import exception_handler, M
     (["Шаблоны"], ["check", "Название", "Версия", "Автор", "Комментарий"]),
 ])
 @exception_handler
+@allure.epic('Workflow')
+@allure.feature('Разделы')
+@allure.title("Проверка боковых вкладок и колонок: {tabs}")
 def test_side_menu_my_files(request, error_handler, logger, admin_driver, tabs, columns):
     """Проверка доступности вкладок и корректности отображения колонок в разделе 'Мои файлы'."""
     logger.info(f"Начало проверки вкладок: {tabs}")

@@ -38,6 +38,9 @@ process_name = f"{get_uuid()}_test_automate_publish_dotx_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title('Автоматизация по публикации шаблона')
 def test_automate_publish_dotx(error_handler, logger, admin_driver, setup_create_delete_process, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет работу автоматизации по публикации шаблона (также снимаем с публикации в конце)"""
     process_name, workflows_page, xpath = setup_create_delete_process

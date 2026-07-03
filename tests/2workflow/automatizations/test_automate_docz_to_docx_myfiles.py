@@ -33,6 +33,9 @@ folder_name = f"{get_uuid()}_FOLDER_DOCZ_DOCX_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title("Автоматизация по конвертации анкеты в docx в папку в разделе 'Мои файлы'")
 def test_automate_transform_docx_myfiles(error_handler, logger, admin_driver,setup_create_delete_file, setup_create_delete_process):
     """Тест проверяет работу автоматизации по конвертации анкеты в docx в папку в разделе 'Мои файлы'"""
     file_name, my_files_page, xpath = setup_create_delete_file

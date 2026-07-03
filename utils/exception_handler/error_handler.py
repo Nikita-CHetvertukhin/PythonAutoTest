@@ -12,15 +12,26 @@ from selenium.common.exceptions import WebDriverException
 class ErrorHandler:
     """Класс для обработки ошибок, логирования и создания скриншотов с интеграцией Allure.
     """
-    def __init__(self, driver, logger=None, browser_type="chrome"):
+    def __init__(self, driver, logger=None, browser_type="chrome", log_capture=None):
         """Инициализация ErrorHandler.
 
         :param driver: WebDriver для работы с браузером.
         :param logger: Логгер для записи ошибок. Если не передан, создаётся новый.
+        :param log_capture: io.StringIO с логом текущего теста (фикстура `log_capture`).
+            Если передан, его содержимое прикрепляется к Allure при падении.
         """
         self.driver = driver
         self.logger = logger  or logging.getLogger(__name__)
         self.browser_type = browser_type.strip().lower()
+        self.log_capture = log_capture
+
+    def _attach_test_log(self):
+        """Прикрепляет к Allure лог, накопленный за текущий тест (если фикстура log_capture передана)."""
+        if self.log_capture is None or "pytest" not in sys.modules:
+            return
+        log_text = self.log_capture.getvalue()
+        if log_text:
+            allure.attach(log_text, name="error log", attachment_type=allure.attachment_type.TEXT)
 
     def handle_exception(self, exception, screenshot_name=None, critical=True):
         """
@@ -38,10 +49,11 @@ class ErrorHandler:
         self.driver.save_screenshot(screenshot_path)
         self.logger.error(f"Ошибка: {exception}. Скриншот сохранён: {screenshot_path}")
 
-        # Прикрепление скриншота к Allure
+        # Прикрепление скриншота и лога теста к Allure
         if "pytest" in sys.modules:
             with open(screenshot_path, "rb") as image_file:
                 allure.attach(image_file.read(), name=f"Ошибка: {exception}", attachment_type=allure.attachment_type.PNG)
+        self._attach_test_log()
 
         # Если ошибка критическая - обновляем страницу
         if critical:
@@ -73,6 +85,7 @@ class ErrorHandler:
                     allure.attach(error_messages, name="Ошибки в консоли", attachment_type=allure.attachment_type.TEXT)
                     with open(screenshot_path, "rb") as image_file:
                         allure.attach(image_file.read(), name="Скриншот при ошибке в консоли", attachment_type=allure.attachment_type.PNG)
+                self._attach_test_log()
 
                 pytest.fail("Обнаружены ошибки в консоли браузера:\n" + error_messages)
 

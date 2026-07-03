@@ -1,4 +1,5 @@
 import time
+import allure
 from venv import logger
 from pages.base_page import BasePage  # Импорт базового класса, содержащего общие методы для работы со страницами
 from locators.my_tasks_locators import MyTasksLocators  # Импорт локаторов, относящихся к странице входа (например, поля ввода, кнопки)
@@ -26,12 +27,13 @@ class MyTasksPage(BasePage):
         # Инициализация XPathFinder для поиска элементов
         self.xpath = XPathFinder(driver)
 
+    @allure.step("Проверка публикации процесса {process_name}")
     def checking_publish_process(self, process_name):
         """Проверяет публикацию процесса."""
         xpath = XPathFinder(self.driver)
 
         xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_TASK_BUTTON, timeout=5).click()
-        self.logger.info("Кнопка 'Создать задачу' нажата")
+        self.logger.debug("Кнопка 'Создать задачу' нажата")
         input_element = xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_TYPE_INPUT, timeout=5)
         input_element.click()  # Кликаем по полю ввода типа задачи
         time.sleep(0.5)  # Ждем, для стабильности 
@@ -39,23 +41,24 @@ class MyTasksPage(BasePage):
         input_element.send_keys(Keys.DELETE)  # Удалить выделенное
         time.sleep(0.5)  # Ждем, для стабильности
         input_element.send_keys(process_name)
-        self.logger.info(f"Имя процесса '{process_name}' введено в поле типа задачи")
+        self.logger.debug(f"Имя процесса '{process_name}' введено в поле типа задачи")
         try:
             match = xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASK_TYPE_TRS}[text()="{process_name}"]', timeout=3)
         except TimeoutException:
             match = None
         time.sleep(1)  # Ждем, для стабильности
         if match:
-            self.logger.info(f"Процесс '{process_name}' найден в списке типов задач")
+            self.logger.debug(f"Процесс '{process_name}' найден в списке типов задач")
             xpath.find_clickable(MyTasksLocators.MY_TASKS_CANCEL_BUTTON, timeout=3).click()
-            self.logger.info("Окно создания задачи закрыто")
+            self.logger.debug("Окно создания задачи закрыто")
             return True
         else:
-            self.logger.info(f"Процесс '{process_name}' не найден в списке типов задач")
+            self.logger.debug(f"Процесс '{process_name}' не найден в списке типов задач")
             xpath.find_clickable(MyTasksLocators.MY_TASKS_CANCEL_BUTTON, timeout=3).click()
-            self.logger.info("Окно создания задачи закрыто")
+            self.logger.debug("Окно создания задачи закрыто")
             return False
 
+    @allure.step("Создание задачи {task_name}")
     def create_task(self, task_name, task_description=None, task_type=None, deadline=None, executor=None, executors=None, executors_massive=None, attache_file=None, from_file=False):
         """Создание задачи:
         task_name - имя задачи
@@ -76,7 +79,7 @@ class MyTasksPage(BasePage):
         input_name.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
         input_name.send_keys(Keys.DELETE)  # Удалить
         input_name.send_keys(task_name)
-        self.logger.info("Название задачи успешно установлено.")
+        self.logger.debug("Название задачи успешно установлено.")
 
         if task_description:
             if not from_file:
@@ -87,7 +90,7 @@ class MyTasksPage(BasePage):
             input_description.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_description.send_keys(Keys.DELETE)  # Удалить
             input_description.send_keys(task_description)
-            self.logger.info("Описание задачи успешно установлено.")
+            self.logger.debug("Описание задачи успешно установлено.")
 
         if task_type:
             if not from_file:
@@ -102,12 +105,12 @@ class MyTasksPage(BasePage):
             input_type.send_keys(Keys.DELETE)
             if task_type not in ["Параллельное согласование", "Последовательное согласование"]:
                 input_type.send_keys(task_type)
-                self.logger.info(f"Имя процесса '{task_type}' введено в поле типа задачи")
+                self.logger.debug(f"Имя процесса '{task_type}' введено в поле типа задачи")
             else:
-                self.logger.info(f"Исключение, не вводим, т.к. поиск не сработает")
+                self.logger.debug(f"Исключение, не вводим, т.к. поиск не сработает")
             time.sleep(0.5) # Ждем, для стабильности
             self.xpath.find_clickable(succes_path, timeout=3).click()
-            self.logger.info(f"Процесс '{task_type}' найден в списке типов задач и выбран")
+            self.logger.debug(f"Процесс '{task_type}' найден в списке типов задач и выбран")
 
         if deadline:
             input_deadline = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_DEADLINE_INPUT, timeout=3)
@@ -115,7 +118,7 @@ class MyTasksPage(BasePage):
             input_deadline.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_deadline.send_keys(Keys.DELETE)  # Удалить
             input_deadline.send_keys(deadline)
-            self.logger.info("Дедлайн задачи успешно установлен.")
+            self.logger.debug("Дедлайн задачи успешно установлен.")
 
         if executor:
             input_executor = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_PERFORMER_INPUT, timeout=3)
@@ -123,11 +126,11 @@ class MyTasksPage(BasePage):
             input_executor.send_keys(Keys.CONTROL + "a")
             input_executor.send_keys(Keys.DELETE)
             input_executor.send_keys(executor)
-            self.logger.info(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
+            self.logger.debug(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
             succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[text()="{executor}"]'
             time.sleep(0.5)  # Ждем, для стабильности
             self.xpath.find_clickable(succes_path, timeout=3).click()
-            self.logger.info(f"Пользователь '{executor}' найден в списке исполнителей задач")
+            self.logger.debug(f"Пользователь '{executor}' найден в списке исполнителей задач")
 
         if executors:
             # ИЗВЛЕКАЕМ ЗАНЧЕНИЯ ИЗ МАССИВА ВИДА Массив вида [("Название роли1","Логин1"),("Название роли2","Логин2")]
@@ -138,11 +141,11 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(Keys.CONTROL + "a")
                 input_element.send_keys(Keys.DELETE)
                 input_element.send_keys(login)
-                self.logger.info(f"Логин {login} успешно введен в инпут роли '{role_name}'")
+                self.logger.debug(f"Логин {login} успешно введен в инпут роли '{role_name}'")
                 time.sleep(0.5)  # Ждем, для стабильности
                 succes_xpath = f'{MyTasksLocators.MY_TASKS_TASK_ROLE}/parent::div/div[contains(@class,"dropdown")and not(contains(@class,"display-none"))]//div[contains(@class,"items")]//tbody/tr/td[2]//span[text()="{login}"]'
                 self.xpath.find_clickable(succes_xpath, timeout=3).click()
-                self.logger.info(f"Роль '{role_name}' с логином '{login}' успешно введена в поле исполнителя задачи.")
+                self.logger.debug(f"Роль '{role_name}' с логином '{login}' успешно введена в поле исполнителя задачи.")
 
         if executors_massive:
             for executor, access_level in executors_massive:
@@ -151,24 +154,24 @@ class MyTasksPage(BasePage):
                 input_executor.send_keys(Keys.CONTROL + "a")
                 input_executor.send_keys(Keys.DELETE)
                 input_executor.send_keys(executor)
-                self.logger.info(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
+                self.logger.debug(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
 
                 succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[text()="{executor}"]'
                 time.sleep(0.5)  # Ждем, для стабильности
                 self.xpath.find_clickable(succes_path, timeout=3).click()
-                self.logger.info(f"Пользователь '{executor}' найден в списке исполнителей задач")
+                self.logger.debug(f"Пользователь '{executor}' найден в списке исполнителей задач")
 
                 current_tr = self.xpath.find_located(f'{MyTasksLocators.MY_TASKS_TASK_ACTORS_TRS}/td[contains(@class,"string")]/div/span[text()="{executor}"]/ancestor::tr')
-                self.logger.info(f"Найдена текущая строка исполнителя")
+                self.logger.debug(f"Найдена текущая строка исполнителя")
                 access_trigger = current_tr.find_element(By.XPATH, './td[contains(@class,"int")and not(contains(@class,"first"))]')
-                self.logger.info(f"Найдена текущая строка доступа исполнителя")
+                self.logger.debug(f"Найдена текущая строка доступа исполнителя")
                 access_trigger.click()
                 share_input = current_tr.find_element(By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVEL_INPUT)
-                self.logger.info(f"Найден инпут уровня доступа")
+                self.logger.debug(f"Найден инпут уровня доступа")
                 self.driver.switch_to.active_element.send_keys(Keys.CONTROL + "a")
                 self.driver.switch_to.active_element.send_keys(Keys.DELETE)
                 self.driver.switch_to.active_element.send_keys(" ")
-                self.logger.info(f"Появился выпадающйи списко урвоней доступа")
+                self.logger.debug(f"Появился выпадающйи списко урвоней доступа")
 
                 level_elements = WebDriverWait(self.driver, 3).until(
                     EC.presence_of_all_elements_located((By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVELS))
@@ -188,7 +191,7 @@ class MyTasksPage(BasePage):
             checkbox = f'{search_file_by_name}/ancestor::tr/td[contains(@class,"check")]//i'
             self.xpath.find_clickable(checkbox, timeout=3).click()
             self.xpath.find_clickable(MyTasksLocators.MY_TASKS_DOCUMENTS_ADD_FILE_SELECT_BUTTON, timeout=3).click()
-            self.logger.info(f"Файл '{attache_file}' успешно прикреплен к задаче.")
+            self.logger.debug(f"Файл '{attache_file}' успешно прикреплен к задаче.")
 
         if not from_file:
             self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_BUTTON).click()
@@ -196,8 +199,9 @@ class MyTasksPage(BasePage):
             self.xpath.find_clickable(MyTasksLocators.MY_TASKS_SEND_FOR_APPROVAL_BUTTON).click()
 
         self.close_all_windows()
-        self.logger.info("Задача успешно создана.")
+        self.logger.debug("Задача успешно создана.")
 
+    @allure.step("Создание подзадачи {subtask_name}")
     def create_subtask(self, subtask_name, task_description=None, deadline=None, executor=None):
 
         self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_CREATE_SUBTASK_BUTTON, timeout=3).click()
@@ -207,7 +211,7 @@ class MyTasksPage(BasePage):
         input_name.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
         input_name.send_keys(Keys.DELETE)  # Удалить
         input_name.send_keys(subtask_name)
-        self.logger.info("Название задачи успешно установлено.")
+        self.logger.debug("Название задачи успешно установлено.")
 
         if task_description:
             input_description = self.wait_and_fill_contenteditable(MyTasksLocators.MY_TASKS_TASK_DESCRIPTION_INPUT, timeout=3)
@@ -215,7 +219,7 @@ class MyTasksPage(BasePage):
             input_description.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_description.send_keys(Keys.DELETE)  # Удалить
             input_description.send_keys(task_description)
-            self.logger.info("Описание задачи успешно установлено.")
+            self.logger.debug("Описание задачи успешно установлено.")
 
         if deadline:
             input_deadline = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_DEADLINE_INPUT, timeout=3)
@@ -223,7 +227,7 @@ class MyTasksPage(BasePage):
             input_deadline.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
             input_deadline.send_keys(Keys.DELETE)  # Удалить
             input_deadline.send_keys(deadline)
-            self.logger.info("Дедлайн задачи успешно установлен.")
+            self.logger.debug("Дедлайн задачи успешно установлен.")
 
         if executor:
             input_executor = self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASK_PERFORMER_INPUT, timeout=3)
@@ -231,10 +235,10 @@ class MyTasksPage(BasePage):
             input_executor.send_keys(Keys.CONTROL + "a")
             input_executor.send_keys(Keys.DELETE)
             input_executor.send_keys(executor)
-            self.logger.info(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
+            self.logger.debug(f"Исполнитель задачи '{executor}' успешно введен в поле исполнителя задачи.")
             succes_path = f'{MyTasksLocators.MY_TASKS_TASK_PERFORMER_TRS}[contains(@title,"{executor}")]'
             if self.xpath.find_clickable(succes_path, timeout=3):
-                self.logger.info(f"Пользователь '{executor}' найден в списке исполнителей задач")
+                self.logger.debug(f"Пользователь '{executor}' найден в списке исполнителей задач")
                 self.xpath.find_clickable(succes_path, timeout=3).click()
             else:
                 self.logger.error(f"Пользователь '{executor}' не найден в списке исполнителей задач")
@@ -242,8 +246,9 @@ class MyTasksPage(BasePage):
         self.xpath.find_clickable(MyTasksLocators.MY_TASKS_CREATE_BUTTON).click()
         self.close_all_windows()
         self.xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_CLOSE_BUTTON, timeout=3).click()
-        self.logger.info("Подзадача успешно создана.")
+        self.logger.debug("Подзадача успешно создана.")
 
+    @allure.step("ПКМ по {object_name} и выбор действия {action_name}")
     def right_click_and_select_action(self, object_name, action_name, max_retries=5):
         """Находит процесс по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
         обеспечивая устойчивость к изменениям DOM."""
@@ -258,7 +263,7 @@ class MyTasksPage(BasePage):
                 process_element = xpath.find_located(target_xpath, timeout=10, few=False)
 
                 if process_element:
-                    self.logger.info(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
+                    self.logger.debug(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
 
                     # Скроллим до элемента
                     # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
@@ -273,7 +278,7 @@ class MyTasksPage(BasePage):
                     actions = ActionChains(self.driver)
                     actions.move_to_element(process_element).perform()
                     actions.context_click(process_element).perform()
-                    self.logger.info(f"ПКМ по '{object_name}' выполнен.")
+                    self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
                     action_element = WebDriverWait(self.driver, 5).until(
@@ -282,7 +287,7 @@ class MyTasksPage(BasePage):
 
                     # Кликаем по нужному пункту меню
                     action_element.click()
-                    self.logger.info(f"Действие '{action_name}' выполнено для '{object_name}'.")
+                    self.logger.debug(f"Действие '{action_name}' выполнено для '{object_name}'.")
                     time.sleep(1)  # Ждем, чтобы форма успела загрузиться
                     return True
 
@@ -293,6 +298,7 @@ class MyTasksPage(BasePage):
         self.logger.error(f"Не удалось выполнить действие '{action_name}' для '{object_name}' после {max_retries} попыток.")
         return False
 
+    @allure.step("Название задачи: {name} (action={action})")
     def task_name_properties(self, name, action):
         """Метод для установки или проверки имени задачи."""
         xpath = XPathFinder(self.driver)
@@ -300,22 +306,22 @@ class MyTasksPage(BasePage):
         check_xpath = f'{input_xpath}[@title="{name}"]'  # XPath для проверки имени
     
         if action == "set":
-            self.logger.info(f"Устанавливаем имя: {name}")
+            self.logger.debug(f"Устанавливаем имя: {name}")
             try:
                 input_element = xpath.find_clickable(input_xpath, timeout=3)
                 input_element.click()
                 input_element.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
                 input_element.send_keys(Keys.DELETE)  # Удалить
                 input_element.send_keys(name)
-                self.logger.info("Имя успешно установлено.")
+                self.logger.debug("Имя успешно установлено.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке имени: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем имя: {name}")
+            self.logger.debug(f"Проверяем имя: {name}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Имя совпадает.")
+                self.logger.debug("Имя совпадает.")
                 return True
             except Exception:
                 self.logger.warning("Имя не совпадает.")
@@ -324,6 +330,7 @@ class MyTasksPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Дедлайн задачи: {deadline} (action={action})")
     def task_deadline_properties(self, deadline, action):
         """Метод для установки или проверки дедлайна задачи."""
         xpath = XPathFinder(self.driver)
@@ -331,7 +338,7 @@ class MyTasksPage(BasePage):
         check_xpath = f'{input_xpath}[@title="{deadline}"]'
 
         if action == "set":
-            self.logger.info(f"Устанавливаем дедлайн: {deadline}")
+            self.logger.debug(f"Устанавливаем дедлайн: {deadline}")
             try:
                 input_element = xpath.find_visible(input_xpath, timeout=3)
                 input_element.click()
@@ -341,15 +348,15 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(Keys.ENTER)
                 xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_CALENDAR_ACTIVE_DATE, timeout=3).click()
                 time.sleep(1)  # Ждем, чтобы дата была установлена
-                self.logger.info("Дедлайн успешно установлен.")
+                self.logger.debug("Дедлайн успешно установлен.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке дедлайна: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем дедлайн: {deadline}")
+            self.logger.debug(f"Проверяем дедлайн: {deadline}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Дедлайн совпадает.")
+                self.logger.debug("Дедлайн совпадает.")
                 return True
             except Exception:
                 self.logger.warning("Дедлайн не совпадает.")
@@ -358,6 +365,7 @@ class MyTasksPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Описание задачи: {description} (action={action})")
     def task_description_properties(self, description, action):
         """Метод для установки или проверки описания задачи."""
         xpath = XPathFinder(self.driver)
@@ -365,7 +373,7 @@ class MyTasksPage(BasePage):
         check_xpath = f'{input_xpath}/p[text()="{description}"]'
 
         if action == "set":
-            self.logger.info(f"Устанавливаем описание: {description}")
+            self.logger.debug(f"Устанавливаем описание: {description}")
             try:
                 input_element = xpath.find_visible(input_xpath, timeout=3)
                 input_element.click()
@@ -373,15 +381,15 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(Keys.DELETE)
                 input_element.send_keys(description)
                 time.sleep(1)  # Ждем, чтобы дата была установлена
-                self.logger.info("Описание успешно установлено.")
+                self.logger.debug("Описание успешно установлено.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке описания: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем описание: {description}")
+            self.logger.debug(f"Проверяем описание: {description}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Описание совпадает.")
+                self.logger.debug("Описание совпадает.")
                 return True
             except Exception:
                 self.logger.warning("Описание не совпадает.")
@@ -390,6 +398,7 @@ class MyTasksPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Исполнитель задачи: {executor_login} (action={action})")
     def task_executor_properties(self, executor_login, action):
         """Метод для установки или проверки исполнителя задачи."""
         xpath = XPathFinder(self.driver)
@@ -398,7 +407,7 @@ class MyTasksPage(BasePage):
         check_xpath = f'{input_xpath}[@title="{executor_login}"]'
 
         if action == "set":
-            self.logger.info(f"Устанавливаем исполнителя: {executor_login}")
+            self.logger.debug(f"Устанавливаем исполнителя: {executor_login}")
             try:
                 input_element = xpath.find_visible(input_xpath, timeout=3)
                 input_element.click()
@@ -407,15 +416,15 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(executor_login)
                 xpath.find_clickable(select_xpath, timeout=3).click()
                 self.close_all_windows()
-                self.logger.info("Исполнитель успешно установлен.")
+                self.logger.debug("Исполнитель успешно установлен.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке исполнителя: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем исполнителя: {executor_login}")
+            self.logger.debug(f"Проверяем исполнителя: {executor_login}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Исполнитель совпадает.")
+                self.logger.debug("Исполнитель совпадает.")
                 return True
             except Exception:
                 self.logger.warning("Исполнитель не совпадает.")
@@ -424,9 +433,10 @@ class MyTasksPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Добавление наблюдателя {observer_login}")
     def task_oberver_properties(self, observer_login):
         """Метод по добавлению наблюдателя в открытый taskform задачи."""
-        self.logger.info(f"Начинаем добавление наблюдателя: {observer_login}")
+        self.logger.debug(f"Начинаем добавление наблюдателя: {observer_login}")
 
         observe_button_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCH_BUTTON
         input_xpath = MyTasksLocators.MY_TASKS_TASKFORM_WATCHER_INPUT
@@ -441,21 +451,22 @@ class MyTasksPage(BasePage):
         input_element.send_keys(Keys.DELETE)
         input_element.send_keys(observer_login)
 
-        self.logger.info(f"Выбираем наблюдателя '{observer_login}' из выпадающего списка")
+        self.logger.debug(f"Выбираем наблюдателя '{observer_login}' из выпадающего списка")
         self.xpath.find_clickable(add_observers_target_tr_xpath, timeout=3).click()
 
-        self.logger.info("Проверяем, что наблюдатель появился в списке")
+        self.logger.debug("Проверяем, что наблюдатель появился в списке")
         self.xpath.find_visible(observers_target_tr_xpath, timeout=3)
 
-        self.logger.info(f"Наблюдатель '{observer_login}' успешно добавлен в задачу")
+        self.logger.debug(f"Наблюдатель '{observer_login}' успешно добавлен в задачу")
     
+    @allure.step("Проверка доступности полей задачи: {fields_massive}")
     def check_access_to_task_fields(self, fields_massive):
         """
         Проверяет доступность редактирования полей в taskform.
         Если поле указано в fields_massive — ожидается, что оно кликабельно.
         Если не указано — ожидается, что оно НЕ кликабельно.
         """
-        self.logger.info(f"Запущена проверка доступа к полям: {fields_massive}")
+        self.logger.debug(f"Запущена проверка доступа к полям: {fields_massive}")
         timeout = 1
 
         # Обычные поля
@@ -473,7 +484,7 @@ class MyTasksPage(BasePage):
                     EC.element_to_be_clickable((By.XPATH, xpath))
                 )
                 if should_be_clickable:
-                    self.logger.info(f"Поле '{field_name}' доступно, как ожидалось.")
+                    self.logger.debug(f"Поле '{field_name}' доступно, как ожидалось.")
                 else:
                     self.logger.error(f"Поле '{field_name}' доступно, хотя не должно быть.")
                     return False
@@ -482,7 +493,7 @@ class MyTasksPage(BasePage):
                     self.logger.error(f"Поле '{field_name}' недоступно, хотя должно быть: {e}")
                     return False
                 else:
-                    self.logger.info(f"Поле '{field_name}' недоступно, как ожидалось.")
+                    self.logger.debug(f"Поле '{field_name}' недоступно, как ожидалось.")
 
         # Наблюдатели
         try:
@@ -491,7 +502,7 @@ class MyTasksPage(BasePage):
                 EC.element_to_be_clickable((By.XPATH, MyTasksLocators.MY_TASKS_TASKFORM_WATCHER_INPUT))
             )
             if "Наблюдатели" in fields_massive:
-                self.logger.info("Поле 'Наблюдатели' доступно, как ожидалось.")
+                self.logger.debug("Поле 'Наблюдатели' доступно, как ожидалось.")
             else:
                 self.logger.error("Поле 'Наблюдатели' доступно, хотя не должно быть.")
                 return False
@@ -500,7 +511,7 @@ class MyTasksPage(BasePage):
                 self.logger.error(f"Поле 'Наблюдатели' недоступно, хотя должно быть: {e}")
                 return False
             else:
-                self.logger.info("Поле 'Наблюдатели' недоступно, как ожидалось.")
+                self.logger.debug("Поле 'Наблюдатели' недоступно, как ожидалось.")
         finally:
             try:
                 self.driver.find_element(By.XPATH, MyTasksLocators.MY_TASKS_TASKFORM_WATCH_BUTTON).click()
@@ -537,14 +548,15 @@ class MyTasksPage(BasePage):
                     xpath = enabled_xpath if should_be_clickable else disabled_xpath
                     self.driver.find_element(By.XPATH, xpath)
 
-                self.logger.info(f"Кнопка '{field_name}' в ожидаемом состоянии.")
+                self.logger.debug(f"Кнопка '{field_name}' в ожидаемом состоянии.")
             except Exception as e:
                 self.logger.error(f"Кнопка '{field_name}' не в ожидаемом состоянии: {e}")
                 return False
 
-        self.logger.info("Проверка доступа к полям завершена успешно.")
+        self.logger.debug("Проверка доступа к полям завершена успешно.")
         return True
     
+    @allure.step("Комментарий задачи: {comment_text} (action={action})")
     def task_comment_properties(self, comment_text, action):
         """Метод для установки или проверки комментария к задаче."""
         xpath = XPathFinder(self.driver)
@@ -554,7 +566,7 @@ class MyTasksPage(BasePage):
         check_xpath = f'{MyTasksLocators.MY_TASKS_TASKFORM_COMMENT_LIST}[text()="{comment_text}"]'
 
         if action == "set":
-            self.logger.info(f"Устанавливаем комментарий: {comment_text}")
+            self.logger.debug(f"Устанавливаем комментарий: {comment_text}")
             try:
                 click_element = xpath.find_visible(click_xpath, timeout=3)
                 click_element.click()
@@ -564,15 +576,15 @@ class MyTasksPage(BasePage):
                 input_element.send_keys(comment_text)
                 time.sleep(0.5)  # Ждем, для стабильности
                 xpath.find_clickable(save_xpath, timeout=3).click()
-                self.logger.info("Комментарий успешно добавлен.")
+                self.logger.debug("Комментарий успешно добавлен.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке комментария: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем комментарий: {comment_text}")
+            self.logger.debug(f"Проверяем комментарий: {comment_text}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Комментарий найден.")
+                self.logger.debug("Комментарий найден.")
                 return True
             except Exception:
                 self.logger.warning("Комментарий не найден.")
@@ -581,6 +593,7 @@ class MyTasksPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Скачивание истории задачи {task_name} в формате {format_name}")
     def download_history_task(self, task_name, format_name):
         '''Метод проверяет успешное скачивания истории таска в указанном формате'''
         xpath = XPathFinder(self.driver)
@@ -588,14 +601,15 @@ class MyTasksPage(BasePage):
         download_by_format = f'{MyTasksLocators.MY_TASKS_TASKFORM_DOWNLOAD_HISTORY_FORMATS_LIST}[contains(@title,"{format_name}")]'
         download_manager = DownloadManager()
 
-        self.logger.info(
+        self.logger.debug(
             f"Начало проверки скачивания истории задачи '{task_name}' в формате '{format_name}'")
         xpath.find_clickable(dropdown_button, timeout=3).click()
         xpath.find_clickable(download_by_format, timeout=3).click()
         download_manager.verify_downloaded_file(f"История согласования '{task_name}'.{format_name}")
-        self.logger.info(
+        self.logger.debug(
             f"Файл 'История согласования {task_name}.{format_name}' успешно загружен!")
 
+    @allure.step("Открытие подзадачи в {task_name}")
     def open_subtask(self, task_name, subtask_massive):
         '''Метод октрывает подзадачу внутри основной задачи'''
         # Ищем основной tr по task_name
@@ -609,12 +623,13 @@ class MyTasksPage(BasePage):
 
                 # Ищем span внутри этого tr и открываем таск кликом
                 xpath.find_clickable(f'{indexed_tr_xpath}//span[text()="{subtask_name}"]', timeout=3).click()
-                self.logger.info(f"Найдена и октрыта подзадача '{subtask_name}' на позиции {position}")
+                self.logger.debug(f"Найдена и октрыта подзадача '{subtask_name}' на позиции {position}")
                 time.sleep(1)  # Ждем, чтобы форма успела загрузиться
             except Exception as e:
                 self.logger.error(f"Ошибка при октрытии подзадачи '{subtask_name}' на позиция {position}) от {task_name}: {e}")
                 raise
 
+    @allure.step("Завершение задачи {task_name} по подзадачам")
     def complete_task(self, task_name: str, subtask_massive: list, waiting=True):
         # Ищем основной tr по task_name
         xpath = XPathFinder(self.driver)
@@ -627,7 +642,7 @@ class MyTasksPage(BasePage):
 
                 # Ищем span внутри этого tr и открываем таск кликом
                 xpath.find_clickable(f'{indexed_tr_xpath}//span[text()="{subtask_name}"]', timeout=3).click()
-                self.logger.info(f"Найдена подзадача '{subtask_name}' на позиции {position}")
+                self.logger.debug(f"Найдена подзадача '{subtask_name}' на позиции {position}")
 
                 # Ждём, чтобы форма открылась и клкиаем по кнопке действий
                 actions_btn = xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_ACTIONS_BUTTON, timeout=3)
@@ -637,7 +652,7 @@ class MyTasksPage(BasePage):
                 # Выбираем и нажимаем действие из выпадающего списка и закрываем taskform
                 xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASKFORM_ACTIONS_DROPDOWN}//td[contains(@title,"{action}")]', timeout=3).click()
                 time.sleep(2)  # Ждем, чтобы форма успела закрыться
-                self.logger.info(f"Подзадача '{subtask_name}' на позиции {position} успешно завершена с действием '{action}'")
+                self.logger.debug(f"Подзадача '{subtask_name}' на позиции {position} успешно завершена с действием '{action}'")
                 # Ждём уведомления о выполнении действия с задачей
                 if waiting:
                     self.close_all_windows()
@@ -649,6 +664,7 @@ class MyTasksPage(BasePage):
                 self.logger.warning(f"Ошибка при обработке подзадачи '{subtask_name}' действием '{action}' на позиция {position}): {e}")
                 raise
 
+    @allure.step("Завершение задачи {task_name} действием {action}")
     def complete_simple_task(self, task_name: str, action: str):
         # Ищем tr по task_name
         xpath = XPathFinder(self.driver)
@@ -664,7 +680,7 @@ class MyTasksPage(BasePage):
         xpath.find_clickable(f'{MyTasksLocators.MY_TASKS_TASKFORM_ACTIONS_DROPDOWN}//td[contains(@title,"{action}")]', timeout=3).click()
         # Ждём уведомления о выполнении действия с задачей
         self.close_all_windows()
-        self.logger.info(f"Действие {action} выполнено для {task_name}")
+        self.logger.debug(f"Действие {action} выполнено для {task_name}")
 
     def find_document_in_task(self, file_name):
         '''Метод проверяет наличие/отсутствие прикрепленного к задаче докмуента'''
@@ -678,6 +694,7 @@ class MyTasksPage(BasePage):
             self.logger.info(f"Документ '{file_name}' не найден в задаче.")
             return False
 
+    @allure.step("Добавление обязательного комментария")
     def add_required_comment(self, text_comment):
         xpath = XPathFinder(self.driver)
         textarea = xpath.find_clickable(MyTasksLocators.MY_TASKS_TASKFORM_REQUIRED_COMMENT_INPUT, timeout=3)
@@ -690,7 +707,7 @@ class MyTasksPage(BasePage):
         try:
             close_buttons = self.driver.find_elements(By.XPATH, BaseLocators.POPUP_CLOSE)
             if not close_buttons:
-                self.logger.info("Нет всплывающих окон для закрытия.")
+                self.logger.debug("Нет всплывающих окон для закрытия.")
 
             for btn in close_buttons:
                 try:
@@ -698,19 +715,20 @@ class MyTasksPage(BasePage):
                 except Exception as e:
                     self.logger.warning(f"Не удалось закрыть окно: {e}")
 
-            self.logger.info(f"Закрыто {len(close_buttons)} всплывающих окон.")
+            self.logger.debug(f"Закрыто {len(close_buttons)} всплывающих окон.")
         except Exception as e:
             self.logger.error(f"Ошибка при поиске всплывающих окон: {e}")
 
+    @allure.step("Раскрытие списка подзадач для {name_task}")
     def click_if_fa_caret_right(self, name_task):
         '''Метод кликает по кнопке раскрытия подзадач основной задачи, если список свернут по умолчанию (кастом некоторых сборок)'''
         xpath = XPathFinder(self.driver)
         target_span_xpath = f'{MyTasksLocators.MY_TASKS_LIST}/span[@title="{name_task}"]/parent::div/span[contains(@class,"collapser")]/div[contains(@class,"fa-caret-right")]'
         try:
-            self.logger.info(f"Проверяем, свернут ли список подзадач для задачи '{name_task}'")
+            self.logger.debug(f"Проверяем, свернут ли список подзадач для задачи '{name_task}'")
             target_element = xpath.find_clickable(target_span_xpath, timeout=2)
             if target_element:
                 target_element.click()
-                self.logger.info(f"Список подзадач для задачи '{name_task}' был свернут. Выполнен клик по кнопке раскрытия.")
+                self.logger.debug(f"Список подзадач для задачи '{name_task}' был свернут. Выполнен клик по кнопке раскрытия.")
         except Exception:
-            self.logger.info(f"Список подзадач для задачи '{name_task}' уже раскрыт. Клик по кнопке раскрытия не требуется.")
+            self.logger.debug(f"Список подзадач для задачи '{name_task}' уже раскрыт. Клик по кнопке раскрытия не требуется.")

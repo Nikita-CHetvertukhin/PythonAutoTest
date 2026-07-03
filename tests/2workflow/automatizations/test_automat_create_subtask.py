@@ -27,6 +27,9 @@ process_name = f"{get_uuid()}_test_automat_create_subtask_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title('Автоматизация по созданию подзадачи')
 def test_automat_create_subtask(error_handler, logger, admin_driver, setup_create_delete_process, setup_create_delete_task):
     """Тест проверяет работу автоматизации по созданию подзадачи"""
     process_name, workflows_page, xpath = setup_create_delete_process

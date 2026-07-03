@@ -10,6 +10,9 @@ import allure
     "skip_cleanup": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature("Раздел 'Рабочие процессы'")
+@allure.title("Удаление/Восстановление процесса")
 def test_remove_restore(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет возможность действия 'Переместить в Корзину','Восстановление' и 'Окончательное удаление'."""
     process_name, workflows_page, xpath = setup_create_delete_process

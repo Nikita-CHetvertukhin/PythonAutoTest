@@ -1,4 +1,5 @@
 import time
+import allure
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -15,17 +16,19 @@ class WorkflowsPage(BasePage):
     """Класс, представляющий страницу "Рабочие процессы" в приложении.
     Наследует BasePage, что позволяет использовать общие методы работы со страницами.
     """
+    @allure.step("Создание процесса {name}")
     def create_process(self, name):
         xpath = XPathFinder(self.driver)
         xpath.find_clickable(WorkflowsLocators.WORKFLOWS_CREATE, timeout=5).click()
-        self.logger.info("Кнопка 'Создать процесс' нажата")
+        self.logger.debug("Кнопка 'Создать процесс' нажата")
         textarea = xpath.find_visible(WorkflowsLocators.WORKFLOWS_TEXTAREA, timeout=5)
-        self.logger.info("xpath textarea найден")
+        self.logger.debug("xpath textarea найден")
         textarea.send_keys(name)
-        self.logger.info("название процесса введено")
+        self.logger.debug("название процесса введено")
         textarea.send_keys(Keys.ENTER)
-        self.logger.info(f"Имя процесса '{name}' введено и подтверждено Enter")
+        self.logger.debug(f"Имя процесса '{name}' введено и подтверждено Enter")
 
+    @allure.step("ПКМ по {object_name} и выбор действия {action_name}")
     def right_click_and_select_action(self, object_name, action_name, max_retries=3):
         """Находит процесс по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
         обеспечивая устойчивость к изменениям DOM."""
@@ -38,7 +41,7 @@ class WorkflowsPage(BasePage):
             try:
                 # Перепроверяем список элементов и ищем процесс
                 if xpath.find_located(target_xpath, timeout=3, few=False):
-                    self.logger.info(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
+                    self.logger.debug(f"Попытка {attempt + 1}: Процесс '{object_name}' найден.")
 
                     # Скроллим до элемента
                     # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
@@ -57,7 +60,7 @@ class WorkflowsPage(BasePage):
                     element = self.driver.find_element(By.XPATH, target_xpath)
                     actions = ActionChains(self.driver)
                     actions.move_to_element(element).context_click(element).perform()
-                    self.logger.info(f"ПКМ по '{object_name}' выполнен.")
+                    self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
                     action_element = WebDriverWait(self.driver, 3).until(
@@ -66,7 +69,7 @@ class WorkflowsPage(BasePage):
 
                     # Кликаем по нужному пункту меню
                     action_element.click()
-                    self.logger.info(f"Действие '{action_name}' выполнено для '{object_name}'.")
+                    self.logger.debug(f"Действие '{action_name}' выполнено для '{object_name}'.")
                     return True
 
             except StaleElementReferenceException:

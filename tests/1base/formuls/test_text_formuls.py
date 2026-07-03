@@ -14,6 +14,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Формулы')
+@allure.title('Проверка текстовых формул')
 def test_text_formuls(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет работу текстовых формул"""
     file_name, my_files_page, xpath = setup_create_delete_file

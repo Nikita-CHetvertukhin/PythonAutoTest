@@ -13,6 +13,9 @@ import allure
     "upload_file_name": "AQA_Test_Formats.docx"
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Docx')
+@allure.title('Загрузка простого Docx')
 def test_upload_simple_docx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет загрузку Docx"""
     file_name, my_files_page, xpath = setup_create_delete_file

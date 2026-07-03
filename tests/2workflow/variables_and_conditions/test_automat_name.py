@@ -14,6 +14,9 @@ import allure
     "upload_file_name": "AQA_ID1.docz",
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Переменные и условия')
+@allure.title('Автоматическая подстановка значений из анкеты в название задачи')
 def test_automat_name(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет автоматическую подстановку значения перемнной из анкеты в название задачи"""
     file_name, my_files_page, xpath = setup_create_delete_file

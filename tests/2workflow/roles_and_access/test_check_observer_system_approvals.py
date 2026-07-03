@@ -43,8 +43,12 @@ logins_massive = [(USER2_LOGIN, "Полный доступ")]
     indirect=True
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
-def test_check_observer_system_approvals(error_handler, logger, admin_driver, user1_driver, user2_driver, setup_create_delete_file, setup_create_delete_task):
+@allure.epic('Workflow')
+@allure.feature('Роли и доступы')
+def test_check_observer_system_approvals(request, error_handler, logger, admin_driver, user1_driver, user2_driver, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет доступы наблюдателя в одном из системныхз маршуртов согалсования"""
+    # Динамический title: parametrize идёт через indirect-фикстуру, поэтому task_type недоступен через шаблон @allure.title
+    allure.dynamic.title(f"Проверка Наблюдателя на системном маршруте: {request.node.callspec.params['setup_create_delete_task']['task_type']}")
     file_name, my_files_page, xpath = setup_create_delete_file
     task_name, my_tasks_page, xpath = setup_create_delete_task
     # Все драйверы

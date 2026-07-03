@@ -27,6 +27,9 @@ import allure
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Роли и доступы')
+@allure.title("Изменения доступов для 'Простой процесс'")
 def test_check_acces_simple_process(error_handler, logger, admin_driver, user1_driver, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет изменение доступов к документу в зависимости от смены исполинтеля, завершении задачи для 'Простая задача'"""
     file_name, my_files_page, xpath = setup_create_delete_file

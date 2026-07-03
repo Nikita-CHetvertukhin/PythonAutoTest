@@ -8,6 +8,9 @@ import allure
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Редактор процесса')
+@allure.title("Свойства фигуры 'Слияние'")
 def test_merger_properties(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет доступность для изменения и сохранение после перезагрузки страницы свойств фигуры 'Слияние'"""
     process_name, workflows_page, xpath = setup_create_delete_process

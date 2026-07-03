@@ -14,6 +14,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Docx')
+@allure.title('Создание простого Docx')
 def test_create_docx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет создание простого Docx"""
     file_name, my_files_page, xpath = setup_create_delete_file

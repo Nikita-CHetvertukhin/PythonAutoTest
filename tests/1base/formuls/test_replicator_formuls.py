@@ -13,6 +13,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Формулы')
+@allure.title('Проверка формул с мультипликатором')
 def test_replicator_formuls(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет работу формул с мультипликатором"""
     file_name, my_files_page, xpath = setup_create_delete_file

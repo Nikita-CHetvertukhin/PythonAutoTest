@@ -40,6 +40,9 @@ process_name = f"{get_uuid()}_test_automate_share_file_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title('Автоматизация по предоставлению доступа к файлу')
 def test_automate_share_file(error_handler, logger, admin_driver, user1_driver, setup_create_delete_process, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет автоматизацию по предоставлению доступа к файлу"""
     process_name, workflows_page, xpath = setup_create_delete_process

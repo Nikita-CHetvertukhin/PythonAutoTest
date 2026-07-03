@@ -16,6 +16,9 @@ import allure
     "publishing_is_group": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Публикация')
+@allure.title('Публикация простого Dotx на группу')
 def test_publish_to_group(error_handler, logger, admin_driver, user1_driver, setup_create_delete_file):
     """Тест проверяет публикацию простого Dotx на группу"""
     file_name, my_files_page, xpath = setup_create_delete_file

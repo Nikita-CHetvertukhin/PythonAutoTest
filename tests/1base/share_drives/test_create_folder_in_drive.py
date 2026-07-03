@@ -18,6 +18,9 @@ import allure
     reason=f"Лицензия '{SHARE_DRIVES}' отключена — тест пропущен"
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Общие диски')
+@allure.title('Создание папки на общем диске')
 def test_create_folder_in_drive(error_handler, logger, admin_driver, setup_create_delete_drive):
     """Тест проверяет создание папки на общем диске"""
     drive_name, my_files_page, xpath = setup_create_delete_drive

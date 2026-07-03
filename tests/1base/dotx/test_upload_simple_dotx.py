@@ -13,6 +13,9 @@ import allure
     "upload_file_name": "AQA_Test_Formuls_Replicator.dotx"
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Dotx (Шаблоны)')
+@allure.title('Загрузка простого Dotx')
 def test_upload_simple_dotx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет загрузку Dotx"""
     file_name, my_files_page, xpath = setup_create_delete_file

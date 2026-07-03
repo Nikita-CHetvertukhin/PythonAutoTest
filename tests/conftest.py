@@ -9,6 +9,8 @@ import glob
 import re
 import allure
 import shutil
+import io
+import logging
 #Локальный импорт
 from utils.browser_driver import BrowserDriver
 from utils.exception_handler.configure_logging import configure_logging
@@ -29,6 +31,9 @@ from settings.variables import WEBSOCKET_PATCH, DEFAULT_LICENCE_FILE, LICENCE_OU
 from api.auth_client import AuthClient
 from api.upload_client import FileUploadClient
 from api.rename_client import RenameClient
+
+# Отдельное имя, чтобы не конфликтовать с одноимённой фикстурой `logger` ниже
+hook_logger = logging.getLogger(__name__)
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -51,7 +56,7 @@ def pytest_generate_tests(metafunc):
         if metafunc.function.__name__ == "test_generateDatabaseSchema":
             browsers = [browsers[0]]
 
-        print(f"Параметры browser_type: {browsers}")
+        hook_logger.debug(f"Параметры browser_type: {browsers}")
         metafunc.parametrize("browser_type", browsers)
 
 @pytest.fixture(scope="function")
@@ -73,11 +78,33 @@ def logger():
     return configure_logging()
 
 @pytest.fixture(scope="function")
-def error_handler(driver, logger, browser_type):
+def log_capture(logger):
+    """
+    Перехватывает лог текущего теста в память, чтобы при падении
+    приложить именно его (а не общий лог воркера) к отчёту Allure.
+    """
+    buffer = io.StringIO()
+    handler = logging.StreamHandler(buffer)
+    # Уровень не ограничиваем: при падении нужен весь контекст (включая DEBUG
+    # с покликовой механикой), а не только редкие INFO-вехи. Шум сторонних
+    # библиотек (Selenium/urllib3) отсекается на уровне их логгеров, не здесь.
+    handler.setFormatter(logging.Formatter(
+        "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+    ))
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+    try:
+        yield buffer
+    finally:
+        root_logger.removeHandler(handler)
+        handler.close()
+
+@pytest.fixture(scope="function")
+def error_handler(driver, logger, browser_type, log_capture):
     """
     Фикстура для инициализации ErrorHandler с использованием driver и logger.
     """
-    return ErrorHandler(driver, logger, browser_type)
+    return ErrorHandler(driver, logger, browser_type, log_capture=log_capture)
 
 @pytest.fixture(scope="function")
 def admin_driver(driver, logger, error_handler):
@@ -585,7 +612,7 @@ def login_user(request, driver, logger, username, password):
 # Хук для пропуска тестов на основе переменной окружения SKIP_TESTS
 def pytest_runtest_setup(item):
     skip_tests_env = os.getenv("SKIP_TESTS", "")
-    print(f"[DEBUG] SKIP_TESTS raw env:\n{skip_tests_env}")
+    hook_logger.debug(f"SKIP_TESTS raw env:\n{skip_tests_env}")
 
     skip_map = {}
     for line in skip_tests_env.splitlines():

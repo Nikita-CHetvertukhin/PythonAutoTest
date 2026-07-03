@@ -14,6 +14,9 @@ import allure
     indirect=True
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Изменение дедлайна')
 def test_deadline_change(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет изменение дедлайна для задачи"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

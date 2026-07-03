@@ -20,6 +20,9 @@ import allure
     "file_type": "Новый документ"
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Доступы')
+@allure.title('Шеринг файла на группу')
 def test_base_share_file_to_group(error_handler, logger, admin_driver, user1_driver, setup_create_delete_file):
     """Тест проверяет базовую возможность шеринга файла на Группу (без проверки самого доступа)."""
     file_name, my_files_page, xpath = setup_create_delete_file

@@ -18,6 +18,9 @@ import allure
     "by_side_menu": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Общие диски')
+@allure.title('Создание общего диска из бокового меню')
 def test_create_drive_by_side_menu(error_handler, logger, admin_driver, setup_create_delete_drive):
     """Тест проверяет создание общего диска из бокового меню"""
     drive_name, my_files_page, xpath = setup_create_delete_drive

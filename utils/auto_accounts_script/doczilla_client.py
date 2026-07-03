@@ -39,7 +39,6 @@ class DoczillaClient:
             raise
 
     def authenticate(self):
-        print(self.owner_login, " ", self.owner_password)
         payload = {
             "request": "signin",
             "login": self.owner_login,

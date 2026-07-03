@@ -6,6 +6,9 @@ import allure
 @pytest.mark.workflow_smoke
 @pytest.mark.workflow
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature("Раздел 'Рабочие процессы'")
+@allure.title('Создание процесса')
 def test_create_process(error_handler, logger, admin_driver, setup_create_delete_process):
     """Тест проверяет возможность создания нового процесса, присваивание ему имени и доступность после перезагрузки страницы."""
     process_name, workflows_page, xpath = setup_create_delete_process

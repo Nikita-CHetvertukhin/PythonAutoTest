@@ -1,4 +1,5 @@
 import inspect
+import allure
 from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD_MD5
 import datetime
 import time
@@ -32,20 +33,22 @@ class BasePage:
         self.logger = logger
         self.xpath = XPathFinder(driver)  
 
+    @allure.step("Выход из учетной записи")
     def exit_from_account(self):
         """Метод для выхода из УЗ."""
         try:
-            self.logger.info("Поиск и клик иконки УЗ в хедере")
+            self.logger.debug("Поиск и клик иконки УЗ в хедере")
             account_button = self.xpath.find_clickable(BaseLocators.HEADER_ACCOUNT_BUTTON, timeout=3, few=False)
             account_button.click()
-            self.logger.info("Кнопка личного кабинета нажата. Переход к поиску и клику кнопки выхода.")
+            self.logger.debug("Кнопка личного кабинета нажата. Переход к поиску и клику кнопки выхода.")
             signout_button = self.xpath.find_clickable(BaseLocators.ACCOUNT_SIGNOUT, timeout=3, few=False)
             signout_button.click()
-            self.logger.info("Кнопка 'Выйти' нажата. Выход из учетной записи выполнен.")
+            self.logger.debug("Кнопка 'Выйти' нажата. Выход из учетной записи выполнен.")
         except Exception as e:
             self.logger.error(f"Не удалось выйти из учетной записи: {str(e)}")
             raise
 
+    @allure.step("Клик по кнопке {button_name} в Header меню")
     def find_click_header_menu(self, button_name, nested_button_name=None):
         """Основной метод обработки кнопок меню Header, включая вложенные элементы.
         :param button_name: Название основной кнопки меню, которую нужно найти и нажать.
@@ -65,7 +68,7 @@ class BasePage:
                 label = self.xpath.find_inside(btn, f'.//div[(contains(@class,"label") or contains(@class,"headline")) and(text()="{button_name}")]/parent::div', few=True)
                 if label and label[0].is_displayed():
                     btn.click()
-                    self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
+                    self.logger.debug(f"Кнопка '{button_name}' найдена и кликнута.")
 
                     if nested_button_name:
                         dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
@@ -75,7 +78,7 @@ class BasePage:
                         ]
                         if nested_items:
                             nested_items[0].click()
-                            self.logger.info(f"Вложенная кнопка '{nested_button_name}' найдена и кликнута.")
+                            self.logger.debug(f"Вложенная кнопка '{nested_button_name}' найдена и кликнута.")
                             return True
                         else:
                             self.logger.warning(f"Вложенная кнопка '{nested_button_name}' не найдена.")
@@ -85,7 +88,7 @@ class BasePage:
         # Если основная кнопка не найдена, пробуем кликнуть по кнопке Doczilla Pro в лого
         doczilla_pro = self.xpath.find_clickable(BaseLocators.HEADER_DOCZILLA_BUTTON, timeout=1)
         doczilla_pro.click()
-        self.logger.info("Клик по кнопке 'Doczilla Pro'")
+        self.logger.debug("Клик по кнопке 'Doczilla Pro'")
         dropdown_elements = self.xpath.find_visible(BaseLocators.HEADER_DROPDOWN_LIST, timeout=1, few=True)
         
         for dropdown in dropdown_elements:
@@ -95,7 +98,7 @@ class BasePage:
 
                 if nested_button_name:
                     ActionChains(self.driver).move_to_element(target_item).perform()
-                    self.logger.info(f"Наведение на элемент '{button_name}' внутри 'Doczilla Pro'.")
+                    self.logger.debug(f"Наведение на элемент '{button_name}' внутри 'Doczilla Pro'.")
                     try:
                         nested_dropdown = self.xpath.find_inside(target_item, BaseLocators.HEADER_DROPDOWN_LIST, few=True)
                     except TimeoutException:
@@ -111,19 +114,20 @@ class BasePage:
                     ]
                     if nested_items:
                         nested_items[0].click()
-                        self.logger.info(f"Вложенный элемент '{nested_button_name}' найден и кликнут.")
+                        self.logger.debug(f"Вложенный элемент '{nested_button_name}' найден и кликнут.")
                         return True
                     else:
                         self.logger.error(f"Вложенный элемент '{nested_button_name}' не найден.")
                         return False
                 else:
                     target_item.click()
-                    self.logger.info(f"Элемент '{button_name}' найден и кликнут.")
+                    self.logger.debug(f"Элемент '{button_name}' найден и кликнут.")
                     return True
 
         self.logger.error(f"Элемент '{button_name}' не найден.")
         return False
 
+    @allure.step("Клик по кнопке {button_name} в боковом меню")
     def find_click_side_menu(self, button_name):
         """Основной метод обработки кнопок бокового меню
         :param button_name: Название кнопки меню
@@ -139,47 +143,47 @@ class BasePage:
             span = self.xpath.find_inside(btn, f'.//span[text()="{button_name}"]', few=True)
             if span and span[0].is_displayed():
                 btn.click()
-                self.logger.info(f"Кнопка '{button_name}' найдена и кликнута.")
+                self.logger.debug(f"Кнопка '{button_name}' найдена и кликнута.")
                 try:
                     # 1 Попытка найти строки сразу
                     try:
                         WebDriverWait(self.driver, 1).until(
                             EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
                         )
-                        self.logger.info("Строки таблицы найдены сразу.")
+                        self.logger.debug("Строки таблицы найдены сразу.")
                         return True
                     except TimeoutException:
-                        self.logger.info("Строки сразу не найдены.")
+                        self.logger.debug("Строки сразу не найдены.")
 
                      # 2️ Проверка наличия индикатора загрузки
                     try:
                         loading_icon = WebDriverWait(self.driver, 1).until(
                             EC.visibility_of_element_located((By.XPATH, BaseLocators.BODY_STATUS))
                         )
-                        self.logger.info("Обнаружен индикатор загрузки. Ожидание завершения...")
+                        self.logger.debug("Обнаружен индикатор загрузки. Ожидание завершения...")
                         try:
                             WebDriverWait(self.driver, 5).until(
                                 EC.invisibility_of_element(loading_icon)
                             )
-                            self.logger.info("Индикатор загрузки исчез. Повторная проверка строк...")
+                            self.logger.debug("Индикатор загрузки исчез. Повторная проверка строк...")
                             try:
                                 WebDriverWait(self.driver, 1).until(
                                     EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
                                 )
-                                self.logger.info("Строки таблицы загружены после ожидания.")
+                                self.logger.debug("Строки таблицы загружены после ожидания.")
                                 return True
                             except TimeoutException:
-                                self.logger.info("Страница пуста после исчезновения индикатора.")
+                                self.logger.debug("Страница пуста после исчезновения индикатора.")
                         except TimeoutException:
                             self.logger.warning("Страница не загружена в течение 5 секунд.")
                             return False
                     except TimeoutException:
-                        self.logger.info("Индикатор загрузки не найден. Повторная проверка строк...")
+                        self.logger.debug("Индикатор загрузки не найден. Повторная проверка строк...")
                         try:
                             WebDriverWait(self.driver, 1).until(
                                 EC.presence_of_element_located((By.XPATH, BaseLocators.BODY_LIST))
                             )
-                            self.logger.info("Строки таблицы найдены.")
+                            self.logger.debug("Строки таблицы найдены.")
                             return True
                         except TimeoutException:
                             self.logger.warning("Страница пуста. Строки таблицы не найдены.")
@@ -192,6 +196,7 @@ class BasePage:
         self.logger.error(f"Кнопка '{button_name}' не найдена в боковом меню.")
         return False         
     
+    @allure.step("Поиск файла {name}")
     def find_file_by_name(self, name, format_file=None, time=2):
         """Ищет файл по имени и скроллит до него, если он не виден.
         Аргумент format позволяет указать формат файла, если необходимо.
@@ -213,18 +218,18 @@ class BasePage:
             file_element = xpath.find_located(target_xpath, timeout=time, few=False)
 
             if file_element:
-                self.logger.info(f"Файл '{name}' найден в DOM.")
+                self.logger.debug(f"Файл '{name}' найден в DOM.")
 
                 xpath.find_visible(target_xpath, timeout=5, few=False)
                 xpath.find_clickable(target_xpath, timeout=5, few=False)
 
-                self.logger.info(f"Файл '{name}' отображается на экране и доступен")
+                self.logger.debug(f"Файл '{name}' отображается на экране и доступен")
                 # Проверяем формат если указан
                 if format_file:
                     icon_xpath = f'{target_xpath}/preceding-sibling::i[contains(@class,"{format_file}")]'
                     try:
                         xpath.find_visible(icon_xpath, timeout=3)
-                        self.logger.info(f"Файл '{name}' подтвержден формат '{format_file}'.")
+                        self.logger.debug(f"Файл '{name}' подтвержден формат '{format_file}'.")
                     except TimeoutException:
                         message = f"Файл '{name}' найден, но формат '{format_file}' не подтверждён."
                         self.logger.error(f"Файл '{name}' найден, но формат '{format_file}' не подтверждён.")
@@ -236,6 +241,7 @@ class BasePage:
             self.logger.warning(f"Файл '{name}' не найден в DOM!")
             return None
 
+    @allure.step("Проверка успешности перехода по кнопке {button_name}")
     def checking_success_side_menu(self, button_name, title_path, column_path, columns_to_check):
         """Проверяет активность кнопки, соответствие заголовка body, отсутствие ошибки и видимость колонок."""
         xpath = XPathFinder(self.driver)
@@ -292,13 +298,14 @@ class BasePage:
             self.logger.exception(f"Ошибка при проверке колонок в '{button_name}'")
 
         if all_checks_passed:
-            self.logger.info(f"Кнопка {button_name} обработана успешно")
+            self.logger.debug(f"Кнопка {button_name} обработана успешно")
 
         return all_checks_passed, result
 
+    @allure.step("Проверка видимости колонок таблицы")
     def verify_columns_visibility(self, columns_xpath, *types):
         """Проверяет, что <td> элементы с указанными типами видимы на странице."""
-        self.logger.info("Начало проверки видимости столбцов таблицы.")
+        self.logger.debug("Начало проверки видимости столбцов таблицы.")
         self.xpath = XPathFinder(self.driver)
 
         header_row = self.xpath.find_located(columns_xpath, timeout=5)
@@ -311,20 +318,20 @@ class BasePage:
 
             for t in types:
                 if t in column_class or t in column_title:
-                    self.logger.info(f"Найден столбец '{t}': class='{column_class}', title='{column_title}'.")
+                    self.logger.debug(f"Найден столбец '{t}': class='{column_class}', title='{column_title}'.")
 
                     try:
                         # Убедимся, что элемент действительно видим
                         WebDriverWait(self.driver, 1).until(EC.visibility_of(column))
                         hidden_types.discard(t)
-                        self.logger.info(f"Столбец '{t}' успешно найден и видим.")
+                        self.logger.debug(f"Столбец '{t}' успешно найден и видим.")
                     except TimeoutException:
                         self.logger.warning(f"Столбец '{t}' не найден как видимый.")
 
         if hidden_types:
             self.logger.error(f"Невидимые или отсутствующие столбцы: {', '.join(hidden_types)}")
         else:
-            self.logger.info("Все указанные столбцы успешно найдены и видимы.")
+            self.logger.debug("Все указанные столбцы успешно найдены и видимы.")
 
         return not hidden_types, list(hidden_types)
 
@@ -335,6 +342,7 @@ class BasePage:
         process_name = f"{function_name}_{timestamp}"  # Формируем имя процесса
         return process_name
 
+    @allure.step("Управление доступом (action={action})")
     def share_access(self, action="set", logins_and_access=None, is_close=True):
         """
         Устанавливает, изменяет или проверяет доступ для пользователя/группы.
@@ -364,7 +372,7 @@ class BasePage:
                         mismatches.append((login, actual_level, level))
                         self.logger.warning(f"Несоответствие: '{login}' — текущий уровень '{actual_level}', ожидаемый '{level}'")
                     else:
-                        self.logger.info(f"Проверка пройдена: '{login}' имеет уровень доступа '{actual_level}'")
+                        self.logger.debug(f"Проверка пройдена: '{login}' имеет уровень доступа '{actual_level}'")
 
                 except TimeoutException:
                     mismatches.append((login, None, level))
@@ -377,7 +385,7 @@ class BasePage:
                 self.logger.error(f"Обнаружены несоответствия: {mismatches}")
                 return False, mismatches
             else:
-                self.logger.info("Все уровни доступа соответствуют ожидаемым")
+                self.logger.debug("Все уровни доступа соответствуют ожидаемым")
                 return True
 
         # Если установка доступа
@@ -419,7 +427,7 @@ class BasePage:
                 )
                 invite_button.click()
 
-                self.logger.info(f"Доступ для '{login}' успешно установлен на уровень '{level}'.")
+                self.logger.debug(f"Доступ для '{login}' успешно установлен на уровень '{level}'.")
 
         if action == "edit":
             for login, level in logins_and_access:
@@ -448,11 +456,12 @@ class BasePage:
                         ancestor_div.click()
                         break
 
-                self.logger.info(f"Доступ для '{login}' успешно изменен на уровень '{level}'.")
+                self.logger.debug(f"Доступ для '{login}' успешно изменен на уровень '{level}'.")
 
         if is_close:
             xpath.find_clickable(BaseLocators.SHARE_CLOSE, timeout=3).click()
 
+    @allure.step("Копирование с новым именем {new_name}")
     def copy_to(self, new_name):
         """Копирует объект с новым именем.
         :param new_name: Новое имя для копируемого объекта.
@@ -465,38 +474,39 @@ class BasePage:
         # Кликаем по кнопке "Копировать"
         copy_button = xpath.find_clickable(BaseLocators.COPY_WINDOW_COPYBTN, timeout=3, few=False)
         copy_button.click()
-        self.logger.info(f"Объект скопирован с именем '{new_name}'.")
+        self.logger.debug(f"Объект скопирован с именем '{new_name}'.")
 
+    @allure.step("Публикация на {logins_groups}")
     def publish_to(self, logins_groups, directory=None, clear=True, is_group=False):
         '''Публикует объект из окна публикации на Логин/логины УЗ/групп, если указана директория выбирает дополнительно директорию'''
         time.sleep(1)
         if clear:
             # Навести крусор на имеющуюся публикацию и кликнуть по крестику
             # Сначала ищем все имеющиеся записи
-            self.logger.info("Очистка существующих публикаций перед новой публикацией")
+            self.logger.debug("Очистка существующих публикаций перед новой публикацией")
             existing_publish = self.xpath.find_visible(BaseLocators.PUBLISH_LIST, timeout=3, few=True)
-            self.logger.info(f"existing_publish = {existing_publish}")
+            self.logger.debug(f"existing_publish = {existing_publish}")
             # Теперь цикл for по всем записям с индексом итерации
             for i in range(len(existing_publish)):
                 # Наводим курсор на запись
-                self.logger.info(f"Удаление публикации i = {i}")
-                self.logger.info(f"Удаление публикации = {existing_publish[i]}")
+                self.logger.debug(f"Удаление публикации i = {i}")
+                self.logger.debug(f"Удаление публикации = {existing_publish[i]}")
                 ActionChains(self.driver).move_to_element(existing_publish[i]).perform()
                 time.sleep(0.5)
                 # Увеличиваем индекс на 1, т.к. в xpath индексация с 1
                 target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]/div[contains(@class,"x-cross")]'
-                self.logger.info(f"Путь до закрытия = {target_xpath}")
+                self.logger.debug(f"Путь до закрытия = {target_xpath}")
                 self.xpath.find_clickable(target_xpath, timeout=3).click()
         if directory:
             trigger_directory_element = self.xpath.find_clickable(BaseLocators.PUBLISH_DIRECTORY_TRIGGER, timeout=3, few=False)
             trigger_directory_element.click()
             self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DIRECTORY_DROPDOWN}[text()="{directory}"]/ancestor::div[1]').click()
-            self.logger.info(f"Каталог публикации '{directory}' установлен")
+            self.logger.debug(f"Каталог публикации '{directory}' установлен")
         # logins_groups получаем массив, который может состоять из одного или несколкьих элементов
         for login in logins_groups:
             input_logins_element = self.xpath.find_clickable(BaseLocators.PUBLISH_INPUT, timeout=3, few=False)
             input_logins_element.send_keys(login)
-            self.logger.info(f"Попытка поиска {login}")
+            self.logger.debug(f"Попытка поиска {login}")
             self.xpath.find_clickable(f'{BaseLocators.PUBLISH_DROPDOWN}[text()="{login}"]/ancestor::div[1]').click()
             # Проверка, что появилась запись на публикацию
             try:
@@ -508,8 +518,9 @@ class BasePage:
                 self.logger.error(f"Ошибка при добавлении логина/группы '{login}': {e}")
                 raise RuntimeError(f"Публикация прервана: логин/группа '{login}' не появился(а) в списке") from e
         self.xpath.find_clickable(BaseLocators.PUBLISH_FINISH, timeout=3).click()
-        self.logger.info("Публикация завершена")
+        self.logger.debug("Публикация завершена")
 
+    @allure.step("Перемещение объекта (папка={folder_name}, новое имя={new_name})")
     def move_to(self, folder_name=None, section_name=None, new_name=None):
         """Метод перемещает выбранный файл (уже из окна перемещения) в выбранную секцию/папку с новым названием (опицонально)"""
         target_folder_xpath = f'{BaseLocators.COPY_WINDOW_LIST}/td[contains(@class,"first")]//span[text()="{folder_name}"]'
@@ -521,47 +532,50 @@ class BasePage:
             input_element = self.xpath.find_clickable(BaseLocators.COPY_WINDOW_INPUT, timeout=3, few=False)
             input_element.clear()
             input_element.send_keys(new_name)
-            self.logger.info(f'При перемещении задано новое имя {new_name}')
+            self.logger.debug(f'При перемещении задано новое имя {new_name}')
         # Если перемещаем в определенную папку (тоже опционально, т.к. можем просто переместить из общих дисков в корень "Мои файлы", например)
         if folder_name:
             self.xpath.find_clickable(target_folder_xpath, timeout=3).click()
             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
             time.sleep(1)  # Пауза для стабильности
-            self.logger.info(f'Двойной клик по каталогу {folder_name}')
+            self.logger.debug(f'Двойной клик по каталогу {folder_name}')
 
         # Кликаем по кнопке "Переместить"
         moved_button = self.xpath.find_clickable(BaseLocators.COPY_WINDOW_COPYBTN, timeout=3, few=False)
         moved_button.click()
-        self.logger.info(f"Объект перемещен в секцию {section_name} в папку {folder_name}.")
+        self.logger.debug(f"Объект перемещен в секцию {section_name} в папку {folder_name}.")
 
+    @allure.step("Переименование {current_name} -> {new_name}")
     def send_rename(self, current_name, new_name):
         """Переименовывает объект с новым именем.
         :param new_name: Новое имя для переименовываемого объекта.
         """
         xpath = XPathFinder(self.driver)
-        self.logger.info(f"Переименование: current='{current_name}', new='{new_name}'")
+        self.logger.debug(f"Переименование: current='{current_name}', new='{new_name}'")
         rename_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}', timeout=3, few=False)
-        self.logger.info(f"Xpath {rename_path} найден")
+        self.logger.debug(f"Xpath {rename_path} найден")
         rename_path.send_keys(f'{new_name}')
-        self.logger.info(f"Имя объекта '{current_name}' изменено на '{new_name}'")
+        self.logger.debug(f"Имя объекта '{current_name}' изменено на '{new_name}'")
         next_td_path = xpath.find_visible(f'{BaseLocators.BODY_TEXTAREA}/ancestor::td[1]/following-sibling::td[contains(@field,"1")]', timeout=3, few=False)
-        self.logger.info(f"Xpath {next_td_path} найден")
+        self.logger.debug(f"Xpath {next_td_path} найден")
         next_td_path.click()  # Кликаем по следующему td, чтобы сохранить изменения
 
+    @allure.step("Обработка диалогового окна (action={action})")
     def dialog_window(self, action=True):
         if action:
             # Кнопка "Подтвердить" в диалоговом окне
             confirm_button = self.xpath.find_clickable(
                 BaseLocators.DIALOG_WINDOW_CONFIRM, timeout=3, few=False)
             confirm_button.click()
-            self.logger.info("Кнопка 'Подтвердить' нажата.")
+            self.logger.debug("Кнопка 'Подтвердить' нажата.")
         else:
             # Кнопка "Отменить" в диалоговом окне
             cancel_button = self.xpath.find_clickable(
                 BaseLocators.DIALOG_WINDOW_CANCEL, timeout=3, few=False)
             cancel_button.click()
-            self.logger.info("Кнопка 'Отменить' нажата.")
+            self.logger.debug("Кнопка 'Отменить' нажата.")
 
+    @allure.step("Проверка наличия ошибки на странице. Ожидаемая=(should_find_error={should_find_error})")
     def check_error(self, should_find_error=True, path=None, has_close_button=True, timeout=1):
             """Проверяет наличие ошибки на странице и, если возможно, закрывает ее.
 
@@ -578,12 +592,12 @@ class BasePage:
                 self.xpath.find_visible(path, timeout=timeout)
 
                 if should_find_error:
-                    self.logger.info(f"Успех: Ошибка найдена: {path}")
+                    self.logger.debug(f"Успех: Ошибка найдена: {path}")
                     if has_close_button:
                         try:
-                            close_button = self.xpath.find_clickable(BaseLocators.ERROR_CLOSE, timeout=timeout)
+                            close_button = self.xpath.find_clickable(BaseLocators.ERROR_CLOSE, timeout=1)
                             close_button.click()
-                            self.logger.info("Кнопка 'Закрыть' нажата, ошибка скрыта.")
+                            self.logger.debug("Кнопка 'Закрыть' нажата, ошибка скрыта.")
                         except TimeoutException:
                             self.logger.warning("Кнопка 'Закрыть' не кликабельна или отсутствует.")
                     return True
@@ -597,17 +611,19 @@ class BasePage:
                     return False
                     #raise Exception(f"Ошибка не найдена, но должна быть — {path}")
                 else:
-                    self.logger.info(f"Успех: Ошибка отсутствует на странице — {path}")
+                    self.logger.debug(f"Успех: Ошибка отсутствует на странице — {path}")
                     return True
 
+    @allure.step("Клик по логотипу в Header")
     def click_header_logo_button(self):
         """Ищет и нажимает кнопку HEADER_LOGO_BUTTON. Если кнопка не найдена, выбрасывает TimeoutException."""
         xpath = XPathFinder(self.driver)
         # Ожидание появления и кликабельности кнопки
         logo_button = xpath.find_clickable(BaseLocators.HEADER_LOGO_BUTTON,timeout=10,few=False)
         logo_button.click()
-        self.logger.info("Кнопка HEADER_LOGO_BUTTON успешно нажата.")
+        self.logger.debug("Кнопка HEADER_LOGO_BUTTON успешно нажата.")
 
+    @allure.step("Закрытие всех всплывающих окон")
     def close_all_windows(self):
         """Метод ищет все всплывающие окна и закрывает их, если найдены."""
         xpath = XPathFinder(self.driver)
@@ -615,7 +631,7 @@ class BasePage:
         try:
             close_buttons = xpath.find_clickable(path=BaseLocators.POPUP_CLOSE, few=True, timeout=1)
             if not close_buttons:
-                self.logger.info("Нет всплывающих окон для закрытия.")
+                self.logger.debug("Нет всплывающих окон для закрытия.")
                 return False
 
             for btn in close_buttons:
@@ -628,12 +644,13 @@ class BasePage:
             WebDriverWait(self.driver, 1).until(
                 lambda d: not d.find_elements(By.XPATH, BaseLocators.POPUP_CLOSE)
             )
-            self.logger.info(f"Закрыто {len(close_buttons)} всплывающих окон.")
+            self.logger.debug(f"Закрыто {len(close_buttons)} всплывающих окон.")
             return True
         except Exception as e:
             self.logger.error(f"Ошибка при поиске всплывающих окон: {e}")
             return False
 
+    @allure.step("Загрузка файла {upload_file_name} через API")
     def upload_file(self, upload_file_name, new_name):
         # Создание через API: Загрузка и переименование
         auth_client = AuthClient(login={ADMIN_LOGIN}, password={ADMIN_PASSWORD_MD5})
@@ -646,6 +663,7 @@ class BasePage:
         file_name = rename_client.rename_by_recordid(record_id, new_name)
         return file_name
 
+    @allure.step("Обработка действия во всплывающем окне (action={action})")
     def popup_action(self, action=True):
         """Метод для обработки действий в всплывающем окне."""
         xpath = XPathFinder(self.driver)
@@ -653,14 +671,15 @@ class BasePage:
             # Кнопка подтверждения действия в всплывающем окне
             confirm_button = xpath.find_clickable(BaseLocators.POPUP_CONFIRM, timeout=3, few=False)
             confirm_button.click()
-            self.logger.info("Кнопка подтверждения действия в всплывающем окне нажата.")
+            self.logger.debug("Кнопка подтверждения действия в всплывающем окне нажата.")
         else:
             # Кнопка отмены действия в всплывающем окне
             cancel_button = xpath.find_clickable(BaseLocators.POPUP_CANCEL, timeout=3, few=False)
             cancel_button.click()
-            self.logger.info(
+            self.logger.debug(
                 "Кнопка отмены действия в всплывающем окне нажата.")
 
+    @allure.step("Обработка действия во всплывающем окне общего диска (action={action})")
     def popup_drive_action(self, action=True):
         """Метод для обработки действий в всплывающем окне при работе с общими дисками."""
         xpath = XPathFinder(self.driver)
@@ -668,10 +687,10 @@ class BasePage:
             # Кнопка подтверждения действия в всплывающем окне
             confirm_button = xpath.find_clickable(BaseLocators.POPUP_DRIVE_CONFIRM, timeout=3, few=False)
             confirm_button.click()
-            self.logger.info("Кнопка подтверждения действия в всплывающем окне нажата.")
+            self.logger.debug("Кнопка подтверждения действия в всплывающем окне нажата.")
         else:
             # Кнопка отмены действия в всплывающем окне
             cancel_button = xpath.find_clickable(BaseLocators.POPUP_DRIVE_CANCEL, timeout=3, few=False)
             cancel_button.click()
-            self.logger.info(
+            self.logger.debug(
                 "Кнопка отмены действия в всплывающем окне нажата.")

@@ -14,6 +14,9 @@ import allure
     "open_file": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Docz (Анкеты)')
+@allure.title('Скачивание Анкеты в docx формате')
 def test_download_questionnary_docx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет скачивание Анкеты в docx формате"""
     file_name, my_files_page, xpath = setup_create_delete_file

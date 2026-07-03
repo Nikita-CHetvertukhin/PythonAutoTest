@@ -15,6 +15,9 @@ import allure
     indirect=True
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Недоступность изменения/удаления чужого комментария к задаче')
 def test_innability_act_comment(error_handler, logger, admin_driver, user1_driver, setup_create_delete_task):
     """Тест проверяет невозможнотсь измения/удаления чужого комментария к задаче"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

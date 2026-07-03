@@ -15,6 +15,9 @@ import allure
     "publishing_from": [f"{ADMIN_LOGIN}"]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Публикация')
+@allure.title('Снятие с публикации простого Dotx')
 def test_unpublish_dotx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет снятие с публикации простого Dotx"""
     file_name, my_files_page, xpath = setup_create_delete_file

@@ -24,6 +24,9 @@ process_name = f"{get_uuid()}_deleting_custom_task_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title("Удаление задачи через 'ПКМ' - 'Удалить'")
 def test_deleting_custom_task(error_handler, logger, admin_driver, setup_create_delete_process, setup_create_delete_task):
     """Тест проверяет Удаление кастомной (корневой + вложенных) задачи через ПКМ - Удалить"""
     process_name, workflows_page, xpath = setup_create_delete_process

@@ -15,6 +15,9 @@ from utils.get_date import get_timestamp, get_uuid
     "publishing_from": [f"{ADMIN_LOGIN}"]
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Публикация')
+@allure.title('Создание анкеты из опубликованного шаблона')
 def test_create_docz_from_published_dotx(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет создание анкеты из опубликованного шаблона"""
     file_name, my_files_page, xpath = setup_create_delete_file

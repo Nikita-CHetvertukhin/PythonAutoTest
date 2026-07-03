@@ -1,5 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
 import time
+import allure
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -34,20 +35,22 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Ошибка при проверке title у процесса: {e}")
             return False
 
+    @allure.step("Клик 'Файл' -> {action_name}")
     def action_from_document(self, action_name):
         """Нажимает 'Файл', внутри документа и кликает по элементу action_name"""
         xpath = XPathFinder(self.driver)
         
-        self.logger.info("Клик по кнопке 'Файл'")
+        self.logger.debug("Клик по кнопке 'Файл'")
         action_button = xpath.find_visible(WorkflowEditorLocators.WFEDITOR_FILE_BUTTON, timeout=1)
         action_button.click()
 
-        self.logger.info(f"Клик по кнопке {action_name}")
+        self.logger.debug(f"Клик по кнопке {action_name}")
         action_xpath = xpath.find_located(f'{WorkflowEditorLocators.WFEDITOR_FILE_DROPDOWN}//div[contains(@class,"headline") and text()="{action_name}"]/parent::div', timeout=3, few=False)
         action_xpath.click()
         # if action_name in {"Опубликовать", "Снять с публикации"}:
         #     self.close_all_windows()
 
+    @allure.step("Добавление фигуры {shape_name}")
     def add_shape(self, shape_name):
         """Добавляет фигуру в редактор рабочего процесса, проверяет её наличие и возвращает уникальный model_id."""
         xpath = XPathFinder(self.driver)
@@ -72,10 +75,10 @@ class WorkflowEditorPage(BasePage):
             existing_elements = self.driver.find_elements(By.XPATH, g_element_xpath)  
             existing_model_ids = [el.get_attribute("model-id") for el in existing_elements] if existing_elements else []
 
-            self.logger.info(f"Клик по кнопке добавления фигуры '{shape_name}' ({model_class})")
+            self.logger.debug(f"Клик по кнопке добавления фигуры '{shape_name}' ({model_class})")
             shape_button = xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_SHAPE_BUTTONS}/a[@title="{shape_name}"]', timeout=5)
             shape_button.click()
-            self.logger.info(f"Фигура '{shape_name}' ({model_class}) добавлена в редактор рабочего процесса")
+            self.logger.debug(f"Фигура '{shape_name}' ({model_class}) добавлена в редактор рабочего процесса")
 
             # Ожидание появления нового элемента
             WebDriverWait(self.driver, 5).until(
@@ -94,7 +97,7 @@ class WorkflowEditorPage(BasePage):
                     break
 
             if new_model_id:
-                self.logger.info(f"Извлечен УНИКАЛЬНЫЙ model_id: {new_model_id} для фигуры {model_class}")
+                self.logger.debug(f"Извлечен УНИКАЛЬНЫЙ model_id: {new_model_id} для фигуры {model_class}")
                 return new_model_id
             else:
                 self.logger.warning(f"Не удалось найти новый g-элемент с классом '{model_class}'")
@@ -104,6 +107,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Ошибка при добавлении фигуры '{shape_name}': {e}")
             return None
 
+    @allure.step("Перетаскивание элемента {model_id} вправо на {offset}")
     def drag_element_right(self, model_id, offset=150):
         xpath = XPathFinder(self.driver)
         action = ActionChains(self.driver)
@@ -112,8 +116,9 @@ class WorkflowEditorPage(BasePage):
 
         # Инициализация ActionChains для выполнения drag-and-drop
         action.click_and_hold(element).move_by_offset(offset, 0).release().perform()
-        self.logger.info(f'Элемент {model_id} сдвинут вправо на {offset}')
+        self.logger.debug(f'Элемент {model_id} сдвинут вправо на {offset}')
 
+    @allure.step("Наведение курсора на фигуру {model_id}")
     def hover_shape(self, model_id):
         xpath = XPathFinder(self.driver)
         action = ActionChains(self.driver)
@@ -124,8 +129,9 @@ class WorkflowEditorPage(BasePage):
 
         # Выполнение наведения курсора
         action.move_to_element(element).perform()
-        self.logger.info(f'Наведен курсор на {model_id}')
+        self.logger.debug(f'Наведен курсор на {model_id}')
 
+    @allure.step("Клик по фигуре {model_id}")
     def click_shape(self, model_id):
         xpath = XPathFinder(self.driver)
         shape_path = f'{WorkflowEditorLocators.WFEDITOR_SHAPES}/*[name()="g"][contains(@model-id, "{model_id}")]'
@@ -135,8 +141,9 @@ class WorkflowEditorPage(BasePage):
 
         # Выполнение клика напрямую
         ActionChains(self.driver).move_to_element(element).click().perform()
-        self.logger.info(f'Клик по {model_id}')
+        self.logger.debug(f'Клик по {model_id}')
 
+    @allure.step("Клик по фигуре с текстом {text}")
     def click_shape_by_text(self, text):
         """Метод кликаем по фигуре на основани и текста (подходит не для всех фигур, толкьо с аргументом text)"""
         xpath = XPathFinder(self.driver)
@@ -145,8 +152,9 @@ class WorkflowEditorPage(BasePage):
         element = xpath.find_visible(shape_path, timeout=3)
         # Выполнение клика напрямую
         ActionChains(self.driver).move_to_element(element).click().perform()
-        self.logger.info(f'Клик по фигуре с текстом {text}')
+        self.logger.debug(f'Клик по фигуре с текстом {text}')
 
+    @allure.step("Установка каталога в автоматизации {type_auto} -> {type_section}")
     def change_catalog_in_auto(self, type_auto, type_section, name_catalog=None):
         """Метод устанавливает каталог в автоматизациях при старте/завершении, поддерживает аргументы:
         type_auto: "start", "finish" - тип автоматизации (при старте или при завершении)
@@ -169,13 +177,13 @@ class WorkflowEditorPage(BasePage):
             icon = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FOLDER_ICON, timeout=3).click()
         if type_auto == "finish":
             icon = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FOLDER_ICON, timeout=3).click()
-        self.logger.info(f'Клик по иконке каталога в автоматизации {type_auto}')
+        self.logger.debug(f'Клик по иконке каталога в автоматизации {type_auto}')
         
         # Выбор секции каталога
         target_section = xpath.find_clickable(
             f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_SECTIONS}[contains(text(), "{type_section}")]/ancestor::a', timeout=3)
         target_section.click()
-        self.logger.info(f'Клик по секции {type_section}')
+        self.logger.debug(f'Клик по секции {type_section}')
         time.sleep(1)  # Пауза для стабильности
         
         # Если указан каталог, ищем его в списке и делаем двойной клик
@@ -183,13 +191,14 @@ class WorkflowEditorPage(BasePage):
             xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_ITEMS}[contains(text(),"{name_catalog}")]/ancestor::tr', timeout=3).click()
             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
             time.sleep(1)  # Пауза для стабильности
-            self.logger.info(f'Двойной клик по каталогу {name_catalog}')
+            self.logger.debug(f'Двойной клик по каталогу {name_catalog}')
         
         # Подтверждаем выбор
         xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_CATALOG_SELECT, timeout=3).click()
         time.sleep(0.5)  # Пауза для стабильности
-        self.logger.info('Клик по кнопке "Выбрать" в каталоге')
+        self.logger.debug('Клик по кнопке "Выбрать" в каталоге')
 
+    @allure.step("Перевыбор УЗ {box_name} в автоматизации {type_auto}")
     def rechange_user_in_auto(self, type_auto, box_name):
         '''Метод предназначен для перевыбора УЗ в настройках автомтаизации публикации, шеринга при загрузке маршрута на новую сборку
         type_auto может быть равен start или finish'''
@@ -212,6 +221,7 @@ class WorkflowEditorPage(BasePage):
         else:
             raise ValueError(f"Неверное значение type_auto: '{type_auto}'. Ожидается 'start' или 'finish'.")
 
+    @allure.step("Связь фигур {first_model_id} -> {second_model_id}")
     def connect_shapes(self, first_model_id, second_model_id):
         xpath = XPathFinder(self.driver)
         action = ActionChains(self.driver)
@@ -224,7 +234,7 @@ class WorkflowEditorPage(BasePage):
             f'{WorkflowEditorLocators.WFEDITOR_SHAPES}/*[name()="g"][contains(@model-id, "{first_model_id}")]/*[name()="g"]',
             timeout=3
         )
-        self.logger.info(f'Исходный элемент {first_model_id} найден')
+        self.logger.debug(f'Исходный элемент {first_model_id} найден')
 
         # Начинаем drag-and-drop
         action.click_and_hold(source_element).perform()
@@ -237,7 +247,7 @@ class WorkflowEditorPage(BasePage):
 
         # Получаем model-id найденного элемента
         dynamic_model_id = dynamic_element.get_attribute("model-id")
-        self.logger.info(f'Идентификатор элемента связи установлен {dynamic_model_id}')
+        self.logger.debug(f'Идентификатор элемента связи установлен {dynamic_model_id}')
 
         # Завершаем перемещение к целевой фигуре
         target_element = xpath.find_visible(
@@ -245,17 +255,18 @@ class WorkflowEditorPage(BasePage):
             timeout=3
         )
         action.move_to_element(target_element).release().perform()
-        self.logger.info(f'Связь с элементом {second_model_id} установлена')
+        self.logger.debug(f'Связь с элементом {second_model_id} установлена')
 
        # Выполнить поиск видимости элемента с dynamic_model_id
         dynamic_element = xpath.find_visible(
             f'{WorkflowEditorLocators.WFEDITOR_SHAPES}/*[name()="g"][contains(@model-id, "{dynamic_model_id}")]',
             timeout=3
         )
-        self.logger.info(f'Элемент связи {dynamic_model_id} найден и отображается')
+        self.logger.debug(f'Элемент связи {dynamic_model_id} найден и отображается')
 
         return dynamic_model_id
 
+    @allure.step("Удаление фигуры {model_id}")
     def delete_shape(self, model_id):
         xpath = XPathFinder(self.driver)
         action = ActionChains(self.driver)
@@ -274,8 +285,9 @@ class WorkflowEditorPage(BasePage):
         # Клик по найденному кругу
         action.move_to_element(circle_tool).click().perform()
 
-        self.logger.info(f'Взаимодействие с инструментом фигуры {model_id} выполнено')
+        self.logger.debug(f'Взаимодействие с инструментом фигуры {model_id} выполнено')
 
+    @allure.step("Действие {action} для элемента {model_id}")
     def undo_redo_action(self, action, model_id, locator=True):
         """
         Выполняет 'Отменить' или 'Повторить' и проверяет изменение состояния элемента в DOM.
@@ -286,7 +298,7 @@ class WorkflowEditorPage(BasePage):
         :param locator: Если True - ищет кнопку, если False - использует сочетание клавиш.
         """
         action = action.lower()
-        self.logger.info(f"Выполнение действия: {action} для элемента с model_id: {model_id}")
+        self.logger.debug(f"Выполнение действия: {action} для элемента с model_id: {model_id}")
         element_selector = f'{WorkflowEditorLocators.WFEDITOR_SHAPES}/*[name()="g"][contains(@model-id, "{model_id}")]'
 
         if action not in ["отменить", "повторить"]:
@@ -297,27 +309,28 @@ class WorkflowEditorPage(BasePage):
             try:
                 button = WebDriverWait(self.driver, 3).until(EC.element_to_be_clickable((By.XPATH, button_selector)))
                 button.click()
-                self.logger.info(f"Клик по кнопке: {action.capitalize()}")
+                self.logger.debug(f"Клик по кнопке: {action.capitalize()}")
             except Exception as e:
                 self.logger.error(f"Ошибка клика по кнопке: {e}")
         else:
             shortcut = Keys.CONTROL + 'z' if action == "отменить" else Keys.CONTROL + 'y'
             try:
                 self.driver.switch_to.active_element.send_keys(shortcut)
-                self.logger.info(f"Нажато сочетание клавиш: {shortcut}")
+                self.logger.debug(f"Нажато сочетание клавиш: {shortcut}")
             except Exception as e:
                 self.logger.error(f"Ошибка при нажатии сочетания клавиш: {e}")
 
         try:
             if action == "отменить":
                 WebDriverWait(self.driver, 1).until(EC.invisibility_of_element_located((By.XPATH, element_selector)))
-                self.logger.info(f"Элемент {model_id} успешно удалён!")
+                self.logger.debug(f"Элемент {model_id} успешно удалён!")
             else:
                 WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.XPATH, element_selector)))
-                self.logger.info(f"Элемент {model_id} успешно восстановлен!")
+                self.logger.debug(f"Элемент {model_id} успешно восстановлен!")
         except:
             self.logger.error(f"Элемент {model_id} не изменил состояние после '{action}'!")
 
+    @allure.step("Изменение и проверка масштаба {attribute} для {model_id}")
     def adjust_zoom_and_verify(self, attribute, model_id):
         """
         Получает текущее значение масштаба и размер элемента, изменяет масштаб,
@@ -334,7 +347,7 @@ class WorkflowEditorPage(BasePage):
         try:
             initial_zoom_value = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, zoom_input_xpath))).get_attribute("value")
             initial_zoom_percentage = int(initial_zoom_value.replace('%', ''))  # Преобразуем '125%' -> 125
-            self.logger.info(f"Исходный масштаб перед изменением: {initial_zoom_percentage}%")
+            self.logger.debug(f"Исходный масштаб перед изменением: {initial_zoom_percentage}%")
         except Exception as e:
             self.logger.error(f"Ошибка получения исходного масштаба: {e}")
             return False
@@ -343,7 +356,7 @@ class WorkflowEditorPage(BasePage):
         try:
             element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, element_selector)))
             original_size = element.size
-            self.logger.info(f"Исходный размер фигуры {model_id}: {original_size['width']}x{original_size['height']}")
+            self.logger.debug(f"Исходный размер фигуры {model_id}: {original_size['width']}x{original_size['height']}")
         except Exception as e:
             self.logger.error(f"Ошибка получения исходного размера элемента {model_id}: {e}")
             return False
@@ -353,7 +366,7 @@ class WorkflowEditorPage(BasePage):
         try:
             zoom_button = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, zoom_button_xpath)))
             zoom_button.click()
-            self.logger.info(f"Нажата кнопка {attribute}")
+            self.logger.debug(f"Нажата кнопка {attribute}")
         except Exception as e:
             self.logger.error(f"Ошибка клика по {attribute}: {e}")
             return False
@@ -362,7 +375,7 @@ class WorkflowEditorPage(BasePage):
         try:
             new_zoom_value = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, zoom_input_xpath))).get_attribute("value")
             new_zoom_percentage = int(new_zoom_value.replace('%', ''))  # Преобразуем '75%' -> 75
-            self.logger.info(f"Текущий масштаб после изменения: {new_zoom_percentage}%")
+            self.logger.debug(f"Текущий масштаб после изменения: {new_zoom_percentage}%")
         except Exception as e:
             self.logger.error(f"Ошибка получения нового масштаба: {e}")
             return False
@@ -371,7 +384,7 @@ class WorkflowEditorPage(BasePage):
         try:
             element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, element_selector)))
             new_size = element.size
-            self.logger.info(f"Новый размер фигуры {model_id}: {new_size['width']}x{new_size['height']}")
+            self.logger.debug(f"Новый размер фигуры {model_id}: {new_size['width']}x{new_size['height']}")
         except Exception as e:
             self.logger.error(f"Ошибка получения нового размера элемента {model_id}: {e}")
             return False
@@ -384,9 +397,10 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Ошибка: Размер фигуры {model_id} не изменился корректно!")
             return False
 
-        self.logger.info(f"Масштаб успешно изменён, проверка пройдена!")
+        self.logger.debug(f"Масштаб успешно изменён, проверка пройдена!")
         return True
     
+    @allure.step("Имя процесса/фигуры: {name} (action={action})")
     def name_properties(self, name, action):
         """Метод для установки или проверки имени процесса/фигуры."""
         xpath = XPathFinder(self.driver)
@@ -394,22 +408,22 @@ class WorkflowEditorPage(BasePage):
         check_xpath = f'{input_xpath}[contains(@title,"{name}")]'  # XPath для проверки имени
     
         if action == "set":
-            self.logger.info(f"Устанавливаем имя: {name}")
+            self.logger.debug(f"Устанавливаем имя: {name}")
             try:
                 input_element = xpath.find_clickable(input_xpath, timeout=3)
                 # Альтернативный метод очистки
                 input_element.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
                 input_element.send_keys(Keys.DELETE)  # Удалить
                 input_element.send_keys(name)
-                self.logger.info("Имя успешно установлено.")
+                self.logger.debug("Имя успешно установлено.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке имени: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем имя: {name}")
+            self.logger.debug(f"Проверяем имя: {name}")
             try:
                 xpath.find_visible(check_xpath, timeout=7)
-                self.logger.info("Имя совпадает.")
+                self.logger.debug("Имя совпадает.")
                 return True
             except Exception:
                 self.logger.warning(f"Имя не совпадает.Path: {check_xpath}")
@@ -418,6 +432,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Описание процесса/фигуры: {descriptions} (action={action})")
     def descriptions_properties(self, descriptions, action):
         """Метод для установки или проверки описания процесса/фигуры."""
         xpath = XPathFinder(self.driver)
@@ -426,7 +441,7 @@ class WorkflowEditorPage(BasePage):
         name_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_NAME  # XPath до инпута имени названия
 
         if action == "set":
-            self.logger.info(f"Устанавливаем описание: {descriptions}")
+            self.logger.debug(f"Устанавливаем описание: {descriptions}")
             try:
                 input_element = xpath.find_clickable(input_xpath, timeout=3)
             
@@ -437,17 +452,17 @@ class WorkflowEditorPage(BasePage):
                 # Ввод нового описания
                 input_element.send_keys(descriptions)
 
-                self.logger.info("Описание успешно установлено.")
+                self.logger.debug("Описание успешно установлено.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке описания: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем описание: {descriptions}")
+            self.logger.debug(f"Проверяем описание: {descriptions}")
             try:
                 actual_description = xpath.find_visible(paragraph_xpath, timeout=3).text  # Достаем текст `<p>`
                 if actual_description.strip() == descriptions.strip():
-                    self.logger.info("Описание совпадает.")
+                    self.logger.debug("Описание совпадает.")
                     return True
                 else:
                     self.logger.warning(f"Описание не совпадает: ожидалось '{descriptions}', получили '{actual_description}'")
@@ -460,6 +475,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Срок процесса/фигуры: {term} (action={action})")
     def term_properties(self, term, action):
         """Метод для установки или проверки срока процесса/фигуры."""
         xpath = XPathFinder(self.driver)
@@ -467,22 +483,22 @@ class WorkflowEditorPage(BasePage):
         check_xpath = f'{input_xpath}[@title="{term}"]'  # XPath для проверки имени
     
         if action == "set":
-            self.logger.info(f"Устанавливаем срок: {term}")
+            self.logger.debug(f"Устанавливаем срок: {term}")
             try:
                 input_element = xpath.find_clickable(input_xpath, timeout=3)
                 # Альтернативный метод очистки
                 input_element.send_keys(Keys.CONTROL + "a")  # Выделить весь текст
                 input_element.send_keys(Keys.DELETE)  # Удалить
                 input_element.send_keys(term)
-                self.logger.info("Срок успешно установлено.")
+                self.logger.debug("Срок успешно установлено.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке срока: {e}")
                 raise
         elif action == "check":
-            self.logger.info(f"Проверяем срока: {term}")
+            self.logger.debug(f"Проверяем срока: {term}")
             try:
                 xpath.find_visible(check_xpath, timeout=3)
-                self.logger.info("Срок совпадает.")
+                self.logger.debug("Срок совпадает.")
                 return True
             except Exception:
                 self.logger.warning("Срок не совпадает.")
@@ -491,6 +507,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Период уведомления: {period_notify} (action={action})")
     def notify_properties(self, period_notify, action):
         """Метод для установки или проверки периода уведомления."""
         xpath = XPathFinder(self.driver)
@@ -503,25 +520,25 @@ class WorkflowEditorPage(BasePage):
         input_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_NOTIFY_TERM_INPUT
 
         if action == "set":
-            self.logger.info(f"Выбираем период уведомления: {period_notify}")
+            self.logger.debug(f"Выбираем период уведомления: {period_notify}")
             try:
                 # Открываем выпадающий список
                 xpath.find_clickable(button_xpath, timeout=3).click()
                 # Находим нужный элемент и кликаем
                 xpath.find_located(list_xpath, timeout=3)
-                self.logger.info(f"Строка {list_xpath} найдена в DOM")
+                self.logger.debug(f"Строка {list_xpath} найдена в DOM")
                 xpath.find_visible(list_xpath, timeout=3).click()
-                self.logger.info("Период успешно установлен.")
+                self.logger.debug("Период успешно установлен.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке периода: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем установленный период уведомления: {period_notify}")
+            self.logger.debug(f"Проверяем установленный период уведомления: {period_notify}")
             try:
                 actual_notify_period = xpath.find_visible(input_xpath, timeout=3).get_attribute("title")
                 if actual_notify_period == period_notify:
-                    self.logger.info("Период совпадает.")
+                    self.logger.debug("Период совпадает.")
                     return True
                 else:
                     self.logger.warning(f"Период не совпадает: ожидалось '{period_notify}', получили '{actual_notify_period}'")
@@ -534,19 +551,20 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Роль {role_name} (action={action})")
     def role_properties(self, role_name, action, checkboxes, access_level=None, users=None):
         """Метод для создания или проверки роли процесса."""
         xpath = XPathFinder(self.driver)
 
         if action == "create":
-            self.logger.info(f"Создаем роль: {role_name}")
+            self.logger.debug(f"Создаем роль: {role_name}")
 
             try:
                 # Кликаем кнопку для создания роли
                 element = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_INSERT_ROLE, timeout=3).click()
             
                 # Находим инпут для имени роли и вводим role_name
-                self.logger.info(f'Задаем название роли - {role_name}')
+                self.logger.debug(f'Задаем название роли - {role_name}')
                 textarea_path = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea'
                 input_element = xpath.find_located(textarea_path, timeout=3)
                 input_element.send_keys(role_name)
@@ -557,31 +575,31 @@ class WorkflowEditorPage(BasePage):
                 xpath.find_visible(new_tr, timeout=3)
 
                 # Выбираем уровень доступа
-                self.logger.info(f'Выбираем уровень доступа - {access_level}')
+                self.logger.debug(f'Выбираем уровень доступа - {access_level}')
                 xpath.find_clickable(f'{new_tr}/td[@field=1]/div/span', timeout=3).click()
                 xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_SHOW_LIST, timeout=3).click()
                 xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_LIST}/td[contains(@class,"column") and contains(@title, "{access_level}")]', timeout=3).click()
 
                 # Устанавливаем чекбоксы
                 rows = xpath.find_located(WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_TRS, timeout=3, few=True)
-                self.logger.info(f'Проставляем чекбоксы - {checkboxes.lower()}')
-                self.logger.info(f"Найдено {len(rows)} строк чекбоксов")
+                self.logger.debug(f'Проставляем чекбоксы - {checkboxes.lower()}')
+                self.logger.debug(f"Найдено {len(rows)} строк чекбоксов")
                 for index, row in enumerate(rows, start=1):  # Нумерация строк с 1
-                    self.logger.info(f"Обрабатываем строку {index}: {row.text}")  
+                    self.logger.debug(f"Обрабатываем строку {index}: {row.text}")  
 
                     checkbox_xpath = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_TRS}[{index}]/td/div/span/i[contains(@class,"checkbox-{checkboxes.lower()}")]'
-                    self.logger.info(f'Ищем чекбокс: {checkbox_xpath}')
+                    self.logger.debug(f'Ищем чекбокс: {checkbox_xpath}')
 
                     try:
                         checkbox_element = xpath.find_visible(checkbox_xpath, timeout=0.1)
                     except Exception:
-                        self.logger.info(f'Не нашли: {checkbox_xpath}')
+                        self.logger.debug(f'Не нашли: {checkbox_xpath}')
                         checkbox_element = None
 
                     if not checkbox_element:
                         try:
                             icon_path = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_SHARE_TRS}[{index}]/td/div/span/i'
-                            self.logger.info(f'Ищем кнопку: {icon_path}')
+                            self.logger.debug(f'Ищем кнопку: {icon_path}')
                             checkbox_icon = xpath.find_clickable(icon_path, timeout=1)
                             checkbox_icon.click()
                         except Exception:
@@ -591,7 +609,7 @@ class WorkflowEditorPage(BasePage):
                         try:
                             checkbox_element = xpath.find_visible(checkbox_xpath, timeout=2)
                             if checkbox_element:
-                                self.logger.info(f'Чекбокс успешно изменен: {checkboxes.lower()}')
+                                self.logger.debug(f'Чекбокс успешно изменен: {checkboxes.lower()}')
                             else:
                                 self.logger.warning(f'Чекбокс не изменился после клика!')
                         except Exception:
@@ -605,34 +623,34 @@ class WorkflowEditorPage(BasePage):
                 input_users.send_keys(USER1_LOGIN)
                 xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_CELLWITHDROPDOWN_DROPDOWN}[text()="{USER1_LOGIN}"]', timeout=3).click()
             
-                self.logger.info("Роль успешно создана.")
+                self.logger.debug("Роль успешно создана.")
             except Exception as e:
                 self.logger.error(f"Ошибка при создании роли: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем роль: {role_name}")
+            self.logger.debug(f"Проверяем роль: {role_name}")
 
             try:
                 # Проверяем, что роль существует
-                self.logger.info(f'Проверяем наличие роли: {role_name}')
+                self.logger.debug(f'Проверяем наличие роли: {role_name}')
                 checking_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_ROLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="{role_name}"]/parent::div/parent::td/parent::tr'
                 xpath.find_visible(checking_tr, timeout=3, scroll=True)
-                self.logger.info(f'Роль "{role_name}" найдена.')
+                self.logger.debug(f'Роль "{role_name}" найдена.')
 
                 # Проверяем уровень доступа
-                self.logger.info(f'Проверяем уровень доступа: {access_level}')
+                self.logger.debug(f'Проверяем уровень доступа: {access_level}')
                 check_access = f'{checking_tr}/td[@field=1]/div/span[text()="{access_level}"]'
                 xpath.find_visible(check_access, timeout=3)
-                self.logger.info(f'Уровень доступа "{access_level}" подтвержден.')
+                self.logger.debug(f'Уровень доступа "{access_level}" подтвержден.')
 
                 # Проверяем пользователей
-                self.logger.info(f'Проверяем наличие пользователя: {users}')
+                self.logger.debug(f'Проверяем наличие пользователя: {users}')
                 check_users = f'{checking_tr}/td[@field=2]/div/span[text()="{", ".join(users)}"]'
                 xpath.find_visible(check_users, timeout=3)
-                self.logger.info(f'Пользователь "{users}" найден.')
+                self.logger.debug(f'Пользователь "{users}" найден.')
 
-                self.logger.info("Роль и доступы успешно проверены.")
+                self.logger.debug("Роль и доступы успешно проверены.")
                 return True
 
             except Exception as e:
@@ -643,32 +661,33 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'create' или 'check'")
 
+    @allure.step("Наблюдатель {role_name} (action={action})")
     def observer_properties(self, action, role_name, users=None):
         xpath = XPathFinder(self.driver)
-        self.logger.info(f'Начинаем обработку наблюдателя: {role_name}, action={action}, users={users}')
+        self.logger.debug(f'Начинаем обработку наблюдателя: {role_name}, action={action}, users={users}')
 
         if action == "add":
             try:
-                self.logger.info("Ищем инпут и вводим название роли")
+                self.logger.debug("Ищем инпут и вводим название роли")
                 observer_input = xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_INPUT, timeout=3)
                 observer_input.send_keys(role_name)
 
-                self.logger.info("Ждём и нажимаем элемент выпадающего списка")
+                self.logger.debug("Ждём и нажимаем элемент выпадающего списка")
                 observer_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_LIST}[text()="{role_name}"]'
                 xpath.find_clickable(observer_option, timeout=3).click()
 
                 # Проверяем, что в таблице добавилась нужная строка
                 actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[text()="{role_name}"]/parent::div/parent::td/parent::tr'
-                self.logger.info(f'Проверяем наличие строки наблюдателя: {actual_tr}')
+                self.logger.debug(f'Проверяем наличие строки наблюдателя: {actual_tr}')
                 xpath.find_visible(actual_tr, timeout=3)
-                self.logger.info(f'Наблюдатель "{role_name}" успешно добавлен.')
+                self.logger.debug(f'Наблюдатель "{role_name}" успешно добавлен.')
 
                 # Если указан `users`, проверяем его наличие
                 if users:
-                    self.logger.info(f'Проверяем наличие пользователя: {users} по пути {actual_tr}/td//span[text()="{", ".join(users)}"]')
+                    self.logger.debug(f'Проверяем наличие пользователя: {users} по пути {actual_tr}/td//span[text()="{", ".join(users)}"]')
                     user_check = f'{actual_tr}/td//span[text()="{", ".join(users)}"]'
                     xpath.find_visible(user_check, timeout=3)
-                    self.logger.info(f'Пользователь "{users}" подтвержден.')
+                    self.logger.debug(f'Пользователь "{users}" подтвержден.')
 
             except Exception as e:
                 self.logger.error(f"Ошибка при добавлении наблюдателя: {e}")
@@ -676,19 +695,19 @@ class WorkflowEditorPage(BasePage):
 
         elif action == "check":
             try:
-                self.logger.info(f'Проверяем наличие наблюдателя: {role_name}')
+                self.logger.debug(f'Проверяем наличие наблюдателя: {role_name}')
                 actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_OBSERVER_TABLE}[text()="{role_name}"]/parent::div/parent::td/parent::tr'
-                self.logger.info(f'Ищем строку наблюдателя: {actual_tr}')
+                self.logger.debug(f'Ищем строку наблюдателя: {actual_tr}')
                 xpath.find_visible(actual_tr, timeout=3)
-                self.logger.info(f'Наблюдатель "{role_name}" найден.')
+                self.logger.debug(f'Наблюдатель "{role_name}" найден.')
 
                 # Если указан `users`, проверяем его наличие
                 if users:
-                    self.logger.info(f'Проверяем наличие пользователя: {users}')
+                    self.logger.debug(f'Проверяем наличие пользователя: {users}')
                     user_check = f'{actual_tr}/td//span[text()="{", ".join(users)}"]'
-                    self.logger.info(f'Ищем пользователя в строке: {user_check}')
+                    self.logger.debug(f'Ищем пользователя в строке: {user_check}')
                     xpath.find_visible(user_check, timeout=3)
-                    self.logger.info(f'Пользователь "{users}" подтвержден.')
+                    self.logger.debug(f'Пользователь "{users}" подтвержден.')
 
                 return True
 
@@ -700,18 +719,19 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'add' или 'check'")
 
+    @allure.step("Переменная {id} (action={action})")
     def variables_properties(self, action, id, name, comment, type, content):
         xpath = XPathFinder(self.driver)
 
         if action == "add":
-            self.logger.info(f'Начинаем добавление переменной: {id}')
+            self.logger.debug(f'Начинаем добавление переменной: {id}')
 
             # Кликаем кнопку создания переменной
-            self.logger.info("Кликаем кнопку создания переменной")
+            self.logger.debug("Кликаем кнопку создания переменной")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_INSERT_VARIABLE, timeout=3).click()
 
             # Вводим ID
-            self.logger.info(f'Вводим ID: {id}')
+            self.logger.debug(f'Вводим ID: {id}')
             input_id = xpath.find_clickable(
                 f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div/div[contains(@class,"box")]/input',
                 timeout=3
@@ -722,10 +742,10 @@ class WorkflowEditorPage(BasePage):
 
             # Находим строку созданной переменной
             new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[text()="{id}"]/parent::div/parent::td/parent::tr'
-            self.logger.info(f'Найдена строка переменной: {new_tr}')
+            self.logger.debug(f'Найдена строка переменной: {new_tr}')
 
             # Назначаем название
-            self.logger.info(f'Назначаем название: {name}')
+            self.logger.debug(f'Назначаем название: {name}')
             xpath.find_clickable(f'{new_tr}/td[@field=1]', timeout=3).click()
             input_name = xpath.find_clickable(f'{new_tr}/td[@field=1]/div/div/textarea', timeout=3)
             input_name.send_keys(name)
@@ -733,7 +753,7 @@ class WorkflowEditorPage(BasePage):
             time.sleep(0.3)
 
             # Назначаем комментарий
-            self.logger.info(f'Назначаем комментарий: {comment}')
+            self.logger.debug(f'Назначаем комментарий: {comment}')
             xpath.find_clickable(f'{new_tr}/td[@field=2]', timeout=3).click()
             input_comment = xpath.find_clickable(f'{new_tr}/td[@field=2]/div/div/textarea', timeout=3)
             input_comment.send_keys(comment)
@@ -741,53 +761,53 @@ class WorkflowEditorPage(BasePage):
             time.sleep(0.3)
 
             # Выбираем тип
-            self.logger.info(f'Выбираем тип переменной: {type}')
+            self.logger.debug(f'Выбираем тип переменной: {type}')
             xpath.find_clickable(f'{new_tr}/td[@field=3]', timeout=3).click()
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_CELLWITHDROPDOWN_BUTTON, timeout=3).click()
             xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_CELLWITHDROPDOWN_DROPDOWN}[text()="{type}"]', timeout=3).click()
             time.sleep(0.3)
 
             # Назначаем значение
-            self.logger.info(f'Назначаем значение: {content}')
+            self.logger.debug(f'Назначаем значение: {content}')
             xpath.find_clickable(f'{new_tr}/td[@field=4]', timeout=3).click()
             input_value = xpath.find_clickable(f'{new_tr}/td[@field=4]/div/div/textarea', timeout=3)
             input_value.send_keys(content)
             input_value.send_keys(Keys.ENTER)
 
-            self.logger.info(f'Переменная "{id}" успешно добавлена.')
+            self.logger.debug(f'Переменная "{id}" успешно добавлена.')
 
         elif action == "check":
             try:
-                self.logger.info(f'Проверяем наличие переменной: {id}')
+                self.logger.debug(f'Проверяем наличие переменной: {id}')
                 checking_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_VARIABLE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="{id}"]/parent::div/parent::td/parent::tr'
                 xpath.find_visible(checking_tr, timeout=3, scroll=True)
-                self.logger.info(f'Переменная "{id}" найдена.')
+                self.logger.debug(f'Переменная "{id}" найдена.')
 
                 # Проверяем наименование
-                self.logger.info(f'Проверяем название переменной: {name}')
+                self.logger.debug(f'Проверяем название переменной: {name}')
                 check_name = f'{checking_tr}/td[@field=1]/div/span[contains(text(), "{name}")]'
                 xpath.find_visible(check_name, timeout=3)
-                self.logger.info(f'Название "{name}" подтверждено.')
+                self.logger.debug(f'Название "{name}" подтверждено.')
 
                 # Проверяем комментарий
-                self.logger.info(f'Проверяем комментарий: {comment}')
+                self.logger.debug(f'Проверяем комментарий: {comment}')
                 check_comment = f'{checking_tr}/td[@field=2]/div/span[contains(text(), "{comment}")]'
                 xpath.find_visible(check_comment, timeout=3)
-                self.logger.info(f'Комментарий "{comment}" подтвержден.')
+                self.logger.debug(f'Комментарий "{comment}" подтвержден.')
 
                 # Проверяем тип
-                self.logger.info(f'Проверяем тип переменной: {type}')
+                self.logger.debug(f'Проверяем тип переменной: {type}')
                 check_type = f'{checking_tr}/td[@field=3]/div/span[contains(text(), "{type}")]'
                 xpath.find_visible(check_type, timeout=3)
-                self.logger.info(f'Тип "{type}" подтвержден.')
+                self.logger.debug(f'Тип "{type}" подтвержден.')
 
                 # Проверяем значение
-                self.logger.info(f'Проверяем значение переменной: {content}')
+                self.logger.debug(f'Проверяем значение переменной: {content}')
                 check_value = f'{checking_tr}/td[@field=4]/div/span[contains(text(), "{content}")]'
                 xpath.find_visible(check_value, timeout=3)
-                self.logger.info(f'Значение "{content}" подтверждено.')
+                self.logger.debug(f'Значение "{content}" подтверждено.')
 
-                self.logger.info("Переменная успешно проверена.")
+                self.logger.debug("Переменная успешно проверена.")
                 return True
 
             except Exception as e:
@@ -798,18 +818,19 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'add' или 'check'")
 
+    @allure.step("Стадия {name} (action={action})")
     def stages_properties(self, action, name, number):
         xpath = XPathFinder(self.driver)
 
         if action == "add":
-            self.logger.info(f'Добавляем стадию процесса: {name} (номер {number})')
+            self.logger.debug(f'Добавляем стадию процесса: {name} (номер {number})')
 
             # Кликаем кнопку создания стадии
-            self.logger.info("Кликаем кнопку создания стадии")
+            self.logger.debug("Кликаем кнопку создания стадии")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_INSERT_STAGE, timeout=3).click()
 
             # Назначаем название
-            self.logger.info(f'Назначаем название стадии: {name}')
+            self.logger.debug(f'Назначаем название стадии: {name}')
             input_name = xpath.find_clickable(f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="​"]/parent::div/following-sibling::div[contains(@class,"textarea")]/div/textarea', timeout=3)
             input_name.send_keys(name)
             input_name.send_keys(Keys.ENTER)
@@ -817,31 +838,31 @@ class WorkflowEditorPage(BasePage):
 
             # Находим строку созданной стадии
             new_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[text()="{name}"]/parent::div/parent::td/parent::tr'
-            self.logger.info(f'Найдена строка стадии: {new_tr}')
+            self.logger.debug(f'Найдена строка стадии: {new_tr}')
 
             # Назначаем номер стадии
-            self.logger.info(f'Назначаем номер стадии: {number}')
+            self.logger.debug(f'Назначаем номер стадии: {number}')
             xpath.find_clickable(f'{new_tr}/td[@field=1]', timeout=3).click()
             input_number = xpath.find_clickable(f'{new_tr}/td[@field=1]/div/div/input', timeout=3)
             input_number.send_keys(number)
             input_number.send_keys(Keys.ENTER)
 
-            self.logger.info(f'Стадия "{name}" успешно добавлена.')
+            self.logger.debug(f'Стадия "{name}" успешно добавлена.')
 
         elif action == "check":
             try:
-                self.logger.info(f'Проверяем наличие стадии: {name}')
+                self.logger.debug(f'Проверяем наличие стадии: {name}')
                 checking_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGEE_TRS}/td[contains(@class,"first")]/div/span[contains(@class,"text") and text()="{name}"]/parent::div/parent::td/parent::tr'
                 xpath.find_visible(checking_tr, timeout=3, scroll=True)
-                self.logger.info(f'Стадия "{name}" найдена.')
+                self.logger.debug(f'Стадия "{name}" найдена.')
 
                 # Проверяем номер стадии
-                self.logger.info(f'Проверяем номер стадии: {number}')
+                self.logger.debug(f'Проверяем номер стадии: {number}')
                 check_number = f'{checking_tr}/td[@field=1]/div/span[contains(text(), "{number}")]'
                 xpath.find_visible(check_number, timeout=3)
-                self.logger.info(f'Номер "{number}" подтвержден.')
+                self.logger.debug(f'Номер "{number}" подтвержден.')
 
-                self.logger.info("Стадия успешно проверена.")
+                self.logger.debug("Стадия успешно проверена.")
                 return True
 
             except Exception as e:
@@ -852,29 +873,30 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'add' или 'check'")
 
+    @allure.step("Автоматизация при старте {automation_type} (action_type={action_type})")
     def automation_start(self, action_type, automation_type):
         xpath = XPathFinder(self.driver)
-        self.logger.info(f'Начинаем обработку автоматизации при старте: {automation_type}')
+        self.logger.debug(f'Начинаем обработку автоматизации при старте: {automation_type}')
 
         if action_type == "add":
-            self.logger.info("Кликаем чекбокс 'Автоматизация при старте'")
+            self.logger.debug("Кликаем чекбокс 'Автоматизация при старте'")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO, timeout=3).click()
 
-            self.logger.info("Открываем выпадающий список автоматизации")
+            self.logger.debug("Открываем выпадающий список автоматизации")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_BUTTON, timeout=3).click()
 
-            self.logger.info(f'Выбираем автоматизацию: {automation_type}')
+            self.logger.debug(f'Выбираем автоматизацию: {automation_type}')
             automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_lIST}[text()="{automation_type}"]'
             xpath.find_clickable(automation_option, timeout=3).click()
 
-            self.logger.info(f'Автоматизация "{automation_type}" успешно добавлена.')
+            self.logger.debug(f'Автоматизация "{automation_type}" успешно добавлена.')
 
         elif action_type == "check":
             try:
-                self.logger.info(f'Проверяем наличие автоматизации: {automation_type}')
+                self.logger.debug(f'Проверяем наличие автоматизации: {automation_type}')
                 automation_input = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_START_AUTO_FIRST_INPUT}[contains(@title,"{automation_type}")]'
                 xpath.find_visible(automation_input, timeout=3, scroll=True)
-                self.logger.info(f'Автоматизация "{automation_type}" подтверждена.')
+                self.logger.debug(f'Автоматизация "{automation_type}" подтверждена.')
                 return True
 
             except Exception as e:
@@ -885,29 +907,30 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action_type: {action_type}")
             raise ValueError("action_type должен быть 'add' или 'check'")
 
+    @allure.step("Автоматизация при завершении {automation_type} (action_type={action_type})")
     def automation_finish(self, action_type, automation_type):
         xpath = XPathFinder(self.driver)
-        self.logger.info(f'Начинаем обработку автоматизации при старте: {automation_type}')
+        self.logger.debug(f'Начинаем обработку автоматизации при старте: {automation_type}')
 
         if action_type == "add":
-            self.logger.info("Кликаем чекбокс 'Автоматизация при старте'")
+            self.logger.debug("Кликаем чекбокс 'Автоматизация при старте'")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO, timeout=3).click()
 
-            self.logger.info("Открываем выпадающий список автоматизации")
+            self.logger.debug("Открываем выпадающий список автоматизации")
             xpath.find_clickable(WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_BUTTON, timeout=3).click()
 
-            self.logger.info(f'Выбираем автоматизацию: {automation_type}')
+            self.logger.debug(f'Выбираем автоматизацию: {automation_type}')
             automation_option = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_lIST}[text()="{automation_type}"]'
             xpath.find_clickable(automation_option, timeout=3).click()
 
-            self.logger.info(f'Автоматизация "{automation_type}" успешно добавлена.')
+            self.logger.debug(f'Автоматизация "{automation_type}" успешно добавлена.')
 
         elif action_type == "check":
             try:
-                self.logger.info(f'Проверяем наличие автоматизации: {automation_type}')
+                self.logger.debug(f'Проверяем наличие автоматизации: {automation_type}')
                 automation_input = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_FINISH_AUTO_FIRST_INPUT}[contains(@title,"{automation_type}")]'
                 xpath.find_visible(automation_input, timeout=3, scroll=True)
-                self.logger.info(f'Автоматизация "{automation_type}" подтверждена.')
+                self.logger.debug(f'Автоматизация "{automation_type}" подтверждена.')
                 return True
 
             except Exception as e:
@@ -918,6 +941,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action_type: {action_type}")
             raise ValueError("action_type должен быть 'add' или 'check'")
 
+    @allure.step("Исполнитель {executor_name} (action={action})")
     def executor_properties(self, executor_name, action):
         """Метод для установки или проверки периода уведомления."""
         xpath = XPathFinder(self.driver)
@@ -930,24 +954,24 @@ class WorkflowEditorPage(BasePage):
         input_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_EXECUTOR_INPUT
 
         if action == "set":
-            self.logger.info(f"Выбираем исполнителя: {executor_name}")
+            self.logger.debug(f"Выбираем исполнителя: {executor_name}")
             try:
                 # Открываем выпадающий список
                 xpath.find_clickable(button_xpath, timeout=3).click()
                 # Находим нужный элемент и кликаем
                 xpath.find_located(list_xpath, timeout=3)
                 xpath.find_visible(list_xpath, timeout=3).click()
-                self.logger.info("Исполнитель успешно установлен.")
+                self.logger.debug("Исполнитель успешно установлен.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установке исполнителя: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем установленного исполнителя: {executor_name}")
+            self.logger.debug(f"Проверяем установленного исполнителя: {executor_name}")
             try:
                 actual_executor = xpath.find_visible(input_xpath, timeout=3).get_attribute("title")
                 if actual_executor == executor_name:
-                    self.logger.info("Исполнитель совпадает.")
+                    self.logger.debug("Исполнитель совпадает.")
                     return True
                 else:
                     self.logger.warning(f"Исполнитель не совпадает: ожидалось '{executor_name}', получили '{actual_executor}'")
@@ -960,6 +984,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Стадия фигуры {stage_name} (action={action})")
     def shape_stages_properties(self, stage_name, action):
         """Метод для установки или проверки периода уведомления."""
         xpath = XPathFinder(self.driver)
@@ -972,24 +997,24 @@ class WorkflowEditorPage(BasePage):
         input_xpath = WorkflowEditorLocators.WFEDITOR_PROPERTIES_STAGE_INPUT
 
         if action == "set":
-            self.logger.info(f"Выбираем стадию: {stage_name}")
+            self.logger.debug(f"Выбираем стадию: {stage_name}")
             try:
                 # Открываем выпадающий список
                 xpath.find_clickable(button_xpath, timeout=3).click()
                 # Находим нужный элемент и кликаем
                 xpath.find_located(list_xpath, timeout=3)
                 xpath.find_visible(list_xpath, timeout=3).click()
-                self.logger.info("Стадия успешно установлена.")
+                self.logger.debug("Стадия успешно установлена.")
             except Exception as e:
                 self.logger.error(f"Ошибка при установки стадии: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем установленную стадию: {stage_name}")
+            self.logger.debug(f"Проверяем установленную стадию: {stage_name}")
             try:
                 actual_stage = xpath.find_visible(input_xpath, timeout=3).get_attribute("title")
                 if actual_stage == stage_name:
-                    self.logger.info("Стадия совпадает.")
+                    self.logger.debug("Стадия совпадает.")
                     return True
                 else:
                     self.logger.warning(f"Стадия не совпадает: ожидалось '{stage_name}', получили '{actual_stage}'")
@@ -1002,20 +1027,21 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Связь с {target_element} (action={action})")
     def connections_properties(self, action, target_element,trans_name, result):
         """Метод для проверки таблицы связей фигуры."""
         xpath = XPathFinder(self.driver)
         actual_tr = f'{WorkflowEditorLocators.WFEDITOR_PROPERTIES_CONNECT_TRS}//span[contains(text(),"{target_element}")]/ancestor::tr[1]'
 
         if action == "set":
-            self.logger.info(f"Ищем строку с целевым элементом: {target_element}")
+            self.logger.debug(f"Ищем строку с целевым элементом: {target_element}")
 
             try:
                 # Ищем актуальную строку
                 xpath.find_visible(actual_tr, timeout=3)
 
                 # Вводим наименование перехода
-                self.logger.info(f'Вводим наименование перехода - {trans_name}')
+                self.logger.debug(f'Вводим наименование перехода - {trans_name}')
                 xpath.find_clickable(f'{actual_tr}/td[@field=1]/div/span', timeout=3).click()
                 input_name = xpath.find_clickable(f'{actual_tr}/td[@field=1]/div/div/textarea', timeout=3)
                 input_name.send_keys(trans_name)
@@ -1028,31 +1054,31 @@ class WorkflowEditorPage(BasePage):
                 input_result.send_keys(result)
                 input_result.send_keys(Keys.ENTER)
             
-                self.logger.info("Связь фигуры успешно настроена.")
+                self.logger.debug("Связь фигуры успешно настроена.")
             except Exception as e:
                 self.logger.error(f"Ошибка при настройки связи фигуры: {e}")
                 raise
 
         elif action == "check":
-            self.logger.info(f"Проверяем связь с целевым элементом: {target_element}")
+            self.logger.debug(f"Проверяем связь с целевым элементом: {target_element}")
 
             try:
                 # Ищем актуальную строку
                 xpath.find_visible(actual_tr, timeout=7)
 
                 # Проверяем наименование перехода
-                self.logger.info(f'Проверяем уровень доступа: {trans_name}')
+                self.logger.debug(f'Проверяем уровень доступа: {trans_name}')
                 check_trans = f'{actual_tr}/td[@field=1]/div/span[contains(text(), "{trans_name}")]'
                 xpath.find_visible(check_trans, timeout=3)
-                self.logger.info(f'Название перехода "{check_trans}" подтверждено.')
+                self.logger.debug(f'Название перехода "{check_trans}" подтверждено.')
 
                 # Проверяем результат
-                self.logger.info(f'Проверяем результат: {result}')
+                self.logger.debug(f'Проверяем результат: {result}')
                 check_result = f'{actual_tr}/td[@field=2]/div/span[contains(text(), "{result}")]'
                 xpath.find_visible(check_result, timeout=3)
-                self.logger.info(f'Результат "{check_result}" подтвержден.')
+                self.logger.debug(f'Результат "{check_result}" подтвержден.')
 
-                self.logger.info("Параметры связи успешно проверены.")
+                self.logger.debug("Параметры связи успешно проверены.")
                 return True
 
             except Exception as e:
@@ -1063,6 +1089,7 @@ class WorkflowEditorPage(BasePage):
             self.logger.error(f"Недопустимое значение action: {action}")
             raise ValueError("action должен быть 'set' или 'check'")
 
+    @allure.step("Результат выхода фигуры: {content} (action={action})")
     def shape_exit_result_properties(self, action, content):
         """Метод для установки или проверки результата выхода из фигуры."""
         xpath = XPathFinder(self.driver)
@@ -1075,14 +1102,14 @@ class WorkflowEditorPage(BasePage):
         }
 
         if action == "set":
-            self.logger.info(f"Устанавливаем результат выхода: {content}")
+            self.logger.debug(f"Устанавливаем результат выхода: {content}")
 
             # Определяем текущий статус как ключ, а не XPath
             current_status_key = next((key for key, status in status_map.items() if xpath.find_visible(status)), None)
-            self.logger.info(f"Текущий статус перед изменением: {current_status_key}")
+            self.logger.debug(f"Текущий статус перед изменением: {current_status_key}")
 
             if current_status_key == content:
-                self.logger.info(f"Статус уже '{content}', клик не требуется")
+                self.logger.debug(f"Статус уже '{content}', клик не требуется")
                 return
 
             # Определяем количество кликов для изменения статуса
@@ -1093,29 +1120,30 @@ class WorkflowEditorPage(BasePage):
                 ("fail", "null"): 1
             }.get((current_status_key, content), None)
 
-            self.logger.info(f"click_count определен как: {click_count}")
+            self.logger.debug(f"click_count определен как: {click_count}")
 
             if click_count:
-                self.logger.info(f"Текущий статус: {current_status_key}, кликов потребуется: {click_count}")
+                self.logger.debug(f"Текущий статус: {current_status_key}, кликов потребуется: {click_count}")
                 try:
                     for _ in range(click_count):
                         element = xpath.find_clickable(exit_element)
                         element.click()
                         time.sleep(0.1)
                     xpath.find_located(status_map[content])
-                    self.logger.info(f"Результат выхода установлен в '{content}'")
+                    self.logger.debug(f"Результат выхода установлен в '{content}'")
                 except Exception as e:
                     self.logger.error(f"Ошибка при клике: {e}")
 
         elif action == "check":
-            self.logger.info(f"Проверяем результат выхода: {content}")
+            self.logger.debug(f"Проверяем результат выхода: {content}")
             if xpath.find_visible(status_map[content]):
-                self.logger.info(f"Статус соответствует: {content}")
+                self.logger.debug(f"Статус соответствует: {content}")
                 return True
             else:
                 self.logger.warning(f"Ожидался статус '{content}', но он не соответствует")
                 return False
 
+    @allure.step("Проверка скопированной ссылки процесса в URL")
     def special_check_url(self):
         '''Метод предназначени только для специфического кейса проверки скопированной ссылки на процесс и ссылки в url'''
         xpath = XPathFinder(self.driver)
@@ -1126,11 +1154,11 @@ class WorkflowEditorPage(BasePage):
         element.send_keys(Keys.CONTROL, 'v')
         # Получение текущего URL в переменную
         current_url = self.driver.current_url
-        self.logger.info(f"Текущий URL вкладки: {current_url}")
+        self.logger.debug(f"Текущий URL вкладки: {current_url}")
 
         check_description_xpath = f'{input_description_xpath}//a[contains(text(),"{current_url}")]'
         if xpath.find_located(check_description_xpath, timeout=3):
-            self.logger.info(f"Скопированная ссылка процесса соответствует текущему URL: {current_url}")
+            self.logger.debug(f"Скопированная ссылка процесса соответствует текущему URL: {current_url}")
             return True
         else:
             self.logger.warning(f"Скопированная ссылка процесса не соответствует текущему URL: {current_url}")

@@ -26,6 +26,9 @@ import allure
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Отправка на согласование')
+@allure.title("Создание задачи из документа")
 def test_create_task_by_my_files(error_handler, logger, admin_driver, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет создание задачи через 'Документ'"""
     file_name, my_files_page, xpath = setup_create_delete_file

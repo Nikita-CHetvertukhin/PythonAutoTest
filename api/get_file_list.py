@@ -1,12 +1,16 @@
-import requests
 import logging
+import allure
 from settings.variables import API_URL, WORKSPACE, MY_FILES_SECTION, WORKFLOWS_SECTION
+from api.base_client import post_and_log
+
+logger = logging.getLogger(__name__)
 
 class GetFileListClient:
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.url = API_URL
 
+    @allure.step("Получение списка файлов через API")
     def get_file_list(self) -> list[str]:
         payload = {
             "request": WORKSPACE,
@@ -19,7 +23,7 @@ class GetFileListClient:
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
-        response = requests.post(self.url, data=payload, headers=headers)
+        response = post_and_log(logger, self.url, data=payload, headers=headers)
 
         response.raise_for_status()
         result = response.json()
@@ -36,6 +40,7 @@ class GetFileListClient:
         ]
         return file_list
 
+    @allure.step("Получение списка процессов через API")
     def get_process_list(self) -> list[str]:
         payload = {
             "request": WORKSPACE,
@@ -48,7 +53,7 @@ class GetFileListClient:
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
-        response = requests.post(self.url, data=payload, headers=headers)
+        response = post_and_log(logger, self.url, data=payload, headers=headers)
 
         response.raise_for_status()
         result = response.json()

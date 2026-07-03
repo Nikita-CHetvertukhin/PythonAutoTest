@@ -8,8 +8,11 @@ import allure
 @pytest.mark.base_smoke
 @pytest.mark.base
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Разделы')
+@allure.title('Проверка базовых вкладок в хедере')
 def test_header_buttons(error_handler, logger, admin_driver):
-    """Тест проверяет открытие базовых вкладкок в хедере"""
+    """Тест проверяет открытие базовых вкладок в хедере"""
     my_files_page = MyFilesPage(admin_driver, logger)
 
     logger.info("Начало проверки базовых разделов хедера")

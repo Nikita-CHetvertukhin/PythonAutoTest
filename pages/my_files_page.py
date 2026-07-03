@@ -1,5 +1,6 @@
 import os
 import time
+import allure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,6 +16,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 
 class MyFilesPage(BasePage):
 
+    @allure.step("ПКМ по {object_name} и выбор действия {action_name}")
     def right_click_and_select_action(self, object_name, action_name, max_retries=5):
         """Находит файл по имени, кликает ПКМ и выбирает действие из выпадающего списка, 
         обеспечивая устойчивость к изменениям DOM."""
@@ -29,7 +31,7 @@ class MyFilesPage(BasePage):
                 file_element = xpath.find_located(target_xpath, timeout=10, few=False)
 
                 if file_element:
-                    self.logger.info(f"Попытка {attempt + 1}: Файл '{object_name}' найден.")
+                    self.logger.debug(f"Попытка {attempt + 1}: Файл '{object_name}' найден.")
 
                     # Ожидание полной загрузки элемента перед взаимодействием
                     WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
@@ -41,7 +43,7 @@ class MyFilesPage(BasePage):
                     actions = ActionChains(self.driver)
                     actions.move_to_element(file_element).perform()
                     actions.context_click(file_element).perform()
-                    self.logger.info(f"ПКМ по '{object_name}' выполнен.")
+                    self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
                     action_element = WebDriverWait(self.driver, 5).until(
@@ -50,7 +52,7 @@ class MyFilesPage(BasePage):
 
                     # Кликаем по нужному пункту меню
                     action_element.click()
-                    self.logger.info(f"Действие '{action_name}' выполнено для '{object_name}'.")
+                    self.logger.debug(f"Действие '{action_name}' выполнено для '{object_name}'.")
                     return True
 
             except StaleElementReferenceException:
@@ -124,6 +126,7 @@ class MyFilesPage(BasePage):
             f"Доступные действия для файла типа '{file_type}' с уровнем доступа '{access_level}' (лицензия COLLABORATION {'включена' if collaboration_enabled else 'выключена'}): {availability}")
         return availability
     
+    @allure.step("ПКМ по {file_name} и проверка доступности действий")
     def right_click_and_check_acces(self, file_name, result):
         '''Метод ищет файл по имени в текущем разделе, кликает ПКМ и проверяет доступность действий в соответсвии с уровнем доступа'''
         xpath = XPathFinder(self.driver)
@@ -139,7 +142,7 @@ class MyFilesPage(BasePage):
             end_action_xpath = f'{MyFilesLocators.MY_FILES_DROPDOWN}/td[@title="{in_end}"]'
 
             if file_element:
-                self.logger.info(f"Файл '{file_name}' найден.")
+                self.logger.debug(f"Файл '{file_name}' найден.")
 
                 # Ожидание полной загрузки элемента перед взаимодействием
                 WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
@@ -151,7 +154,7 @@ class MyFilesPage(BasePage):
                 actions = ActionChains(self.driver)
                 actions.move_to_element(file_element).perform()
                 actions.context_click(file_element).perform()
-                self.logger.info(f"ПКМ по '{file_name}' выполнен.")
+                self.logger.debug(f"ПКМ по '{file_name}' выполнен.")
 
                 # Проверка доступности действий
                 errors = []
@@ -172,10 +175,10 @@ class MyFilesPage(BasePage):
                             if has_disabled:
                                 errors.append(f"'{action_name}' должно быть доступно, но содержит класс 'disabled'.")
                             else:
-                                self.logger.info(f"'{action_name}' доступно и кликабельно, класс 'disabled' отсутствует.")
+                                self.logger.debug(f"'{action_name}' доступно и кликабельно, класс 'disabled' отсутствует.")
                         else:
                             if has_disabled:
-                                self.logger.info(f"'{action_name}' содержит класс 'disabled'.")
+                                self.logger.debug(f"'{action_name}' содержит класс 'disabled'.")
                             else:
                                 errors.append(f"'{action_name}' должно быть недоступно, но класс 'disabled' отсутствует.")
                     except Exception as e:
@@ -187,48 +190,51 @@ class MyFilesPage(BasePage):
                         self.logger.error(err)
                     raise AssertionError("Обнаружены ошибки в доступности действий:\n" + "\n".join(errors))
                 else:
-                    self.logger.info(f"Все действия для '{file_name}' соответствуют ожиданиям.")
+                    self.logger.debug(f"Все действия для '{file_name}' соответствуют ожиданиям.")
                     # Ожидаем появления контекстного меню
                     action_element = WebDriverWait(self.driver, 5).until(
                         EC.element_to_be_clickable((By.XPATH, end_action_xpath))
                     )
                     # Кликаем по нужному пункту меню
                     action_element.click()
-                    self.logger.info(f"Действие '{in_end}' выполнено для '{file_name}'.")
+                    self.logger.debug(f"Действие '{in_end}' выполнено для '{file_name}'.")
                     return True
 
         except Exception:
             self.logger.error(f"Не удалось кликнуть ПКМ для '{file_name}'.")
             raise
 
+    @allure.step("Создание файла {file_name} типа {file_type}")
     def create_file(self, file_name, file_type):
         """Создает новый файл в разделе 'Мои файлы' с указанным именем и типом.
         Поддерживаемые типы: "Новый документ","Интерактивный шаблон","Новую папку"
         """
         xpath = XPathFinder(self.driver)
         xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
-        self.logger.info("Кнопка 'Создать' нажата")
+        self.logger.debug("Кнопка 'Создать' нажата")
         xpath.find_clickable(f'{MyFilesLocators.MY_FILES_CREATE_DROPDOWN}[contains(@title, "{file_type}")]',timeout=5).click()
         textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
-        self.logger.info("xpath textarea найден")
+        self.logger.debug("xpath textarea найден")
         textarea.send_keys(file_name)
-        self.logger.info("название файла введено")
+        self.logger.debug("название файла введено")
         textarea.send_keys(Keys.ENTER)
-        self.logger.info(f"Имя файла '{file_name}' введено и подтверждено Enter")
+        self.logger.debug(f"Имя файла '{file_name}' введено и подтверждено Enter")
 
+    @allure.step("Создание папки {file_name} в разделе Шаблоны")
     def create_folder_in_templates(self, file_name):
         """Создает новую папку в разделе 'Шаблоны' с заданным названием.
         """
         xpath = XPathFinder(self.driver)
         xpath.find_clickable(MyFilesLocators.CREATE_TEMPLATES_FOLDER_BUTTON, timeout=5).click()
-        self.logger.info("Кнопка 'Создать' нажата")
+        self.logger.debug("Кнопка 'Создать' нажата")
         textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
-        self.logger.info("xpath textarea найден")
+        self.logger.debug("xpath textarea найден")
         textarea.send_keys(file_name)
-        self.logger.info("название папки введено")
+        self.logger.debug("название папки введено")
         textarea.send_keys(Keys.ENTER)
-        self.logger.info(f"Имя папки '{file_name}' введено и подтверждено Enter")
+        self.logger.debug(f"Имя папки '{file_name}' введено и подтверждено Enter")
 
+    @allure.step("Создание анкеты {file_name} из шаблона")
     def create_docz_from_dotx_section(self, file_name, directory=None, section_name=None):
         '''Метод создаёт анкету из раздела шаблоны и сохраняет её в указанную секцию (опионально) или директорию (опционально), с новым названием (Опционально)
         По умолчанию - Корень Мои файлы, название шаблона'''
@@ -238,8 +244,9 @@ class MyFilesPage(BasePage):
         input_element.send_keys(file_name)
         # Кликаем по кнопке "Сохранить здесь"
         self.xpath.find_clickable(MyFilesLocators.QUESTIONNAIRE_CONFIRM_BUTTON, timeout=3, few=False).click()
-        self.logger.info(f"Создана анкета с именем '{file_name}'.")
+        self.logger.debug(f"Создана анкета с именем '{file_name}'.")
 
+    @allure.step("Создание общего диска {drive_name}")
     def create_drive(self, drive_name, side_menu=False):
         """Создает новый общий диск с указанным именем."""
         xpath = XPathFinder(self.driver)
@@ -250,22 +257,22 @@ class MyFilesPage(BasePage):
             share_drive_xpath = f'{BaseLocators.SIDE_MENU_BUTTONS}//span[text()="Общие диски"]/ancestor::a'
             share_drive_element = xpath.find_visible(share_drive_xpath, timeout=5)
             actions.move_to_element(share_drive_element).perform()
-            self.logger.info("Наведение курсора на кнопку 'Общие диски' в боковом меню выполнено")
+            self.logger.debug("Наведение курсора на кнопку 'Общие диски' в боковом меню выполнено")
             # Создаем общий диск
             xpath.find_clickable(MyFilesLocators.SIDE_MENU_ADD_SHARE_DRIVE, timeout=5).click()
-            self.logger.info("Кнопка 'Создать общий диск' нажата")
+            self.logger.debug("Кнопка 'Создать общий диск' нажата")
             textarea = xpath.find_visible(MyFilesLocators.SIDE_MENU_TEXTAREA_SHARE_DRIVE, timeout=5)
-            self.logger.info("xpath textarea найден")
+            self.logger.debug("xpath textarea найден")
             textarea.send_keys(drive_name)
-            self.logger.info(f"Имя общего диска '{drive_name}' введено")
+            self.logger.debug(f"Имя общего диска '{drive_name}' введено")
             textarea.send_keys(Keys.ENTER)
-            self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")
+            self.logger.debug(f"Имя общего диска '{drive_name}' подтверждено Enter")
         else:
             xpath.find_clickable(MyFilesLocators.MY_FILES_CREATE, timeout=5).click()
-            self.logger.info("Кнопка 'Создать' нажата")
+            self.logger.debug("Кнопка 'Создать' нажата")
             textarea = xpath.find_visible(MyFilesLocators.MY_FILES_TEXTAREA, timeout=5)
-            self.logger.info("xpath textarea найден")
+            self.logger.debug("xpath textarea найден")
             textarea.send_keys(drive_name)
-            self.logger.info(f"Имя общего диска введено")
+            self.logger.debug(f"Имя общего диска введено")
             textarea.send_keys(Keys.ENTER)
-            self.logger.info(f"Имя общего диска '{drive_name}' подтверждено Enter")
+            self.logger.debug(f"Имя общего диска '{drive_name}' подтверждено Enter")

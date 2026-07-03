@@ -15,6 +15,9 @@ from utils.get_date import get_timestamp
     reason="Тест запускается только локально. Без риска для данных на тестовых/клиентских сборках"
 )
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Автоматизации')
+@allure.title('Автоматизация по сохранению данных в БД')
 def test_automate_save_database(request, error_handler, logger, admin_driver, setup_create_delete_drive, setup_create_delete_process, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет работу автоматизации по сохранению данных в БД (только для локального теста)"""
-    assert False, "Напишу, когда буду заниматься коробкой"
+    assert False, "Логики пока нет"

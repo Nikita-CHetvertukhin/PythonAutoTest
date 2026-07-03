@@ -1,1 +1,40 @@
-import pytestimport time  # Импортируем модуль time для работы с задержками в ожидании прогрессаfrom locators.generation_locators import GenerationLocators  # Импортируем локаторы для элементов страницыfrom pages.base_page import BasePage  # Наследуем базовую страницу, чтобы использовать методы поиска элементовclass GenerationPage(BasePage):    """Класс, представляющий страницу генерации схемы данных.    Наследует BasePage, что позволяет использовать общие методы работы со страницей.    """        # Методы взаимодействия        def wait_for_100_percent(self, timeout=120):        """Ожидание, пока прогресс генерации не станет '100%'.        :param timeout: Общее время ожидания в секундах.        :return: True, если текст стал '100%', иначе False.        """        self.logger.info("Генерация схемы данных началась")        start_time = time.time()        while time.time() - start_time < timeout:            try:                # Поиск элемента                element = self.xpath.find_visible(GenerationLocators.GENERATION_PROGRESS)                # Проверка текста элемента                if element.text == "100%":                    self.logger.info("Элемент достиг значения '100%'")                    return True                else:                    self.logger.info(f"Прогресс генерации: '{element.text}'. Ожидание продолжается...")            except Exception as e:                self.logger.warning(f"Элемент не найден: {e}")                return False            # Ожидание перед следующей проверкой            time.sleep(1)        self.logger.error(f"Ожидание {timeout} секунд истекло. Прогресс не достиг '100%'")        return False
+import pytest
+import allure
+import time  # Импортируем модуль time для работы с задержками в ожидании прогресса
+from locators.generation_locators import GenerationLocators  # Импортируем локаторы для элементов страницы
+from pages.base_page import BasePage  # Наследуем базовую страницу, чтобы использовать методы поиска элементов
+
+class GenerationPage(BasePage):
+    """Класс, представляющий страницу генерации схемы данных.
+    Наследует BasePage, что позволяет использовать общие методы работы со страницей.
+    """
+    
+    # Методы взаимодействия
+    
+    @allure.step("Ожидаение завершения генерации в течение {timeout} секунд")
+    def wait_for_100_percent(self, timeout=120):
+        """Ожидание, пока прогресс генерации не станет '100%'.
+        :param timeout: Общее время ожидания в секундах.
+        :return: True, если текст стал '100%', иначе False.
+        """
+        self.logger.debug("Генерация схемы данных началась")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                # Поиск элемента
+                element = self.xpath.find_visible(GenerationLocators.GENERATION_PROGRESS)
+                # Проверка текста элемента
+                if element.text == "100%":
+                    self.logger.debug("Элемент достиг значения '100%'")
+                    return True
+                else:
+                    self.logger.debug(f"Прогресс генерации: '{element.text}'. Ожидание продолжается...")
+            except Exception as e:
+                self.logger.warning(f"Элемент не найден: {e}")
+                return False
+
+            # Ожидание перед следующей проверкой
+            time.sleep(1)
+
+        self.logger.error(f"Ожидание {timeout} секунд истекло. Прогресс не достиг '100%'")
+        return False

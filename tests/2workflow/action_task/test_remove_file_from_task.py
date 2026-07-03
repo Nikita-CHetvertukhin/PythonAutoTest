@@ -29,6 +29,9 @@ file_name = f"{get_uuid()}_remove_file_from_task_{get_timestamp()}"
     )],
     indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title('Удаления документа из задачи')
 def test_remove_file_from_task(error_handler, logger, admin_driver, setup_create_delete_file, setup_create_delete_task):
     """Тест проверяет функционал удаления прикрепленного документа в задаче"""
     file_name, my_files_page, xpath = setup_create_delete_file

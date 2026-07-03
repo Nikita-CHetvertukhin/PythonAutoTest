@@ -9,6 +9,9 @@ import allure
         "skip_cleanup": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Workflow')
+@allure.feature('Действия с задачей')
+@allure.title("Удаление системной задачи через 'ПКМ' - 'Удалить'")
 def test_deleting_simple_task(error_handler, logger, admin_driver, setup_create_delete_task):
     """Тест проверяет Удаление системной простой задачи через ПКМ - Удалить"""
     task_name, my_tasks_page, xpath = setup_create_delete_task

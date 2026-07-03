@@ -15,6 +15,9 @@ from utils.get_date import get_timestamp, get_uuid
     "folder_in_templates": True
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Публикация')
+@allure.title("Публикация шаблона в папку")
 def test_publish_dotx_to_folder(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет публикацию шаблона в папку в разделе 'Шаблоны'"""
     file_name, my_files_page, xpath = setup_create_delete_file

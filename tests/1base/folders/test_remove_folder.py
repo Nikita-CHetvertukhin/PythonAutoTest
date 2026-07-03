@@ -12,6 +12,9 @@ import allure
     "file_type": "Новую папку",
 }], indirect=True)
 @exception_handler  # Декоратор обрабатывает исключения и делает скриншот
+@allure.epic('Коробка')
+@allure.feature('Папки')
+@allure.title('Удаление папки')
 def test_remove_folder(error_handler, logger, admin_driver, setup_create_delete_file):
     """Тест проверяет удаление папки"""
     file_name, my_files_page, xpath = setup_create_delete_file
