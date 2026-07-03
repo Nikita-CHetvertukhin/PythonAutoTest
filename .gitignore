@@ -1,7 +1,6 @@
 /.idea
 /.vs
 **/__pycache__/
-/reports
 /log
 /settings/variables.py
 /allure_results

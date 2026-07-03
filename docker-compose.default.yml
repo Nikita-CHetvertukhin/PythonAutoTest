@@ -7,8 +7,6 @@ services:
     volumes:
         #  Сырые результаты Allure отдаются сервису allure-docker-service : Константа
         - allure_results:/app/allure_results
-        #  Твой путь до папки сохранения логов и загрузок : Константа
-        - "D:\\Dev\\PythonAutoTest\\reports:/app/report"
     # Путь до скрипта запуска внутри контейнера
     entrypoint: "/app/entrypoint.sh"
     depends_on:

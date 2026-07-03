@@ -117,10 +117,6 @@ pytest -m prepare --browser chrome
 - docker-compose.yml
 ```
 
-- Установить путь копирования логов и загрузок из контейнера на хост машину (у сервисов `dz_autotest` и `allure`), например:
-```bash
-- "D:\\Dev\\PythonAutoTest\\reports:/app/report"
-```
 - При необходимости изменить название образа и тег:
 ```bash
 image: dz_autotest:dev
@@ -145,6 +141,8 @@ docker build -t dz_autotest:dev .
 </details> 
 
 <details><summary>✅ Запустить контейнер с тестами:</summary>
+
+При первом запуске дополнительно поднимется сервис `allure` (генератор отчётов) — он объявлен как зависимость `dz_autotest` и стартует автоматически, вручную поднимать не нужно. Образ `frankescobar/allure-docker-service` при этом качается с Docker Hub, так что для первого запуска нужен интернет (в отличие от `dz_autotest`, который собирается локально из `Dockerfile`).
 
 Аргументы -m и --browser те же, что и при запуске тестов локально
 ```bash
@@ -171,7 +169,7 @@ docker compose run --rm dz_autotest -m base --browser chrome
   http://localhost:5050/allure-docker-service/projects/doczilla-pro/reports/latest/index.html
   ```
 
-  Текстовые логи и загрузки сохраняются по пути, указанному в volumes файла `docker-compose.yml`.
+  Флаг `--rm` в команде запуска тестов относится только к `dz_autotest` — контейнер `allure` после прогона продолжает работать в фоне, чтобы отчёт с историей был доступен в любой момент. Остановить его вручную: `docker compose stop allure` (при следующем запуске тестов поднимется снова сам).
 </details>
 
 <details>

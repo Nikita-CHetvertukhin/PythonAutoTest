@@ -10,20 +10,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tar \
     wget \
     git && \
-    apt-get clean
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Установка Google Chrome
+# Добавление репозиториев Google Chrome и Microsoft Edge (без установки — экономим слой)
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y google-chrome-stable && apt-get clean
+    wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - && \
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list
 
-# Установка Firefox
-RUN apt-get update && apt-get install -y firefox-esr && apt-get clean
-
-# Установка Microsoft Edge
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - && \
-    echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list && \
-    apt-get update && apt-get install -y microsoft-edge-stable && apt-get clean
+# Установка Chrome, Firefox, Edge одним слоем
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    google-chrome-stable \
+    firefox-esr \
+    microsoft-edge-stable && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Рабочая директория и переменная PYTHONPATH
 WORKDIR /app
@@ -35,9 +35,6 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 # Копирование всех остальных файлов проекта
 COPY . .
-
-# Подготовка entrypoint
-RUN apt-get update && apt-get install -y dos2unix && dos2unix /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Точка входа

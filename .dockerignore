@@ -1,0 +1,29 @@
+# VCS / IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+.vs
+
+# Виртуальные окружения — в образе свои зависимости ставятся через requirements.txt
+env
+.venv
+
+# Кэши
+__pycache__
+**/__pycache__
+.pytest_cache
+
+# Рантайм-данные — генерируются заново внутри контейнера
+allure_results
+reports
+log
+resources/downloads
+resources/profiles
+
+# Windows-бинарники драйверов — в Linux-контейнере бесполезны
+resources/drivers/*.exe
+
+# Локальный docker-compose с реальными TEST_URL/WORKSPACE — не нужен внутри образа
+docker-compose.yml
