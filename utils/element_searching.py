@@ -21,9 +21,14 @@ class XPathFinder:
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
-        WebDriverWait(self.driver, wait_time).until(
-            EC.presence_of_element_located((By.XPATH, path))
-        )
+        try:
+            WebDriverWait(self.driver, wait_time).until(
+                EC.presence_of_element_located((By.XPATH, path))
+            )
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"find_located: элемент не появился в DOM за {wait_time}с. XPath: {path}"
+            ) from e
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
 
     def find_visible(self, path, timeout=None, few=None, scroll=False):
@@ -31,9 +36,14 @@ class XPathFinder:
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
-        element = WebDriverWait(self.driver, wait_time).until(
-            EC.presence_of_element_located((By.XPATH, path))
-        )
+        try:
+            element = WebDriverWait(self.driver, wait_time).until(
+                EC.presence_of_element_located((By.XPATH, path))
+            )
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"find_visible: элемент не стал видимым за {wait_time}с. XPath: {path}"
+            ) from e
         if scroll:
             self.driver.execute_script("arguments[0].scrollIntoView();", element)
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
@@ -47,9 +57,14 @@ class XPathFinder:
             element = self.driver.find_element(By.XPATH, path)
             self.driver.execute_script("arguments[0].scrollIntoView();", element)
         # Проверяем кликабельность
-        element = WebDriverWait(self.driver, wait_time).until(
-            EC.element_to_be_clickable((By.XPATH, path))
-        )
+        try:
+            element = WebDriverWait(self.driver, wait_time).until(
+                EC.element_to_be_clickable((By.XPATH, path))
+            )
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"find_clickable: элемент не стал кликабельным за {wait_time}с. XPath: {path}"
+            ) from e
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
 
     def find_invisible(self, path, timeout=None, few=None):
@@ -57,9 +72,14 @@ class XPathFinder:
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
-        WebDriverWait(self.driver, wait_time).until(
-            EC.invisibility_of_element_located((By.XPATH, path))
-        )
+        try:
+            WebDriverWait(self.driver, wait_time).until(
+                EC.invisibility_of_element_located((By.XPATH, path))
+            )
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"find_invisible: элемент не исчез/не стал невидимым за {wait_time}с. XPath: {path}"
+            ) from e
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
 
     def not_find(self, path: str, timeout: int = None, few: bool = None):

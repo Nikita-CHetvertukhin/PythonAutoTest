@@ -113,11 +113,15 @@ def admin_driver(driver, logger, error_handler):
 
     driver.execute_script(WEBSOCKET_PATCH) # Отключаем вебсокеты для повышения стабильности тестов в ФС
 
-    login_page.enter_username(ADMIN_LOGIN)
-    login_page.enter_password(ADMIN_PASSWORD)
-    login_page.click_login()
+    try:
+        login_page.enter_username(ADMIN_LOGIN)
+        login_page.enter_password(ADMIN_PASSWORD)
+        login_page.click_login()
 
-    assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
+        assert login_page.check_account_button(), "Элемент личного кабинета не найден. Авторизация не удалась."
+    except Exception as e:
+        error_handler.handle_exception(e, critical=False)
+        raise
     # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
     error_handler.clear_browser_logs()
 
@@ -588,10 +592,14 @@ def login_user(request, driver, logger, username, password):
         error_handler = ErrorHandler(driver, logger)
         login_page = LoginPage(driver, logger)
 
-        login_page.enter_username(username)
-        login_page.enter_password(password)
-        login_page.click_login()
-        assert login_page.check_account_button(), "Авторизация не удалась."
+        try:
+            login_page.enter_username(username)
+            login_page.enter_password(password)
+            login_page.click_login()
+            assert login_page.check_account_button(), "Авторизация не удалась."
+        except Exception as e:
+            error_handler.handle_exception(e, critical=False)
+            raise
         error_handler.clear_browser_logs()
 
         yield driver
@@ -601,10 +609,14 @@ def login_user(request, driver, logger, username, password):
         error_handler = ErrorHandler(driver, logger)
         login_page = LoginPage(driver, logger)
 
-        login_page.enter_username(username)
-        login_page.enter_password(password)
-        login_page.click_login()
-        assert login_page.check_account_button(), "Авторизация не удалась."
+        try:
+            login_page.enter_username(username)
+            login_page.enter_password(password)
+            login_page.click_login()
+            assert login_page.check_account_button(), "Авторизация не удалась."
+        except Exception as e:
+            error_handler.handle_exception(e, critical=False)
+            raise
         error_handler.clear_browser_logs()
 
         yield driver

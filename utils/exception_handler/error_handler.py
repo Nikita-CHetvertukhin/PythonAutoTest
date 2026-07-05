@@ -33,6 +33,17 @@ class ErrorHandler:
         if log_text:
             allure.attach(log_text, name="error log", attachment_type=allure.attachment_type.TEXT)
 
+    def _attach_page_state(self):
+        """Прикрепляет к Allure URL на момент ошибки (до refresh_and_wait, который его может изменить)."""
+        if "pytest" not in sys.modules:
+            return
+        try:
+            current_url = self.driver.current_url
+        except WebDriverException as e:
+            self.logger.warning(f"Не удалось получить URL: {e}")
+            return
+        allure.attach(current_url, name="URL на момент ошибки", attachment_type=allure.attachment_type.TEXT)
+
     def handle_exception(self, exception, screenshot_name=None, critical=True):
         """
         Обрабатывает исключение: сохраняет скриншот, логирует ошибку и прикрепляет к отчету Allure.
@@ -53,6 +64,7 @@ class ErrorHandler:
         if "pytest" in sys.modules:
             with open(screenshot_path, "rb") as image_file:
                 allure.attach(image_file.read(), name=f"Ошибка: {exception}", attachment_type=allure.attachment_type.PNG)
+        self._attach_page_state()
         self._attach_test_log()
 
         # Если ошибка критическая - обновляем страницу
@@ -85,6 +97,7 @@ class ErrorHandler:
                     allure.attach(error_messages, name="Ошибки в консоли", attachment_type=allure.attachment_type.TEXT)
                     with open(screenshot_path, "rb") as image_file:
                         allure.attach(image_file.read(), name="Скриншот при ошибке в консоли", attachment_type=allure.attachment_type.PNG)
+                self._attach_page_state()
                 self._attach_test_log()
 
                 pytest.fail("Обнаружены ошибки в консоли браузера:\n" + error_messages)

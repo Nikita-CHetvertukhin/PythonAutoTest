@@ -23,22 +23,22 @@ class LoginPage(BasePage):
             if log_enabled:
                 self.logger.error(f"Ошибка при работе с полем логина: {e}")
 
-    @allure.step("Ввод пароля")
     def enter_password(self, password, log_enabled=False):
         """Метод для ввода пароля."""
-        try:
-            element = self.xpath.find_visible(LoginLocators.PASSWORD_INPUT)
-            element.clear()
-            if log_enabled:
-                self.logger.debug("Поле пароля очищено успешно.")
+        with allure.step("Ввод пароля"):
+            try:
+                element = self.xpath.find_visible(LoginLocators.PASSWORD_INPUT)
+                element.clear()
+                if log_enabled:
+                    self.logger.debug("Поле пароля очищено успешно.")
 
-            element.send_keys(password)
-            if log_enabled:
-                self.logger.debug("Пароль успешно введён.")
+                element.send_keys(password)
+                if log_enabled:
+                    self.logger.debug("Пароль успешно введён.")
 
-        except Exception as e:
-            if log_enabled:
-                self.logger.error(f"Ошибка при работе с полем пароля: {e}")
+            except Exception as e:
+                if log_enabled:
+                    self.logger.error(f"Ошибка при работе с полем пароля: {e}")
 
     @allure.step("Клик по кнопке 'Войти'")
     def click_login(self, log_enabled=False):
