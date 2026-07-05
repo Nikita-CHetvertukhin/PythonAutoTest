@@ -22,9 +22,11 @@ def exception_handler(func):
         except MinorIssue as e:
             with allure.step("Некритическая ошибка"):
                 error_handler.handle_exception(e, critical=False)  # Логируем и создаем скриншотб не перезагружаю старницу
-                pytest.mark.xfail(run=True, reason=f"Обработанная некритическая ошибка: {e}")
 
-        except Exception as e:
+        except (Exception, pytest.fail.Exception) as e:
+            # pytest.fail() бросает _pytest.outcomes.Failed, который наследуется от BaseException,
+            # а не Exception — без явного перечисления такие падения проходили бы мимо этого блока
+            # без скриншота/error log.
             error_handler.handle_exception(e)  # Логируем и создаем скриншот
             raise
 

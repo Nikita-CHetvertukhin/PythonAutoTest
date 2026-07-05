@@ -2,7 +2,7 @@ import pytest  # Импорт библиотеки для работы с тес
 from pages.login_page import LoginPage
 from locators.login_locators import LoginLocators
 from utils.exception_handler.decorator_error_handler import exception_handler # Декоратор для обработки исключений
-from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD, USER1_LOGIN, USER1_PASSWORD  # Данные для тестирования авторизации
+from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD, EXPERT_LOGIN, EXPERT_PASSWORD, USER1_LOGIN, USER1_PASSWORD, USER2_LOGIN, USER2_PASSWORD, USER3_LOGIN, USER3_PASSWORD, USER4_LOGIN, USER4_PASSWORD, USER5_LOGIN, USER5_PASSWORD  # Данные для тестирования авторизации
 import allure
 
 @allure.severity(allure.severity_level.BLOCKER) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER
@@ -12,11 +12,18 @@ import allure
     ("Некорректный логин", ADMIN_LOGIN + "123", ADMIN_PASSWORD, True),  # Ожидаем ошибку из-за неверного логина
     ("Некорректный пароль", ADMIN_LOGIN, ADMIN_PASSWORD + "123", True),  # Ожидаем ошибку из-за неверного пароля
     ("Некорректные логин и пароль", ADMIN_LOGIN + "123", ADMIN_PASSWORD + "123", True),  # Ожидаем ошибку из-за неверного пароля
-    ("Успешная авторизация ADMIN", ADMIN_LOGIN, ADMIN_PASSWORD, False)  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация ADMIN", ADMIN_LOGIN, ADMIN_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация EXPERT", EXPERT_LOGIN, EXPERT_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация USER1", USER1_LOGIN, USER1_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация USER2", USER2_LOGIN, USER2_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация USER3", USER3_LOGIN, USER3_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация USER4", USER4_LOGIN, USER4_PASSWORD, False),  # Ожидаем успешную авторизацию без ошибок
+    ("Успешная авторизация USER5", USER5_LOGIN, USER5_PASSWORD, False)  # Ожидаем успешную авторизацию без ошибок
 ])
 @allure.epic('Доступность сборки')
 @allure.feature('Доступность сборки')
 @allure.title('Проверка авторизации: {test_suite[0]}')
+@exception_handler
 def test_authorization(error_handler, logger, driver, test_suite):
     """Тест авторизации в системе с различными комбинациями логина и пароля."""
     suite_name, login, password, expect_error = test_suite # Распаковываем параметры теста

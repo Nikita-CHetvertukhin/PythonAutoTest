@@ -2,7 +2,7 @@ import pytest
 import allure
 from pages.my_files_page import MyFilesPage
 from locators.base_locators import BaseLocators
-from utils.exception_handler.decorator_error_handler import exception_handler, MinorIssue
+from utils.exception_handler.decorator_error_handler import exception_handler
 
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.workflow_smoke

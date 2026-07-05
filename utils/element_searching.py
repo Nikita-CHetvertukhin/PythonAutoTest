@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
+from utils.active_driver_tracker import set_active_driver
 
 class XPathFinder:
     """Утилиты для поиска элементов по XPath с использованием Selenium."""
@@ -18,6 +19,7 @@ class XPathFinder:
 
     def find_located(self, path, timeout=None, few=None):
         """Проверяет, что элемент(ы) присутствует в DOM."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
@@ -33,6 +35,7 @@ class XPathFinder:
 
     def find_visible(self, path, timeout=None, few=None, scroll=False):
         """Проверяет, что элемент(ы) видим."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
@@ -50,6 +53,7 @@ class XPathFinder:
 
     def find_clickable(self, path, timeout=None, few=None, scroll=False):
         """Проверяет, что элемент(ы) кликабелен."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
         # Ищем и скроллим до элемента
@@ -69,6 +73,7 @@ class XPathFinder:
 
     def find_invisible(self, path, timeout=None, few=None):
         """Проверяет, что элемент(ы) не видим."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
@@ -82,8 +87,48 @@ class XPathFinder:
             ) from e
         return self.driver.find_elements(By.XPATH, path) if search_mode else self.driver.find_element(By.XPATH, path)
 
+    def wait_visible(self, element, timeout=None):
+        """Ждёт, пока уже найденный WebElement станет видимым."""
+        set_active_driver(self.driver)
+        wait_time = timeout if timeout is not None else self.timeout
+
+        try:
+            WebDriverWait(self.driver, wait_time).until(EC.visibility_of(element))
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"wait_visible: элемент не стал видимым за {wait_time}с."
+            ) from e
+        return element
+
+    def wait_clickable(self, element, timeout=None):
+        """Ждёт, пока уже найденный WebElement станет кликабельным."""
+        set_active_driver(self.driver)
+        wait_time = timeout if timeout is not None else self.timeout
+
+        try:
+            WebDriverWait(self.driver, wait_time).until(EC.element_to_be_clickable(element))
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"wait_clickable: элемент не стал кликабельным за {wait_time}с."
+            ) from e
+        return element
+
+    def wait_invisible(self, element, timeout=None):
+        """Ждёт, пока уже найденный WebElement станет невидимым/исчезнет."""
+        set_active_driver(self.driver)
+        wait_time = timeout if timeout is not None else self.timeout
+
+        try:
+            WebDriverWait(self.driver, wait_time).until(EC.invisibility_of_element(element))
+        except TimeoutException as e:
+            raise TimeoutException(
+                f"wait_invisible: элемент не исчез/не стал невидимым за {wait_time}с."
+            ) from e
+        return element
+
     def not_find(self, path: str, timeout: int = None, few: bool = None):
         """Проверяет, что элемент(ы) отсутствуют в DOM по заданному XPath."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
@@ -104,6 +149,7 @@ class XPathFinder:
 
     def wait_until_elements_not_present(self, path: str, timeout: int = None, few: bool = None):
         """Ждёт, пока элемент(ы) исчезнут из DOM."""
+        set_active_driver(self.driver)
         wait_time = timeout if timeout is not None else self.timeout
         search_mode = few if few is not None else self.few
 
@@ -123,5 +169,6 @@ class XPathFinder:
         :param few: Если True, ищет список элементов, иначе один (по умолчанию используется `self.few`).
         :return: Один или список `WebElement`, найденных внутри `element`.
         """
+        set_active_driver(self.driver)
         search_mode = few if few is not None else self.few
         return element.find_elements(By.XPATH, path) if search_mode else element.find_element(By.XPATH, path)

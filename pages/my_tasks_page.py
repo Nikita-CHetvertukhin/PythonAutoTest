@@ -173,9 +173,7 @@ class MyTasksPage(BasePage):
                 self.driver.switch_to.active_element.send_keys(" ")
                 self.logger.debug(f"Появился выпадающйи списко урвоней доступа")
 
-                level_elements = WebDriverWait(self.driver, 3).until(
-                    EC.presence_of_all_elements_located((By.XPATH, MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVELS))
-                )
+                level_elements = self.xpath.find_located(MyTasksLocators.MY_TASKS_TASK_ACCESS_LEVELS, timeout=3, few=True)
 
                 for level in level_elements:
                     if level.get_attribute("title") == access_level:
@@ -269,8 +267,8 @@ class MyTasksPage(BasePage):
                     # self.driver.execute_script("arguments[0].scrollIntoView(true);", process_element)
 
                     # Ожидание полной загрузки элемента перед взаимодействием
-                    WebDriverWait(self.driver, 5).until(EC.visibility_of(process_element))
-                    WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(process_element))
+                    xpath.wait_visible(process_element, timeout=5)
+                    xpath.wait_clickable(process_element, timeout=5)
 
                     time.sleep(0.5)  # Небольшая пауза для стабильности
 
@@ -281,9 +279,7 @@ class MyTasksPage(BasePage):
                     self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
-                    action_element = WebDriverWait(self.driver, 5).until(
-                        EC.presence_of_element_located((By.XPATH, action_xpath))
-                    )
+                    action_element = xpath.find_located(action_xpath, timeout=5)
 
                     # Кликаем по нужному пункту меню
                     action_element.click()

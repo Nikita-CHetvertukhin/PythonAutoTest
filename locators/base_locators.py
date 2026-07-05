@@ -64,21 +64,21 @@ class BaseLocators:
     '''SHARE WINDOW'''
 
     # Инпут ввода имени пользователя или группы
-    SHARE_INPUT = '//div[contains(@class,"share-dialog")]//input[contains(@placeholder,"Имя")]'
+    SHARE_INPUT = '//div[contains(@class,"share x-dialog")]//input[contains(@placeholder,"Имя")]'
     # Элементы выпадашки с пользователями или группами
-    SHARE_DROPDOWN = '//div[contains(@class,"share-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"headline")]'
+    SHARE_DROPDOWN = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"headline")]'
     # Список строк пользователей или групп с доступом
-    SHARE_LIST = '//div[contains(@class,"share-dialog")]//div[contains(@class,"share-list") and not(contains(@class,"link"))]/div[(@class="x-box x-item") or (@class="x-box x-item x-hover") or (@class="x-box x-item group") or (@class="x-box x-item group x-hover")]'
+    SHARE_LIST = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"x-list") and not(contains(@class,"link"))]/div[contains(@class,"x-list-item")]'
     #Развернуть список уровней доступа (применяется только inside элемента строки в share-list)
     SHARE_TRIGGER_INSIDE = '/div[contains(@class,"x-combo")]'
     # Развернуть список уровней доступа в инпуте
-    SHARE_TRIGGER_INPUT = '//div[contains(@class,"share-dialog")]//div[contains(@class,"x-edit")][2]/div[contains(@class,"x-trigger")]'
+    SHARE_TRIGGER_INPUT = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"x-edit")][2]/div[contains(@class,"x-trigger")]'
     # Элементы списка уровней доступа
-    SHARE_LEVEL = '//div[contains(@class,"share-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"x-item") and not(contains(@class,"display-none"))]/div[contains(@class,"headline")]'
+    SHARE_LEVEL = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"x-item") and not(contains(@class,"display-none"))]/div[contains(@class,"headline")]'
     # Кнопка "Пригласить"
-    SHARE_INVITE = '//div[contains(@class,"share-dialog")]//div[contains(@class,"invite")]'
+    SHARE_INVITE = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"invite")]'
     # Кнопка "Закрыть"
-    SHARE_CLOSE = '//div[contains(@class,"share-dialog")]//div[contains(@class,"close-button")]'
+    SHARE_CLOSE = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"close-button")]'
 
     '''PUBLISH WINDOW'''
 
@@ -93,7 +93,7 @@ class BaseLocators:
     # Элементы выпадашки с пользователями или группами
     PUBLISH_DROPDOWN = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[contains(@class,"x-input") and not(contains(@class,"display-none"))]/div[contains(@class,"x-popup") and not(contains(@class,"display-none"))]/div[contains(@class,"x-menu")]//div[contains(@class,"x-headline")]'
     # Список УЗ или групп на публикацию
-    PUBLISH_LIST = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[(@class="x-box x-item") or (@class="x-box x-item x-hover")]'
+    PUBLISH_LIST = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-body")]/div[contains(@class,"x-list")]/div[contains(@class,"x-item")and contains(@class,"x-box")and contains(@class,"x-list-item")]'
     # Кнопка "Готово"
     PUBLISH_FINISH = '//div[contains(@class,"publish-dialog")]/div[contains(@class,"x-footer")]/div[contains(@class,"primary")]'
     # Кнопка "Отменить"

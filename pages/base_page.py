@@ -1,4 +1,5 @@
 import inspect
+import logging
 import allure
 from settings.variables import ADMIN_LOGIN, ADMIN_PASSWORD_MD5
 import datetime
@@ -30,8 +31,12 @@ class BasePage:
         :param logger: Логгер для ведения журнала событий.
         """
         self.driver = driver
-        self.logger = logger
-        self.xpath = XPathFinder(driver)  
+        # У драйвера может быть проставлен account_label (admin/expert/user1...) после логина —
+        # оборачиваем логгер, чтобы в combo-тестах с несколькими УЗ в одном потоке было видно,
+        # какой аккаунт написал конкретную строку лога.
+        account_label = getattr(driver, "account_label", None)
+        self.logger = logging.LoggerAdapter(logger, {"account": account_label}) if account_label else logger
+        self.xpath = XPathFinder(driver)
 
     @allure.step("Выход из учетной записи")
     def exit_from_account(self):
@@ -391,14 +396,10 @@ class BasePage:
         # Если установка доступа
         if action == "set":
             for login, level in logins_and_access:
-                input_element = WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INPUT))
-                )
+                input_element = self.xpath.find_clickable(BaseLocators.SHARE_INPUT, timeout=5)
                 input_element.send_keys(login)
 
-                dropdown_elements = WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_DROPDOWN))
-                )
+                dropdown_elements = self.xpath.find_located(BaseLocators.SHARE_DROPDOWN, timeout=5, few=True)
 
                 for element in dropdown_elements:
                     if element.text == login:
@@ -408,9 +409,7 @@ class BasePage:
 
                 # Открыть выпадашку и устанвоить доступ
                 self.xpath.find_clickable(BaseLocators.SHARE_TRIGGER_INPUT, timeout=5).click()
-                level_elements = WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
-                )
+                level_elements = self.xpath.find_located(BaseLocators.SHARE_LEVEL, timeout=5, few=True)
                 for level_element in level_elements:
                     if level_element.text.strip() == level:  # сравниваем текст
                         ancestor_div = level_element.find_element(By.XPATH, "./ancestor::div[1]")
@@ -422,29 +421,22 @@ class BasePage:
                         break
 
                 # Пригласить
-                invite_button = WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, BaseLocators.SHARE_INVITE))
-                )
+                invite_button = self.xpath.find_clickable(BaseLocators.SHARE_INVITE, timeout=5)
                 invite_button.click()
 
                 self.logger.debug(f"Доступ для '{login}' успешно установлен на уровень '{level}'.")
 
         if action == "edit":
             for login, level in logins_and_access:
-                current_setting = None
-                try:
-                    current_setting = WebDriverWait(self.driver, 1).until(
-                        EC.presence_of_element_located((By.XPATH, f'{BaseLocators.SHARE_LIST}/div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]'))
-                    )
-                except TimeoutException:
-                    raise TimeoutException(f"Установленный доступ не найден: логин - {login}")
+                current_setting = self.xpath.find_located(
+                    f'{BaseLocators.SHARE_LIST}//div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]',
+                    timeout=1
+                )
                 current_setting.click()
                 access_trigger = current_setting.find_element(By.XPATH,  f'.{BaseLocators.SHARE_TRIGGER_INSIDE}')
                 access_trigger.click()
 
-                level_elements = WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_all_elements_located((By.XPATH, BaseLocators.SHARE_LEVEL))
-                )
+                level_elements = self.xpath.find_located(BaseLocators.SHARE_LEVEL, timeout=5, few=True)
 
                 for level_element in level_elements:
                     if level_element.text.strip() == level:  # сравниваем текст
@@ -494,7 +486,7 @@ class BasePage:
                 ActionChains(self.driver).move_to_element(existing_publish[i]).perform()
                 time.sleep(0.5)
                 # Увеличиваем индекс на 1, т.к. в xpath индексация с 1
-                target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]/div[contains(@class,"x-cross")]'
+                target_xpath = f'{BaseLocators.PUBLISH_LIST}[{i+1}]//div[contains(@class,"x-cross")]'
                 self.logger.debug(f"Путь до закрытия = {target_xpath}")
                 self.xpath.find_clickable(target_xpath, timeout=3).click()
         if directory:
@@ -511,9 +503,9 @@ class BasePage:
             # Проверка, что появилась запись на публикацию
             try:
                 if not is_group:
-                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}/div[contains(@class,"headline") and (text()="{login}")]')
+                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//div[contains(@class,"headline") and (text()="{login}")]')
                 else:
-                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}/div[contains(@class,"headline") and (text()="{login} (Группа)")]')
+                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//div[contains(@class,"headline") and (text()="{login} (Группа)")]')
             except Exception as e:
                 self.logger.error(f"Ошибка при добавлении логина/группы '{login}': {e}")
                 raise RuntimeError(f"Публикация прервана: логин/группа '{login}' не появился(а) в списке") from e

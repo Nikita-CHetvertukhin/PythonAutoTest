@@ -13,10 +13,11 @@ import io
 import logging
 #Локальный импорт
 from utils.browser_driver import BrowserDriver
-from utils.exception_handler.configure_logging import configure_logging
+from utils.exception_handler.configure_logging import configure_logging, AccountDefaultFilter
 from utils.exception_handler.decorator_error_handler import exception_handler, MinorIssue
 from utils.exception_handler.error_handler import ErrorHandler
 from utils.element_searching import XPathFinder
+from utils.active_driver_tracker import set_active_driver
 from pages.login_page import LoginPage
 from locators.base_locators import BaseLocators
 from settings.variables import *
@@ -64,13 +65,19 @@ def driver(browser_type):
     """Создание драйвера с параметризацией браузера"""
     driver_instance = BrowserDriver(browser_type=browser_type)
     driver = driver_instance.initialize_driver()
+    # Базовое значение для error_handler'а: какой driver считать "активным",
+    # если конкретное действие ещё не переставило метку (см. active_driver_tracker)
+    set_active_driver(driver)
 
     try:
         yield driver
     finally:
+        # Сбрасываем, чтобы следующий тест в этом же воркере не унаследовал
+        # ссылку на уже закрытый driver, если упадёт до первого обращения к XPathFinder
+        set_active_driver(None)
         driver_instance.cleanup()
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def logger():
     """
     Фикстура для логгера, который будет использоваться в тестах.
@@ -89,8 +96,9 @@ def log_capture(logger):
     # с покликовой механикой), а не только редкие INFO-вехи. Шум сторонних
     # библиотек (Selenium/urllib3) отсекается на уровне их логгеров, не здесь.
     handler.setFormatter(logging.Formatter(
-        "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+        "%(asctime)s - %(account)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
     ))
+    handler.addFilter(AccountDefaultFilter())
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)
     try:
@@ -124,6 +132,9 @@ def admin_driver(driver, logger, error_handler):
         raise
     # Сбрасываем консоль браузера чтобы обрабатывать только новые ошибки
     error_handler.clear_browser_logs()
+
+    # Метка для логов: в combo-тестах с несколькими УЗ в одном потоке видно, какой аккаунт писал строку
+    driver.account_label = "admin"
 
     return driver  # Передаём браузер без закрытия (его закроет driver)
 
@@ -589,6 +600,8 @@ def login_user(request, driver, logger, username, password):
     if is_combo_test:
         driver_instance = BrowserDriver(browser_type=browser_type)
         driver = driver_instance.initialize_driver()
+        # Второй браузер combo-теста — переставляем метку "активного" driver на него
+        set_active_driver(driver)
         error_handler = ErrorHandler(driver, logger)
         login_page = LoginPage(driver, logger)
 
@@ -601,6 +614,9 @@ def login_user(request, driver, logger, username, password):
             error_handler.handle_exception(e, critical=False)
             raise
         error_handler.clear_browser_logs()
+
+        # Метка для логов: в combo-тестах с несколькими УЗ в одном потоке видно, какой аккаунт писал строку
+        driver.account_label = username
 
         yield driver
         driver_instance.cleanup()
@@ -618,6 +634,9 @@ def login_user(request, driver, logger, username, password):
             error_handler.handle_exception(e, critical=False)
             raise
         error_handler.clear_browser_logs()
+
+        # Метка для логов: в combo-тестах с несколькими УЗ в одном потоке видно, какой аккаунт писал строку
+        driver.account_label = username
 
         yield driver
 

@@ -11,6 +11,7 @@ import allure
 @allure.epic('Доступность сборки')
 @allure.feature('Доступность сборки')
 @allure.title('Выход из УЗ')
+@exception_handler
 def test_exit(error_handler, logger, admin_driver):
     """Тест проверяет корректность выхода из УЗ."""
     base_page = BasePage(admin_driver, logger)

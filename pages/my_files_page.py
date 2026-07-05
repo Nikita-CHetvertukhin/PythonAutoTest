@@ -1,16 +1,12 @@
 import os
 import time
 import allure
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from pathlib import Path
 from pages.base_page import BasePage
 from locators.my_files_locators import MyFilesLocators
 from locators.base_locators import BaseLocators
 from utils.element_searching import XPathFinder
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import StaleElementReferenceException
 
@@ -34,8 +30,8 @@ class MyFilesPage(BasePage):
                     self.logger.debug(f"Попытка {attempt + 1}: Файл '{object_name}' найден.")
 
                     # Ожидание полной загрузки элемента перед взаимодействием
-                    WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
-                    WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(file_element))
+                    xpath.wait_visible(file_element, timeout=5)
+                    xpath.wait_clickable(file_element, timeout=5)
 
                     time.sleep(0.5)  # Небольшая пауза для стабильности
 
@@ -46,9 +42,7 @@ class MyFilesPage(BasePage):
                     self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
-                    action_element = WebDriverWait(self.driver, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, action_xpath))
-                    )
+                    action_element = xpath.find_clickable(action_xpath, timeout=5)
 
                     # Кликаем по нужному пункту меню
                     action_element.click()
@@ -145,8 +139,8 @@ class MyFilesPage(BasePage):
                 self.logger.debug(f"Файл '{file_name}' найден.")
 
                 # Ожидание полной загрузки элемента перед взаимодействием
-                WebDriverWait(self.driver, 5).until(EC.visibility_of(file_element))
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(file_element))
+                xpath.wait_visible(file_element, timeout=5)
+                xpath.wait_clickable(file_element, timeout=5)
 
                 time.sleep(0.5)  # Небольшая пауза для стабильности
 
@@ -192,9 +186,7 @@ class MyFilesPage(BasePage):
                 else:
                     self.logger.debug(f"Все действия для '{file_name}' соответствуют ожиданиям.")
                     # Ожидаем появления контекстного меню
-                    action_element = WebDriverWait(self.driver, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, end_action_xpath))
-                    )
+                    action_element = xpath.find_clickable(end_action_xpath, timeout=5)
                     # Кликаем по нужному пункту меню
                     action_element.click()
                     self.logger.debug(f"Действие '{in_end}' выполнено для '{file_name}'.")

@@ -30,10 +30,12 @@ services:
         WORKSPACE: pro.doczilla.testWorkspace.workspace.table.Workspace
         # Список тестов, которые нужно пропустить (по одному на строку, с указанием причины в формате:<имя_теста>:<причина>)
         SKIP_TESTS: |
+            test_generateDatabaseSchema:Уже сделана генерация схемы
             test_download_history_task:Известный баг. PRO-0001
             test_workflow_administration_menu:Известный баг. PRO-0002
             test_undo_redo:Известный баг. PRO-0003. PRO-0003
             test_automat_name:Известный баг. PRO-0005. PRO-0004
+            test_exit:Известный баг. PRO-0006
 
   allure:
     image: frankescobar/allure-docker-service

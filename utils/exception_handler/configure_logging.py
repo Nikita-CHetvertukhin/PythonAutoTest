@@ -13,6 +13,17 @@ os.makedirs(LOG_DIR, exist_ok=True)
 WORKER_ID = os.getenv('PYTEST_XDIST_WORKER', 'master')  # Получаем ID воркера ('gw0', 'gw1', 'master' и т.д.)
 LOG_FILE = os.path.join(LOG_DIR, f"project_{WORKER_ID}.log")  # Каждый воркер получает уникальный файл
 
+
+class AccountDefaultFilter(logging.Filter):
+    """Проставляет account='-' записям, которые пришли не через LoggerAdapter с меткой аккаунта
+    (BasePage оборачивает logger меткой account_label драйвера) — иначе форматтер с %(account)s
+    упадёт с KeyError на обычных logger.info(...) без этой метки."""
+    def filter(self, record):
+        if not hasattr(record, "account"):
+            record.account = "-"
+        return True
+
+
 # Конфигурация логирования
 LOGGING_CONFIG = {
     "version": 1,
@@ -21,7 +32,13 @@ LOGGING_CONFIG = {
     # Определение форматов логов
     "formatters": {
         "detailed": {  # Подробный формат логов с информацией о файле и строке кода
-            "format": "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+            "format": "%(asctime)s - %(account)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+        },
+    },
+
+    "filters": {
+        "account_default": {
+            "()": "utils.exception_handler.configure_logging.AccountDefaultFilter",
         },
     },
 
@@ -35,6 +52,7 @@ LOGGING_CONFIG = {
             "maxBytes": 5_000_000,  # Максимальный размер файла логов перед ротацией (~5MB)
             "backupCount": 5,  # Хранение 5 архивных копий логов
             "encoding": "utf-8",  # Кодировка файла логов
+            "filters": ["account_default"],
         },
     },
 

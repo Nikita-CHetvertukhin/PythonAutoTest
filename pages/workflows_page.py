@@ -50,9 +50,7 @@ class WorkflowsPage(BasePage):
                     WebDriverWait(self.driver, 3).until(
                         EC.visibility_of_element_located((By.XPATH, target_xpath))
                     )
-                    WebDriverWait(self.driver, 3).until(
-                        EC.element_to_be_clickable((By.XPATH, target_xpath))
-                    )
+                    xpath.find_clickable(target_xpath, timeout=3)
                     time.sleep(0.5)  # Небольшая пауза для стабильности
 
                     # Кликаем ПКМ по элементу
@@ -63,9 +61,7 @@ class WorkflowsPage(BasePage):
                     self.logger.debug(f"ПКМ по '{object_name}' выполнен.")
 
                     # Ожидаем появления контекстного меню
-                    action_element = WebDriverWait(self.driver, 3).until(
-                        EC.element_to_be_clickable((By.XPATH, action_xpath))
-                    )
+                    action_element = xpath.find_clickable(action_xpath, timeout=3)
 
                     # Кликаем по нужному пункту меню
                     action_element.click()

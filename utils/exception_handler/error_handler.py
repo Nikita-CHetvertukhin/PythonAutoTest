@@ -6,6 +6,8 @@ import time  # Работа с временными метками, задерж
 from pathlib import Path
 import uuid
 from utils.refresh_and_wait import refresh_and_wait
+from utils.exception_handler.decorator_error_handler import MinorIssue
+from utils.active_driver_tracker import get_active_driver
 
 from selenium.common.exceptions import WebDriverException
 # Класс для обработки ошибок
@@ -33,12 +35,13 @@ class ErrorHandler:
         if log_text:
             allure.attach(log_text, name="error log", attachment_type=allure.attachment_type.TEXT)
 
-    def _attach_page_state(self):
+    def _attach_page_state(self, driver=None):
         """Прикрепляет к Allure URL на момент ошибки (до refresh_and_wait, который его может изменить)."""
+        driver = driver or self.driver
         if "pytest" not in sys.modules:
             return
         try:
-            current_url = self.driver.current_url
+            current_url = driver.current_url
         except WebDriverException as e:
             self.logger.warning(f"Не удалось получить URL: {e}")
             return
@@ -51,20 +54,32 @@ class ErrorHandler:
         :param exception: Текст ошибки или исключение.
         :param screenshot_name: Имя файла скриншота (по умолчанию генерируется автоматически).
         """
+        # В combo-тестах с несколькими УЗ/браузерами self.driver — не обязательно то окно,
+        # где реально произошла ошибка. active_driver_tracker хранит driver последнего
+        # вызова XPathFinder — берём его, если он есть, иначе используем привязанный по умолчанию.
+        driver = get_active_driver() or self.driver
+        account_label = getattr(driver, "account_label", None)
+
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         unique_id = uuid.uuid4().hex[:8]  # Например: a3b7f9c1
         screenshot_dir = Path("log/screenshots")
         screenshot_dir.mkdir(parents=True, exist_ok=True)
         screenshot_path = screenshot_dir / (screenshot_name or f"{unique_id}_screenshot_{timestamp}.png")
 
-        self.driver.save_screenshot(screenshot_path)
+        driver.save_screenshot(screenshot_path)
         self.logger.error(f"Ошибка: {exception}. Скриншот сохранён: {screenshot_path}")
+
+        # Тест остаётся "passed" (critical=False, не критично), но получает тег для
+        # фильтрации в отчёте Allure — без него такие тесты неотличимы в списке от обычных passed.
+        if isinstance(exception, MinorIssue) and "pytest" in sys.modules:
+            allure.dynamic.tag("minor_issue")
 
         # Прикрепление скриншота и лога теста к Allure
         if "pytest" in sys.modules:
+            screenshot_title = f"Ошибка ({account_label}): {exception}" if account_label else f"Ошибка: {exception}"
             with open(screenshot_path, "rb") as image_file:
-                allure.attach(image_file.read(), name=f"Ошибка: {exception}", attachment_type=allure.attachment_type.PNG)
-        self._attach_page_state()
+                allure.attach(image_file.read(), name=screenshot_title, attachment_type=allure.attachment_type.PNG)
+        self._attach_page_state(driver)
         self._attach_test_log()
 
         # Если ошибка критическая - обновляем страницу
