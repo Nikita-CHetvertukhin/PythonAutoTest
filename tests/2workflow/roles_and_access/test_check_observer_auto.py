@@ -9,7 +9,7 @@ import allure
 from utils.get_date import get_timestamp, get_uuid
 from utils.refresh_and_wait import refresh_and_wait
 
-process_name = f"{get_uuid()}_test_check_observer_manual_{get_timestamp()}"
+process_name = f"{get_uuid()}_test_check_observer_auto_{get_timestamp()}"
 executors = [("Observer",USER1_LOGIN),("Исполнитель",ADMIN_LOGIN)]
 
 @allure.severity(allure.severity_level.CRITICAL) # TRIVIAL, MINOR, NORMAL, CRITICAL, BLOCKER

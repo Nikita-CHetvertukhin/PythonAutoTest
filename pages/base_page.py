@@ -366,7 +366,7 @@ class BasePage:
 
             for login, level in logins_and_access:
                 try:
-                    row_xpath = f'{BaseLocators.SHARE_LIST}/div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]'
+                    row_xpath = f'{BaseLocators.SHARE_LIST}//div[contains(@class,"x-headline") and text()="{login}"]/ancestor::div[1]'
                     row_element = WebDriverWait(self.driver, 2).until(
                         EC.presence_of_element_located((By.XPATH, row_xpath))
                     )
@@ -429,7 +429,7 @@ class BasePage:
         if action == "edit":
             for login, level in logins_and_access:
                 current_setting = self.xpath.find_located(
-                    f'{BaseLocators.SHARE_LIST}//div[contains(@class,"headline") and text()="{login}"]/ancestor::div[1]',
+                    f'{BaseLocators.SHARE_LIST}//div[contains(@class,"x-headline") and text()="{login}"]/ancestor::div[1]',
                     timeout=1
                 )
                 current_setting.click()
@@ -505,7 +505,7 @@ class BasePage:
                 if not is_group:
                     self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//div[contains(@class,"headline") and (text()="{login}")]')
                 else:
-                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//div[contains(@class,"headline") and (text()="{login} (Группа)")]')
+                    self.xpath.find_visible(f'{BaseLocators.PUBLISH_LIST}//div[contains(@class,"headline") and (text()="{login} (группа)")]')
             except Exception as e:
                 self.logger.error(f"Ошибка при добавлении логина/группы '{login}': {e}")
                 raise RuntimeError(f"Публикация прервана: логин/группа '{login}' не появился(а) в списке") from e

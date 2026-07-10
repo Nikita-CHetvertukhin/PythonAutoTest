@@ -78,7 +78,7 @@ class BaseLocators:
     # Кнопка "Пригласить"
     SHARE_INVITE = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"invite")]'
     # Кнопка "Закрыть"
-    SHARE_CLOSE = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"close-button")]'
+    SHARE_CLOSE = '//div[contains(@class,"share x-dialog")]//div[contains(@class,"x-cross")]'
 
     '''PUBLISH WINDOW'''
 
